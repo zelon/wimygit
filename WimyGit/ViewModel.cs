@@ -49,9 +49,18 @@ namespace WimyGit
         {
             this.ChangeDirectory = new DelegateCommand(this.OnChangeDirectory, this.CanChangeDirectory);
             this.StageSelected = new DelegateCommand(this.OnStageSelected, this.CanStageSelected);
+            this.ModifiedDiffCommand = new DelegateCommand(this.OnModifiedDiffCommand, (unused_parameter) => true);
             this.Directory = @"E:\git\WimyGit";
             this.ModifiedList = new System.Collections.ObjectModel.ObservableCollection<FileStatus>();
             this.StagedList = new System.Collections.ObjectModel.ObservableCollection<FileStatus>();
+        }
+
+        public void OnModifiedDiffCommand(object parameter)
+        {
+            foreach(var filepath in SelectedModifiedFilePathList)
+            {
+              git_.Diff(filepath);
+            }
         }
 
         public void OnChangeDirectory(object parameter)
@@ -121,6 +130,8 @@ namespace WimyGit
         bool CanChangeDirectory(object parameter) { return true; }
         public ICommand ChangeDirectory { get; private set; }
         public string Directory { get; set; }
+
+        public ICommand ModifiedDiffCommand { get; private set; }
 
         void OnStageSelected(object parameter)
         {

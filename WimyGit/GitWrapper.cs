@@ -29,5 +29,11 @@ namespace WimyGit
             LibGit2Sharp.StageOptions option = new LibGit2Sharp.StageOptions();
             repository_.Stage(selectedModifiedFilePathList, option);
         }
+
+        public void Diff(string filepath)
+        {
+            RunExternal runner = new RunExternal(@"C:\Program Files (x86)\Git\bin\git.exe", path_, null);
+            runner.RunWithoutWaiting("difftool " + path_ + "\\" + filepath);
+        }
     }
 }
