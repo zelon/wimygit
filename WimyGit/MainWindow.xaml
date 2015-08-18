@@ -1,7 +1,7 @@
 ﻿<Window x:Class="WimyGit.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="MainWindow" Height="717.072" Width="713.755">
+        Title="MainWindow" Height="717.072" Width="713.755" Loaded="Window_Loaded">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="10*" />
@@ -68,7 +68,7 @@
             <Grid.ColumnDefinitions>
                 <ColumnDefinition></ColumnDefinition>
             </Grid.ColumnDefinitions>
-            <TextBox Height="118" TextWrapping="Wrap" Text="{Binding Path=Log}" VerticalAlignment="Top" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="1" Width="642" VerticalScrollBarVisibility="Auto" IsReadOnlyCaretVisible="True" AllowDrop="False"/>
+            <TextBox Height="118" TextWrapping="Wrap" Text="{Binding Path=Log}" VerticalAlignment="Top" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="1" Width="642" VerticalScrollBarVisibility="Auto" IsReadOnlyCaretVisible="True" AllowDrop="False" TextChanged="TextBox_TextChanged"/>
         </Grid>
     </Grid>
 </Window>

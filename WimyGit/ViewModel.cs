@@ -54,7 +54,7 @@ namespace WimyGit
             this.StagedList = new System.Collections.ObjectModel.ObservableCollection<FileStatus>();
         }
 
-        void OnChangeDirectory(object parameter)
+        public void OnChangeDirectory(object parameter)
         {
             git_ = new GitWrapper(Directory);
 
