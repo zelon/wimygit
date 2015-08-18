@@ -42,38 +42,116 @@ namespace WimyGit
         {
             public string Status { get; set; }
             public string FilePath { get; set; }
+            public bool IsSelected { get; set; }
         }
 
         public ViewModel()
         {
             this.ChangeDirectory = new DelegateCommand(this.OnChangeDirectory, this.CanChangeDirectory);
+            this.StageSelected = new DelegateCommand(this.OnStageSelected, this.CanStageSelected);
             this.Directory = @"E:\git\WimyGit";
             this.ModifiedList = new System.Collections.ObjectModel.ObservableCollection<FileStatus>();
+            this.StagedList = new System.Collections.ObjectModel.ObservableCollection<FileStatus>();
         }
 
         void OnChangeDirectory(object parameter)
         {
             git_ = new GitWrapper(Directory);
+
+            Refresh();
+        }
+
+        void Refresh()
+        {
             var filelist = git_.GetModifiedFileList();
             this.ModifiedList.Clear();
+            this.StagedList.Clear();
             foreach (var filestatus in filelist)
             {
-                if (filestatus.State == LibGit2Sharp.FileStatus.Ignored)
+                switch (filestatus.State)
                 {
-                    continue;
+                    case LibGit2Sharp.FileStatus.Ignored:
+                        continue;
+
+                    case LibGit2Sharp.FileStatus.Staged:
+                        AddStagedList(filestatus);
+                        break;
+
+                    case LibGit2Sharp.FileStatus.Untracked:
+                        goto case LibGit2Sharp.FileStatus.Modified;
+                    case LibGit2Sharp.FileStatus.Modified:
+                        AddModifiedList(filestatus);
+                        break;
+
+                    case LibGit2Sharp.FileStatus.Staged | LibGit2Sharp.FileStatus.Modified:
+                        AddModifiedList(filestatus);
+                        AddStagedList(filestatus);
+                        break;
+
+                    default:
+                        System.Diagnostics.Debug.Assert(false);
+                        AddLog("Cannot execute for filestatus:" + filestatus.State.ToString());
+                        break;
                 }
-                FileStatus status = new FileStatus();
-                status.Status = filestatus.State.ToString();
-                status.FilePath = filestatus.FilePath;
-                this.ModifiedList.Add(status);
                 AddLog(String.Format("[{0}] {1}", filestatus.State.ToString(), filestatus.FilePath));
             }
 
+        }
+
+        void AddModifiedList(LibGit2Sharp.StatusEntry filestatus)
+        {
+            FileStatus status = new FileStatus();
+            status.Status = filestatus.State.ToString();
+            status.FilePath = filestatus.FilePath;
+
+            ModifiedList.Add(status);
             PropertyChanged(this, new PropertyChangedEventArgs("ModifiedList"));
         }
+
+        void AddStagedList(LibGit2Sharp.StatusEntry filestatus)
+        {
+            FileStatus status = new FileStatus();
+            status.Status = filestatus.State.ToString();
+            status.FilePath = filestatus.FilePath;
+
+            StagedList.Add(status);
+            PropertyChanged(this, new PropertyChangedEventArgs("StagedList"));
+        }
+
         bool CanChangeDirectory(object parameter) { return true; }
         public ICommand ChangeDirectory { get; private set; }
         public string Directory { get; set; }
+
+        void OnStageSelected(object parameter)
+        {
+            if (SelectedModifiedFilePathList.Count() == 0)
+            {
+                AddLog("No selected to stage");
+            }
+            foreach (var filepath in SelectedModifiedFilePathList)
+            {
+                AddLog("Selected:" + filepath);
+            }
+
+            git_.Stage(SelectedModifiedFilePathList);
+
+            Refresh();
+        }
+        bool CanStageSelected(object parameter)
+        {
+            return true;
+        }
+        public ICommand StageSelected { get; set; }
+
+        public IEnumerable<string> SelectedModifiedFilePathList
+        {
+            get { return ModifiedList.Where(o => o.IsSelected).Select(o => o.FilePath); }
+        }
+
+        public IEnumerable<string> SelectedStagedFilePathList
+        {
+            get { return StagedList.Where(o => o.IsSelected).Select(o => o.FilePath); }
+        }
 
         private string log_;
         public string Log
@@ -92,10 +170,6 @@ namespace WimyGit
         }
 
         public System.Collections.ObjectModel.ObservableCollection<FileStatus> ModifiedList { get; set; }
-
-        private void SelectedItemChange(object sender, EventArgs e)
-        {
-            return;
-        }
+        public System.Collections.ObjectModel.ObservableCollection<FileStatus> StagedList { get; set; }
     }
 }

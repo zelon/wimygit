@@ -22,10 +22,12 @@
             <GridSplitter Grid.Column="1" Width="15" HorizontalAlignment="Stretch"/>
             <Grid>
             </Grid>
-            <ListBox Grid.Column="2" HorizontalAlignment="Left" Height="77" Margin="10,33,0,0" VerticalAlignment="Top" Width="533"/>
-            <Label Content="Staged" Grid.Column="2" HorizontalAlignment="Left" Margin="10,7,0,0" VerticalAlignment="Top"/>
-            <Label Content="Modified" Grid.Column="2" HorizontalAlignment="Left" Margin="10,176,0,0" VerticalAlignment="Top"/>
-            <ListBox Grid.Column="2" HorizontalAlignment="Left" Height="195" Margin="10,207,0,0" VerticalAlignment="Top" Width="533" ItemsSource="{Binding Path=ModifiedList}" SelectionMode="Extended">
+            <ListBox Grid.Column="2" HorizontalAlignment="Left" Height="77" Margin="10,33,0,0" VerticalAlignment="Top" Width="533" ItemsSource="{Binding Path=StagedList}">
+                <ListBox.ItemContainerStyle>
+                    <Style TargetType="{x:Type ListBoxItem}">
+                        <Setter Property="IsSelected" Value="{Binding Mode=TwoWay, Path=IsSelected}" />
+                    </Style>
+                </ListBox.ItemContainerStyle>
                 <ListBox.ItemTemplate>
                     <DataTemplate>
                         <Grid Margin="0,2">
@@ -39,13 +41,34 @@
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>
-            <Button x:Name="button" Content="Stage" Grid.Column="2" HorizontalAlignment="Left" Margin="301,134,0,0" VerticalAlignment="Top" Width="96" Height="44"/>
+            <Label Content="Staged" Grid.Column="2" HorizontalAlignment="Left" Margin="10,7,0,0" VerticalAlignment="Top"/>
+            <Label Content="Modified" Grid.Column="2" HorizontalAlignment="Left" Margin="10,176,0,0" VerticalAlignment="Top"/>
+            <ListBox  Grid.Column="2" HorizontalAlignment="Left" Height="195" Margin="10,207,0,0" VerticalAlignment="Top" Width="533" ItemsSource="{Binding Path=ModifiedList}" SelectionMode="Extended">
+                <ListBox.ItemContainerStyle>
+                    <Style TargetType="{x:Type ListBoxItem}">
+                        <Setter Property="IsSelected" Value="{Binding Mode=TwoWay, Path=IsSelected}" />
+                    </Style>
+                </ListBox.ItemContainerStyle>
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <Grid Margin="0,2">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="100" />
+                                <ColumnDefinition Width="auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="{Binding Status}" />
+                            <TextBlock Grid.Column="1" Text="{Binding FilePath}" Width="auto" />
+                        </Grid>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+            <Button x:Name="button" Content="Stage" Command="{Binding Path=StageSelected}" Grid.Column="2" HorizontalAlignment="Left" Margin="301,134,0,0" VerticalAlignment="Top" Width="96" Height="44"/>
         </Grid>
         <Grid Grid.Row="2">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition></ColumnDefinition>
             </Grid.ColumnDefinitions>
-            <TextBox Height="118" TextWrapping="Wrap" Text="{Binding Path=Log}" VerticalAlignment="Top" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="1" Width="642"/>
+            <TextBox Height="118" TextWrapping="Wrap" Text="{Binding Path=Log}" VerticalAlignment="Top" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="1" Width="642" VerticalScrollBarVisibility="Auto" IsReadOnlyCaretVisible="True" AllowDrop="False"/>
         </Grid>
     </Grid>
 </Window>

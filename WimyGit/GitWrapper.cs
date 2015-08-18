@@ -23,5 +23,11 @@ namespace WimyGit
             LibGit2Sharp.StatusOptions option = new LibGit2Sharp.StatusOptions();
             return repository_.RetrieveStatus(option);
         }
+
+        internal void Stage(IEnumerable<string> selectedModifiedFilePathList)
+        {
+            LibGit2Sharp.StageOptions option = new LibGit2Sharp.StageOptions();
+            repository_.Stage(selectedModifiedFilePathList, option);
+        }
     }
 }
