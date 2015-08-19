@@ -35,5 +35,15 @@ namespace WimyGit
             RunExternal runner = new RunExternal(@"C:\Program Files (x86)\Git\bin\git.exe", path_, null);
             runner.RunWithoutWaiting("difftool " + path_ + "\\" + filepath);
         }
+
+        internal void Commit(string commitMessage)
+        {
+            //string name = repository_.Config.Get<string>("user.name");
+            var signature = repository_.Config.BuildSignature(DateTimeOffset.Now);
+            var commitOption = new LibGit2Sharp.CommitOptions();
+            commitOption.AllowEmptyCommit = false;
+            commitOption.AmendPreviousCommit = false;
+            repository_.Commit(commitMessage, signature, signature, commitOption);
+        }
     }
 }

@@ -50,9 +50,21 @@ namespace WimyGit
             this.ChangeDirectory = new DelegateCommand(this.OnChangeDirectory, this.CanChangeDirectory);
             this.StageSelected = new DelegateCommand(this.OnStageSelected, this.CanStageSelected);
             this.ModifiedDiffCommand = new DelegateCommand(this.OnModifiedDiffCommand, (unused_parameter) => true);
+            this.CommitCommand = new DelegateCommand(this.OnCommitCommand, (unused_parameter) => true);
             this.Directory = @"E:\git\WimyGit";
             this.ModifiedList = new System.Collections.ObjectModel.ObservableCollection<FileStatus>();
             this.StagedList = new System.Collections.ObjectModel.ObservableCollection<FileStatus>();
+        }
+
+        public ICommand CommitCommand { get; private set; }
+        public void OnCommitCommand(object parameter)
+        {
+            if (CommitMessage.Length == 0)
+            {
+                AddLog("Empty commit message. Please fill commit message");
+                return;
+            }
+            git_.Commit(CommitMessage);
         }
 
         public void OnModifiedDiffCommand(object parameter)
@@ -72,6 +84,8 @@ namespace WimyGit
 
         void Refresh()
         {
+            AddLog("Check repository:" + Directory);
+
             var filelist = git_.GetModifiedFileList();
             this.ModifiedList.Clear();
             this.StagedList.Clear();
@@ -105,6 +119,11 @@ namespace WimyGit
                 AddLog(String.Format("[{0}] {1}", filestatus.State.ToString(), filestatus.FilePath));
             }
 
+            if (ModifiedList.Count == 0 && StagedList.Count == 0)
+            {
+                AddLog("Nothing changed");
+            }
+
         }
 
         void AddModifiedList(LibGit2Sharp.StatusEntry filestatus)
@@ -130,6 +149,8 @@ namespace WimyGit
         bool CanChangeDirectory(object parameter) { return true; }
         public ICommand ChangeDirectory { get; private set; }
         public string Directory { get; set; }
+
+        public string CommitMessage { get; set; }
 
         public ICommand ModifiedDiffCommand { get; private set; }
 

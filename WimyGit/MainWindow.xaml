@@ -3,7 +3,8 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="MainWindow" Height="717.072" Width="713.755" Loaded="Window_Loaded">
     <Window.InputBindings>
-        <KeyBinding Modifiers="Ctrl" Key="D" Command="{Binding DiffCommand}" />
+        <KeyBinding Modifiers="Ctrl" Key="D" Command="{Binding ModifiedDiffCommand}" />
+        <KeyBinding Key="F5" Command="{Binding ChangeDirectory}" />
     </Window.InputBindings>
     <Grid>
         <Grid.RowDefinitions>
@@ -15,7 +16,7 @@
             <TextBox HorizontalAlignment="Left" Height="23" TextWrapping="Wrap" Text="{Binding Path=Directory}" VerticalAlignment="Top" Width="414"/>
             <Button Content="Button" HorizontalAlignment="Left" Margin="432,0,0,0" VerticalAlignment="Top" Width="75" Command="{Binding Path=ChangeDirectory}" />
         </Grid>
-        <Grid Grid.Row="1">
+        <Grid Grid.Row="1" Margin="0,0,0,102" Grid.RowSpan="2">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="20*" />
                 <ColumnDefinition Width="Auto" />
@@ -25,7 +26,7 @@
             <GridSplitter Grid.Column="1" Width="15" HorizontalAlignment="Stretch"/>
             <Grid>
             </Grid>
-            <ListBox Grid.Column="2" HorizontalAlignment="Left" Height="77" Margin="10,33,0,0" VerticalAlignment="Top" Width="533" ItemsSource="{Binding Path=StagedList}">
+            <ListBox Grid.Column="2" HorizontalAlignment="Left" Height="95" Margin="10,199,0,0" VerticalAlignment="Top" Width="533" ItemsSource="{Binding Path=StagedList}">
                 <ListBox.ItemContainerStyle>
                     <Style TargetType="{x:Type ListBoxItem}">
                         <Setter Property="IsSelected" Value="{Binding Mode=TwoWay, Path=IsSelected}" />
@@ -44,9 +45,9 @@
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>
-            <Label Content="Staged" Grid.Column="2" HorizontalAlignment="Left" Margin="10,7,0,0" VerticalAlignment="Top"/>
-            <Label Content="Modified" Grid.Column="2" HorizontalAlignment="Left" Margin="10,176,0,0" VerticalAlignment="Top"/>
-            <ListBox  Grid.Column="2" HorizontalAlignment="Left" Height="195" Margin="10,207,0,0" VerticalAlignment="Top" Width="533" ItemsSource="{Binding Path=ModifiedList}" SelectionMode="Extended">
+            <Label Content="Staged" Grid.Column="2" HorizontalAlignment="Left" Margin="10,168,0,0" VerticalAlignment="Top"/>
+            <Label Content="Modified" Grid.Column="2" HorizontalAlignment="Left" Margin="10,326,0,0" VerticalAlignment="Top"/>
+            <ListBox  Grid.Column="2" HorizontalAlignment="Left" Height="153" Margin="10,357,0,0" VerticalAlignment="Top" Width="533" ItemsSource="{Binding Path=ModifiedList}" SelectionMode="Extended">
                 <ListBox.ContextMenu>
                     <ContextMenu>
                         <MenuItem Header="Diff" InputGestureText="Ctrl+D" Command="{Binding Path=ModifiedDiffCommand}" />
@@ -71,13 +72,15 @@
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>
-            <Button x:Name="button" Content="Stage" Command="{Binding Path=StageSelected}" Grid.Column="2" HorizontalAlignment="Left" Margin="301,134,0,0" VerticalAlignment="Top" Width="96" Height="44"/>
+            <Button x:Name="button" Content="Stage" Command="{Binding Path=StageSelected}" Grid.Column="2" HorizontalAlignment="Left" Margin="227,299,0,0" VerticalAlignment="Top" Width="96" Height="44"/>
+            <Button x:Name="button1" Content="Commit" Command="{Binding Path=CommitCommand}" Grid.Column="2" HorizontalAlignment="Left" Margin="227,118,0,0" VerticalAlignment="Top" Width="96" Height="55"/>
+            <TextBox x:Name="textBox" Text="{Binding CommitMessage}" Grid.Column="2" HorizontalAlignment="Left" Height="103" Margin="10,10,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="533"/>
         </Grid>
-        <Grid Grid.Row="2">
+        <Grid Grid.Row="2" Margin="0,104,0,0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition></ColumnDefinition>
             </Grid.ColumnDefinitions>
-            <TextBox Height="118" TextWrapping="Wrap" Text="{Binding Path=Log}" VerticalAlignment="Top" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="1" Width="642" VerticalScrollBarVisibility="Auto" IsReadOnlyCaretVisible="True" AllowDrop="False" TextChanged="TextBox_TextChanged"/>
+            <TextBox Height="186" TextWrapping="Wrap" Text="{Binding Path=Log}" VerticalAlignment="Top" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="1" Width="642" VerticalScrollBarVisibility="Auto" IsReadOnlyCaretVisible="True" AllowDrop="False" TextChanged="TextBox_TextChanged" Margin="36,10,28,0"/>
         </Grid>
     </Grid>
 </Window>
