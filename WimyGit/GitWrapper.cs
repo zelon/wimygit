@@ -38,7 +38,6 @@ namespace WimyGit
 
         internal void Commit(string commitMessage)
         {
-            //string name = repository_.Config.Get<string>("user.name");
             var signature = repository_.Config.BuildSignature(DateTimeOffset.Now);
             var commitOption = new LibGit2Sharp.CommitOptions();
             commitOption.AllowEmptyCommit = false;

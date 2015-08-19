@@ -65,6 +65,8 @@ namespace WimyGit
                 return;
             }
             git_.Commit(CommitMessage);
+            CommitMessage = "";
+            Refresh();
         }
 
         public void OnModifiedDiffCommand(object parameter)
@@ -82,8 +84,12 @@ namespace WimyGit
             Refresh();
         }
 
-        void Refresh()
+        public void Refresh()
         {
+            if (git_ == null)
+            {
+                return;
+            }
             AddLog("Check repository:" + Directory);
 
             var filelist = git_.GetModifiedFileList();
@@ -96,6 +102,8 @@ namespace WimyGit
                     case LibGit2Sharp.FileStatus.Ignored:
                         continue;
 
+                    case LibGit2Sharp.FileStatus.Added:
+                        goto case LibGit2Sharp.FileStatus.Staged;
                     case LibGit2Sharp.FileStatus.Staged:
                         AddStagedList(filestatus);
                         break;
@@ -150,7 +158,19 @@ namespace WimyGit
         public ICommand ChangeDirectory { get; private set; }
         public string Directory { get; set; }
 
-        public string CommitMessage { get; set; }
+        private string commit_message_;
+        public string CommitMessage
+        {
+            get
+            {
+                return commit_message_;
+            }
+            set
+            {
+                commit_message_ = value;
+                NotifyPropertyChanged("CommitMessage");
+            }
+        }
 
         public ICommand ModifiedDiffCommand { get; private set; }
 
@@ -194,10 +214,14 @@ namespace WimyGit
         public void AddLog(string log)
         {
             log_ += log + "\n";
-            var handler = this.PropertyChanged;
-            if (handler != null)
+            NotifyPropertyChanged("Log");
+        }
+
+        private void NotifyPropertyChanged(string name)
+        {
+            if (PropertyChanged != null)
             {
-                handler(this, new PropertyChangedEventArgs("Log"));
+                PropertyChanged(this, new PropertyChangedEventArgs(name));
             }
         }
 

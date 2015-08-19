@@ -29,14 +29,23 @@ namespace WimyGit
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            var view_model = (ViewModel)this.DataContext;
-            view_model.OnChangeDirectory(null);
+            GetViewModel().OnChangeDirectory(null);
         }
 
         private void TextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
             TextBox textbox = (TextBox)sender;
             textbox.ScrollToEnd();
+        }
+
+        private void Window_Activated(object sender, EventArgs e)
+        {
+            GetViewModel().Refresh();
+        }
+
+        private ViewModel GetViewModel()
+        {
+            return (ViewModel)this.DataContext;
         }
     }
 }
