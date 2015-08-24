@@ -51,7 +51,7 @@ namespace WimyGit
             this.StageSelected = new DelegateCommand(this.OnStageSelected, this.CanStageSelected);
             this.ModifiedDiffCommand = new DelegateCommand(this.OnModifiedDiffCommand, (unused_parameter) => true);
             this.CommitCommand = new DelegateCommand(this.OnCommitCommand, (unused_parameter) => true);
-            this.Directory = @"E:\git\WimyGit";
+            this.Directory = @"E:\git\testGit";
             this.ModifiedList = new System.Collections.ObjectModel.ObservableCollection<FileStatus>();
             this.StagedList = new System.Collections.ObjectModel.ObservableCollection<FileStatus>();
         }
