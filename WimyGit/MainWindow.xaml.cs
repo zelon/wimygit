@@ -47,5 +47,15 @@ namespace WimyGit
         {
             return (ViewModel)this.DataContext;
         }
+
+        private void StagedList_GotFocus(object sender, RoutedEventArgs e)
+        {
+            GetViewModel().StagedList_GotFocus();
+        }
+
+        private void ModifiedList_GotFocus(object sender, RoutedEventArgs e)
+        {
+            GetViewModel().ModifiedList_GotFocus();
+        }
     }
 }

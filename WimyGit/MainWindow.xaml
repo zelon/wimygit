@@ -26,7 +26,7 @@
             <GridSplitter Grid.Column="1" Width="15" HorizontalAlignment="Stretch"/>
             <Grid>
             </Grid>
-            <ListBox Grid.Column="2" HorizontalAlignment="Left" Height="95" Margin="10,199,0,0" VerticalAlignment="Top" Width="533" ItemsSource="{Binding Path=StagedList}">
+            <ListBox Grid.Column="2" HorizontalAlignment="Left" Height="95" Margin="10,199,0,0" VerticalAlignment="Top" Width="533" ItemsSource="{Binding Path=StagedList}" GotFocus="StagedList_GotFocus">
                 <ListBox.ItemContainerStyle>
                     <Style TargetType="{x:Type ListBoxItem}">
                         <Setter Property="IsSelected" Value="{Binding Mode=TwoWay, Path=IsSelected}" />
@@ -47,7 +47,7 @@
             </ListBox>
             <Label Content="Staged" Grid.Column="2" HorizontalAlignment="Left" Margin="10,168,0,0" VerticalAlignment="Top"/>
             <Label Content="Modified" Grid.Column="2" HorizontalAlignment="Left" Margin="10,326,0,0" VerticalAlignment="Top"/>
-            <ListBox  Grid.Column="2" HorizontalAlignment="Left" Height="149" Margin="10,357,0,0" VerticalAlignment="Top" Width="533" ItemsSource="{Binding Path=ModifiedList}" SelectionMode="Extended">
+            <ListBox  Grid.Column="2" HorizontalAlignment="Left" Height="149" Margin="10,357,0,0" VerticalAlignment="Top" Width="533" ItemsSource="{Binding Path=ModifiedList}" SelectionMode="Extended" GotFocus="ModifiedList_GotFocus">
                 <ListBox.ContextMenu>
                     <ContextMenu>
                         <MenuItem Header="Diff" InputGestureText="Ctrl+D" Command="{Binding Path=ModifiedDiffCommand}" />

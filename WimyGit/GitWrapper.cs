@@ -40,6 +40,11 @@ namespace WimyGit
             runner.RunWithoutWaiting("difftool " + path_ + "\\" + filepath);
         }
 
+        public void DiffStaged(string filepath)
+        {
+            RunExternal runner = new RunExternal(@"C:\Program Files (x86)\Git\bin\git.exe", path_, null);
+            runner.RunWithoutWaiting("difftool --cached " + path_ + "\\" + filepath);
+        }
         internal void Commit(string commitMessage)
         {
             var signature = repository_.Config.BuildSignature(DateTimeOffset.Now);

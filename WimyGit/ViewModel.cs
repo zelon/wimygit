@@ -37,6 +37,14 @@ namespace WimyGit
         public event PropertyChangedEventHandler PropertyChanged;
 
         private GitWrapper git_;
+        
+        enum LastFocusedList
+        {
+            kNone,
+            kModifiedList,
+            kStagedList,
+        }
+        private LastFocusedList last_focused_list_ = LastFocusedList.kNone;
 
         public class FileStatus
         {
@@ -56,6 +64,19 @@ namespace WimyGit
             this.StagedList = new System.Collections.ObjectModel.ObservableCollection<FileStatus>();
         }
 
+        public void LostFocus_FromLists()
+        {
+            last_focused_list_ = LastFocusedList.kNone;
+        }
+        public void ModifiedList_GotFocus()
+        {
+            last_focused_list_ = LastFocusedList.kModifiedList;
+        }
+        public void StagedList_GotFocus()
+        {
+            last_focused_list_ = LastFocusedList.kStagedList;
+        }
+
         public ICommand CommitCommand { get; private set; }
         public void OnCommitCommand(object parameter)
         {
@@ -71,9 +92,32 @@ namespace WimyGit
 
         public void OnModifiedDiffCommand(object parameter)
         {
+            switch (last_focused_list_)
+            {
+                case LastFocusedList.kNone:
+                    return;
+
+                case LastFocusedList.kModifiedList:
+                    DiffModified();
+                    break;
+
+                case LastFocusedList.kStagedList:
+                    DiffStaged();
+                    break;
+            }
+        }
+        private void DiffModified()
+        {
             foreach(var filepath in SelectedModifiedFilePathList)
             {
               git_.Diff(filepath);
+            }
+        }
+        private void DiffStaged()
+        {
+            foreach(var filepath in SelectedStagedFilePathList)
+            {
+              git_.DiffStaged(filepath);
             }
         }
 
