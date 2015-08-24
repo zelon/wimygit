@@ -64,6 +64,7 @@
     <Compile Include="RunExternal.cs" />
     <Compile Include="SelectionRecover.cs" />
     <Compile Include="ViewModel.cs" />
+    <Compile Include="ViewModel.RepositoryList.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

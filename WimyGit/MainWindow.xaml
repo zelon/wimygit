@@ -13,8 +13,8 @@
             <RowDefinition Height="30*" />
         </Grid.RowDefinitions>
         <Grid Grid.Row="0">
-            <TextBox HorizontalAlignment="Left" Height="23" TextWrapping="Wrap" Text="{Binding Path=Directory}" VerticalAlignment="Top" Width="414"/>
-            <Button Content="Button" HorizontalAlignment="Left" Margin="432,0,0,0" VerticalAlignment="Top" Width="75" Command="{Binding Path=ChangeDirectory}" />
+            <ComboBox x:Name="comboBox" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="404" IsEditable="True" Text="{Binding Path=Directory}" ItemsSource="{Binding Path=RepositoryList}" />
+            <Button Content="Button" HorizontalAlignment="Left" Margin="419,10,0,0" VerticalAlignment="Top" Width="75" Command="{Binding Path=ChangeDirectory}" />
         </Grid>
         <Grid Grid.Row="1" Margin="0,0,0,102" Grid.RowSpan="2">
             <Grid.ColumnDefinitions>

@@ -32,7 +32,7 @@ namespace WimyGit
 
     }
 
-    class ViewModel : System.ComponentModel.INotifyPropertyChanged
+    partial class ViewModel : System.ComponentModel.INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler PropertyChanged;
 
