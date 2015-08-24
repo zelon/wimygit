@@ -26,6 +26,10 @@ namespace WimyGit
 
         internal void Stage(IEnumerable<string> selectedModifiedFilePathList)
         {
+            if (selectedModifiedFilePathList.Count() ==0)
+            {
+                return;
+            }
             LibGit2Sharp.StageOptions option = new LibGit2Sharp.StageOptions();
             repository_.Stage(selectedModifiedFilePathList, option);
         }
