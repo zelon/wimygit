@@ -13,11 +13,13 @@ namespace WimyGit
     class RunExternal
     {
         private readonly string execute_filename_;
+        private readonly string working_directory_;
         private readonly OutputInterface output_;
 
         public RunExternal(string execute_filename, string working_directory, OutputInterface output)
         {
             execute_filename_ = execute_filename;
+            working_directory_ = working_directory;
             output_ = output;
         }
 
@@ -29,6 +31,7 @@ namespace WimyGit
             process.StartInfo.UseShellExecute = false;
             process.StartInfo.RedirectStandardOutput = true;
             process.StartInfo.CreateNoWindow = true;
+            process.StartInfo.WorkingDirectory = working_directory_;
 
             process.OutputDataReceived += OnOutputDataReceived;
             process.EnableRaisingEvents = true;
@@ -45,11 +48,8 @@ namespace WimyGit
             process.StartInfo.FileName = execute_filename_;
             process.StartInfo.Arguments = arguments;
             process.StartInfo.UseShellExecute = false;
-            process.StartInfo.RedirectStandardOutput = true;
+            process.StartInfo.WorkingDirectory = working_directory_;
             process.StartInfo.CreateNoWindow = true;
-
-            process.EnableRaisingEvents = true;
-            process.Exited += OnExit;
 
             process.Start();
         }
