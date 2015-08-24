@@ -47,7 +47,7 @@
             </ListBox>
             <Label Content="Staged" Grid.Column="2" HorizontalAlignment="Left" Margin="10,168,0,0" VerticalAlignment="Top"/>
             <Label Content="Modified" Grid.Column="2" HorizontalAlignment="Left" Margin="10,326,0,0" VerticalAlignment="Top"/>
-            <ListBox  Grid.Column="2" HorizontalAlignment="Left" Height="153" Margin="10,357,0,0" VerticalAlignment="Top" Width="533" ItemsSource="{Binding Path=ModifiedList}" SelectionMode="Extended">
+            <ListBox  Grid.Column="2" HorizontalAlignment="Left" Height="149" Margin="10,357,0,0" VerticalAlignment="Top" Width="533" ItemsSource="{Binding Path=ModifiedList}" SelectionMode="Extended">
                 <ListBox.ContextMenu>
                     <ContextMenu>
                         <MenuItem Header="Diff" InputGestureText="Ctrl+D" Command="{Binding Path=ModifiedDiffCommand}" />
@@ -80,7 +80,7 @@
             <Grid.ColumnDefinitions>
                 <ColumnDefinition></ColumnDefinition>
             </Grid.ColumnDefinitions>
-            <TextBox Height="186" TextWrapping="Wrap" Text="{Binding Path=Log}" VerticalAlignment="Top" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="1" Width="642" VerticalScrollBarVisibility="Auto" IsReadOnlyCaretVisible="True" AllowDrop="False" TextChanged="TextBox_TextChanged" Margin="36,10,28,0"/>
+            <TextBox Height="82" TextWrapping="Wrap" Text="{Binding Path=Log}" VerticalAlignment="Top" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="1" VerticalScrollBarVisibility="Auto" IsReadOnlyCaretVisible="True" AllowDrop="False" TextChanged="TextBox_TextChanged" Margin="36,10,38,0"/>
         </Grid>
     </Grid>
 </Window>
