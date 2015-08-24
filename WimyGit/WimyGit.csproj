@@ -62,6 +62,7 @@
     </ApplicationDefinition>
     <Compile Include="GitWrapper.cs" />
     <Compile Include="RunExternal.cs" />
+    <Compile Include="SelectionRecover.cs" />
     <Compile Include="ViewModel.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>

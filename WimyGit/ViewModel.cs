@@ -93,6 +93,8 @@ namespace WimyGit
             AddLog("Check repository:" + Directory);
 
             var filelist = git_.GetModifiedFileList();
+            var modified_backup = new SelectionRecover(ModifiedList);
+            var staged_backup = new SelectionRecover(StagedList);
             this.ModifiedList.Clear();
             this.StagedList.Clear();
             foreach (var filestatus in filelist)
@@ -105,18 +107,18 @@ namespace WimyGit
                     case LibGit2Sharp.FileStatus.Added:
                         goto case LibGit2Sharp.FileStatus.Staged;
                     case LibGit2Sharp.FileStatus.Staged:
-                        AddStagedList(filestatus);
+                        AddStagedList(filestatus, staged_backup);
                         break;
 
                     case LibGit2Sharp.FileStatus.Untracked:
                         goto case LibGit2Sharp.FileStatus.Modified;
                     case LibGit2Sharp.FileStatus.Modified:
-                        AddModifiedList(filestatus);
+                        AddModifiedList(filestatus, modified_backup);
                         break;
 
                     case LibGit2Sharp.FileStatus.Staged | LibGit2Sharp.FileStatus.Modified:
-                        AddModifiedList(filestatus);
-                        AddStagedList(filestatus);
+                        AddModifiedList(filestatus, modified_backup);
+                        AddStagedList(filestatus, staged_backup);
                         break;
 
                     default:
@@ -131,24 +133,25 @@ namespace WimyGit
             {
                 AddLog("Nothing changed");
             }
-
         }
 
-        void AddModifiedList(LibGit2Sharp.StatusEntry filestatus)
+        void AddModifiedList(LibGit2Sharp.StatusEntry filestatus, SelectionRecover backup_selection)
         {
             FileStatus status = new FileStatus();
             status.Status = filestatus.State.ToString();
             status.FilePath = filestatus.FilePath;
+            status.IsSelected = backup_selection.WasSelected(filestatus.FilePath);
 
             ModifiedList.Add(status);
             PropertyChanged(this, new PropertyChangedEventArgs("ModifiedList"));
         }
 
-        void AddStagedList(LibGit2Sharp.StatusEntry filestatus)
+        void AddStagedList(LibGit2Sharp.StatusEntry filestatus, SelectionRecover backup_selection)
         {
             FileStatus status = new FileStatus();
             status.Status = filestatus.State.ToString();
             status.FilePath = filestatus.FilePath;
+            status.IsSelected = backup_selection.WasSelected(filestatus.FilePath);
 
             StagedList.Add(status);
             PropertyChanged(this, new PropertyChangedEventArgs("StagedList"));
