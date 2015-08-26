@@ -8,30 +8,6 @@ using System.Windows.Input;
 
 namespace WimyGit
 {
-    public class DelegateCommand : ICommand
-    {
-        private Action<object> execute_;
-        private Predicate<object> can_execute_;
-        public event EventHandler CanExecuteChanged;
-
-        public DelegateCommand(Action<object> executeMethod, Predicate<object> canExecuteMethod)
-        {
-            execute_ = executeMethod;
-            can_execute_ = canExecuteMethod;
-        }
-
-        public bool CanExecute(object parameter)
-        {
-            return can_execute_(parameter);
-        }
-
-        public void Execute(object parameter)
-        {
-            execute_(parameter);
-        }
-
-    }
-
     partial class ViewModel : System.ComponentModel.INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler PropertyChanged;
@@ -55,10 +31,10 @@ namespace WimyGit
 
         public ViewModel()
         {
-            this.ChangeDirectory = new DelegateCommand(this.OnChangeDirectory, this.CanChangeDirectory);
-            this.StageSelected = new DelegateCommand(this.OnStageSelected, this.CanStageSelected);
-            this.ModifiedDiffCommand = new DelegateCommand(this.OnModifiedDiffCommand, (unused_parameter) => true);
-            this.CommitCommand = new DelegateCommand(this.OnCommitCommand, (unused_parameter) => true);
+            this.ChangeDirectory = new DelegateCommand(this.OnChangeDirectory);
+            this.StageSelected = new DelegateCommand(this.OnStageSelected);
+            this.ModifiedDiffCommand = new DelegateCommand(this.OnModifiedDiffCommand);
+            this.CommitCommand = new DelegateCommand(this.OnCommitCommand);
             this.Directory = @"E:\git\testGit";
             this.ModifiedList = new System.Collections.ObjectModel.ObservableCollection<FileStatus>();
             this.StagedList = new System.Collections.ObjectModel.ObservableCollection<FileStatus>();
@@ -201,7 +177,6 @@ namespace WimyGit
             PropertyChanged(this, new PropertyChangedEventArgs("StagedList"));
         }
 
-        bool CanChangeDirectory(object parameter) { return true; }
         public ICommand ChangeDirectory { get; private set; }
         public string Directory { get; set; }
 
@@ -235,10 +210,6 @@ namespace WimyGit
             git_.Stage(SelectedModifiedFilePathList);
 
             Refresh();
-        }
-        bool CanStageSelected(object parameter)
-        {
-            return true;
         }
         public ICommand StageSelected { get; set; }
 
