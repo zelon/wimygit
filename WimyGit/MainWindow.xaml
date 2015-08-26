@@ -26,57 +26,57 @@
             </Grid.ColumnDefinitions>
             <Grid></Grid>
             <GridSplitter Grid.Column="1" Width="15" HorizontalAlignment="Stretch"/>
-            <Grid>
+            <Grid Grid.Column="2">
+                <ListBox Height="102" Margin="10,118,10,0" VerticalAlignment="Top" ItemsSource="{Binding Path=StagedList}" GotFocus="StagedList_GotFocus">
+                    <ListBox.ItemContainerStyle>
+                        <Style TargetType="{x:Type ListBoxItem}">
+                            <Setter Property="IsSelected" Value="{Binding Mode=TwoWay, Path=IsSelected}" />
+                        </Style>
+                    </ListBox.ItemContainerStyle>
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Grid Margin="0,2">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="100" />
+                                    <ColumnDefinition Width="auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="{Binding Status}" />
+                                <TextBlock Grid.Column="1" Text="{Binding FilePath}" Width="auto" />
+                            </Grid>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+                <Label Content="Staged" HorizontalAlignment="Left" Margin="10,92,0,0" VerticalAlignment="Top"/>
+                <Label Content="Modified" HorizontalAlignment="Left" Margin="10,243,0,0" VerticalAlignment="Top"/>
+                <ListBox Margin="10,274,10,10" ItemsSource="{Binding Path=ModifiedList}" SelectionMode="Extended" GotFocus="ModifiedList_GotFocus">
+                    <ListBox.ContextMenu>
+                        <ContextMenu>
+                            <MenuItem Header="Diff" InputGestureText="Ctrl+D" Command="{Binding Path=ModifiedDiffCommand}" />
+                            <MenuItem Header="Refresh" InputGestureText="F5" Command="{Binding Path=ChangeDirectory}" />
+                        </ContextMenu>
+                    </ListBox.ContextMenu>
+                    <ListBox.ItemContainerStyle>
+                        <Style TargetType="{x:Type ListBoxItem}">
+                            <Setter Property="IsSelected" Value="{Binding Mode=TwoWay, Path=IsSelected}" />
+                        </Style>
+                    </ListBox.ItemContainerStyle>
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Grid Margin="0,2">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="100" />
+                                    <ColumnDefinition Width="auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="{Binding Status}" />
+                                <TextBlock Grid.Column="1" Text="{Binding FilePath}" Width="auto" />
+                            </Grid>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+                <Button x:Name="button" Content="Stage" Command="{Binding Path=StageSelected}" HorizontalAlignment="Left" Margin="270,225,0,0" VerticalAlignment="Top" Width="96" Height="44"/>
+                <Button x:Name="button1" Content="Commit" Command="{Binding Path=CommitCommand}" HorizontalAlignment="Right" Margin="0,10,10,0" VerticalAlignment="Top" Width="87" Height="77"/>
+                <TextBox x:Name="textBox" Text="{Binding CommitMessage}" Height="77" Margin="10,10,102,0" TextWrapping="Wrap" VerticalAlignment="Top"/>
             </Grid>
-            <ListBox Grid.Column="2" Height="102" Margin="10,118,10,0" VerticalAlignment="Top" ItemsSource="{Binding Path=StagedList}" GotFocus="StagedList_GotFocus">
-                <ListBox.ItemContainerStyle>
-                    <Style TargetType="{x:Type ListBoxItem}">
-                        <Setter Property="IsSelected" Value="{Binding Mode=TwoWay, Path=IsSelected}" />
-                    </Style>
-                </ListBox.ItemContainerStyle>
-                <ListBox.ItemTemplate>
-                    <DataTemplate>
-                        <Grid Margin="0,2">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="100" />
-                                <ColumnDefinition Width="auto" />
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="{Binding Status}" />
-                            <TextBlock Grid.Column="1" Text="{Binding FilePath}" Width="auto" />
-                        </Grid>
-                    </DataTemplate>
-                </ListBox.ItemTemplate>
-            </ListBox>
-            <Label Content="Staged" Grid.Column="2" HorizontalAlignment="Left" Margin="10,92,0,0" VerticalAlignment="Top"/>
-            <Label Content="Modified" Grid.Column="2" HorizontalAlignment="Left" Margin="10,243,0,0" VerticalAlignment="Top"/>
-            <ListBox  Grid.Column="2" Margin="10,274,10,10" ItemsSource="{Binding Path=ModifiedList}" SelectionMode="Extended" GotFocus="ModifiedList_GotFocus">
-                <ListBox.ContextMenu>
-                    <ContextMenu>
-                        <MenuItem Header="Diff" InputGestureText="Ctrl+D" Command="{Binding Path=ModifiedDiffCommand}" />
-                        <MenuItem Header="Refresh" InputGestureText="F5" Command="{Binding Path=ChangeDirectory}" />
-                    </ContextMenu>
-                </ListBox.ContextMenu>
-                <ListBox.ItemContainerStyle>
-                    <Style TargetType="{x:Type ListBoxItem}">
-                        <Setter Property="IsSelected" Value="{Binding Mode=TwoWay, Path=IsSelected}" />
-                    </Style>
-                </ListBox.ItemContainerStyle>
-                <ListBox.ItemTemplate>
-                    <DataTemplate>
-                        <Grid Margin="0,2">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="100" />
-                                <ColumnDefinition Width="auto" />
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="{Binding Status}" />
-                            <TextBlock Grid.Column="1" Text="{Binding FilePath}" Width="auto" />
-                        </Grid>
-                    </DataTemplate>
-                </ListBox.ItemTemplate>
-            </ListBox>
-            <Button x:Name="button" Content="Stage" Command="{Binding Path=StageSelected}" Grid.Column="2" HorizontalAlignment="Left" Margin="270,225,0,0" VerticalAlignment="Top" Width="96" Height="44"/>
-            <Button x:Name="button1" Content="Commit" Command="{Binding Path=CommitCommand}" Grid.Column="2" HorizontalAlignment="Right" Margin="0,10,10,0" VerticalAlignment="Top" Width="87" Height="77"/>
-            <TextBox x:Name="textBox" Text="{Binding CommitMessage}" Grid.Column="2" Height="77" Margin="10,10,102,0" TextWrapping="Wrap" VerticalAlignment="Top"/>
         </Grid>
         <Grid Grid.Row="2" Margin="0,0,0,0">
             <Grid.ColumnDefinitions>
