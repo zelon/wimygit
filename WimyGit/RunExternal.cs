@@ -54,6 +54,17 @@ namespace WimyGit
             process.Start();
         }
 
+        public void RunShell(string arguments)
+        {
+            Process process = new Process();
+            process.StartInfo.FileName = execute_filename_;
+            process.StartInfo.Arguments = arguments;
+            process.StartInfo.UseShellExecute = true;
+            process.StartInfo.CreateNoWindow = false;
+            process.StartInfo.WorkingDirectory = working_directory_;
+
+            process.Start();
+        }
 
         private void OnOutputDataReceived(object sender, DataReceivedEventArgs e)
         {

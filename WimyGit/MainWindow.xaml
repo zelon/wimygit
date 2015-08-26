@@ -8,15 +8,17 @@
     </Window.InputBindings>
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="10*" />
+            <RowDefinition Height="45" />
             <RowDefinition Height="60*" />
             <RowDefinition Height="30*" />
         </Grid.RowDefinitions>
         <Grid Grid.Row="0">
-            <ComboBox x:Name="comboBox" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="404" IsEditable="True" Text="{Binding Path=Directory}" ItemsSource="{Binding Path=RepositoryList}" />
-            <Button Content="Button" HorizontalAlignment="Left" Margin="419,10,0,0" VerticalAlignment="Top" Width="75" Command="{Binding Path=ChangeDirectory}" />
+            <ComboBox x:Name="comboBox" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="365" IsEditable="True" Text="{Binding Path=Directory}" ItemsSource="{Binding Path=RepositoryList}" />
+            <Button Content="Change Directory" HorizontalAlignment="Left" Margin="380,10,0,0" VerticalAlignment="Top" Width="105" Command="{Binding Path=ChangeDirectory}" Height="22" />
+            <Button Command="{Binding Path=OpenExplorer}" x:Name="button2" Content="Open in Explorer" HorizontalAlignment="Left" Margin="490,10,0,0" VerticalAlignment="Top" Width="103" Height="22"/>
+            <Button Command="{Binding Path=OpenGitBash}" x:Name="button3" Content="Open Git Bash" HorizontalAlignment="Left" Margin="598,10,0,0" VerticalAlignment="Top" Width="93" Height="22"/>
         </Grid>
-        <Grid Grid.Row="1" Margin="0,0,0,102" Grid.RowSpan="2">
+        <Grid Margin="0,41,0,102" Grid.RowSpan="3">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="20*" />
                 <ColumnDefinition Width="Auto" />
