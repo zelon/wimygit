@@ -153,6 +153,8 @@ namespace WimyGit
             {
                 AddLog("Nothing changed");
             }
+
+            RefreshHistory();
         }
 
         void AddModifiedList(LibGit2Sharp.StatusEntry filestatus, SelectionRecover backup_selection)

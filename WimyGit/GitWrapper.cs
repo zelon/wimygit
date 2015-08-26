@@ -53,5 +53,14 @@ namespace WimyGit
             commitOption.AmendPreviousCommit = false;
             repository_.Commit(commitMessage, signature, signature, commitOption);
         }
+
+        internal void GetHistory()
+        {
+            LibGit2Sharp.IQueryableCommitLog commit_list = repository_.Commits;
+            foreach (var log in commit_list)
+            {
+                Console.WriteLine(log.Message);
+            }
+        }
     }
 }
