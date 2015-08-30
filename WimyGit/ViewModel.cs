@@ -14,14 +14,6 @@ namespace WimyGit
 
         private GitWrapper git_;
         
-        enum LastFocusedList
-        {
-            kNone,
-            kModifiedList,
-            kStagedList,
-        }
-        private LastFocusedList last_focused_list_ = LastFocusedList.kNone;
-
         public class FileStatus
         {
             public string Status { get; set; }
@@ -38,19 +30,6 @@ namespace WimyGit
             this.Directory = @"E:\git\testGit";
             this.ModifiedList = new System.Collections.ObjectModel.ObservableCollection<FileStatus>();
             this.StagedList = new System.Collections.ObjectModel.ObservableCollection<FileStatus>();
-        }
-
-        public void LostFocus_FromLists()
-        {
-            last_focused_list_ = LastFocusedList.kNone;
-        }
-        public void ModifiedList_GotFocus()
-        {
-            last_focused_list_ = LastFocusedList.kModifiedList;
-        }
-        public void StagedList_GotFocus()
-        {
-            last_focused_list_ = LastFocusedList.kStagedList;
         }
 
         public ICommand CommitCommand { get; private set; }
