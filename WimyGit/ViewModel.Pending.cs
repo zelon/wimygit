@@ -60,6 +60,16 @@ namespace WimyGit
                         AddStagedList(filestatus, staged_backup);
                         break;
 
+                        // renamed
+                    case LibGit2Sharp.FileStatus.Staged | LibGit2Sharp.FileStatus.RenamedInIndex:
+                        AddStagedList(filestatus, staged_backup);
+                        break;
+
+                    case LibGit2Sharp.FileStatus.Staged | LibGit2Sharp.FileStatus.RenamedInIndex | LibGit2Sharp.FileStatus.Modified:
+                        AddModifiedList(filestatus, modified_backup);
+                        AddStagedList(filestatus, staged_backup);
+                        break;
+
                     default:
                         System.Diagnostics.Debug.Assert(false);
                         AddLog("Cannot execute for filestatus:" + filestatus.State.ToString());
