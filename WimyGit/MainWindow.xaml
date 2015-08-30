@@ -34,7 +34,7 @@
                 <TabControl x:Name="tabControl" HorizontalContentAlignment="Left" VerticalContentAlignment="Stretch">
                     <TabItem Header="Pending">
                         <Grid Background="#FFF9F9F9">
-                            <TextBox x:Name="textBox" Text="{Binding CommitMessage}" Height="77" Margin="10,10,102,0" TextWrapping="Wrap" VerticalAlignment="Top"/>
+                            <TextBox x:Name="textBox" AcceptsReturn="True" Text="{Binding CommitMessage}" Height="77" Margin="10,10,102,0" VerticalAlignment="Top" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"/>
                             <Button x:Name="button1" Content="Commit" Command="{Binding Path=CommitCommand}" HorizontalAlignment="Right" Margin="0,10,10,0" VerticalAlignment="Top" Width="87" Height="77"/>
                             <ListBox Height="102" Margin="10,118,10,0" VerticalAlignment="Top" ItemsSource="{Binding Path=StagedList}" >
                                 <ListBox.InputBindings>
