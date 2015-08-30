@@ -67,5 +67,23 @@ namespace WimyGit
         {
             return repository_.Head.Name;
         }
+
+        internal string GetCurrentBranchTrackingRemote()
+        {
+            var head = repository_.Head;
+            int? ahead_by = head.TrackingDetails.AheadBy;
+            int? behind_by = head.TrackingDetails.BehindBy;
+
+            if (ahead_by != null)
+            {
+                return "+" + ahead_by.ToString() + " ahead";
+            }
+
+            if (behind_by != null)
+            {
+                return "-" + behind_by.ToString() + " behind";
+            }
+            return "";
+        }
     }
 }

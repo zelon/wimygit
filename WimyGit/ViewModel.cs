@@ -194,7 +194,13 @@ namespace WimyGit
             }
             else
             {
-                Branch = git_.GetCurrentBranch();
+                string output = git_.GetCurrentBranch();
+                string ahead_or_behind = git_.GetCurrentBranchTrackingRemote();
+                if (ahead_or_behind.Length > 0)
+                {
+                    output = string.Format("{0} - ({1})", git_.GetCurrentBranch(), ahead_or_behind);
+                }
+                Branch = output;
             }
         }
 
