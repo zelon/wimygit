@@ -62,5 +62,10 @@ namespace WimyGit
                 Console.WriteLine(log.Message);
             }
         }
+
+        internal string GetCurrentBranch()
+        {
+            return repository_.Head.Name;
+        }
     }
 }

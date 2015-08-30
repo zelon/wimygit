@@ -155,6 +155,7 @@ namespace WimyGit
             }
 
             RefreshHistory();
+            RefreshBranch();
         }
 
         void AddModifiedList(LibGit2Sharp.StatusEntry filestatus, SelectionRecover backup_selection)
@@ -181,6 +182,21 @@ namespace WimyGit
 
         public ICommand ChangeDirectory { get; private set; }
         public string Directory { get; set; }
+
+        private string branch_;
+        public string Branch { get { return branch_; } set { branch_ = value; NotifyPropertyChanged("Branch"); } }
+
+        void RefreshBranch()
+        {
+            if (git_ == null)
+            {
+                Branch = "Unknown";
+            }
+            else
+            {
+                Branch = git_.GetCurrentBranch();
+            }
+        }
 
         private string commit_message_;
         public string CommitMessage
