@@ -35,7 +35,7 @@ namespace WimyGit
         public ICommand CommitCommand { get; private set; }
         public void OnCommitCommand(object parameter)
         {
-            if (CommitMessage.Length == 0)
+            if (String.IsNullOrEmpty(CommitMessage))
             {
                 AddLog("Empty commit message. Please fill commit message");
                 return;
