@@ -70,6 +70,7 @@
     <Compile Include="ViewModel.cs" />
     <Compile Include="ViewModel.History.cs" />
     <Compile Include="ViewModel.OpenCommand.cs" />
+    <Compile Include="ViewModel.Pending.cs" />
     <Compile Include="ViewModel.RepositoryList.cs" />
     <Compile Include="ViewModel.WindowStatus.cs" />
     <Page Include="MainWindow.xaml">
