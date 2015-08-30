@@ -24,6 +24,7 @@ namespace WimyGit
             ModifiedDiffCommand = new DelegateCommand(OnModifiedDiffCommand);
             StagedDiffCommand = new DelegateCommand(OnStagedDiffCommand);
             CommitCommand = new DelegateCommand(OnCommitCommand);
+            RevertCommand = new DelegateCommand(OnRevertCommand);
 
             ModifiedList = new System.Collections.ObjectModel.ObservableCollection<FileStatus>();
             StagedList = new System.Collections.ObjectModel.ObservableCollection<FileStatus>();
@@ -151,6 +152,15 @@ namespace WimyGit
 
         public ICommand ModifiedDiffCommand { get; private set; }
         public ICommand StagedDiffCommand { get; private set; }
+        public ICommand RevertCommand { get; private set; }
+        public void OnRevertCommand(object parameter)
+        {
+            foreach (var item in SelectedModifiedFilePathList)
+            {
+                git_.P4Revert(item);
+            }
+            Refresh();
+        }
 
         void OnStageSelected(object parameter)
         {

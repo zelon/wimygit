@@ -63,10 +63,12 @@
                             <ListBox Margin="10,274,10,10" ItemsSource="{Binding Path=ModifiedList}" SelectionMode="Extended">
                                 <ListBox.InputBindings>
                                     <KeyBinding Modifiers="Ctrl" Key="D" Command="{Binding ModifiedDiffCommand}" />
+                                    <KeyBinding Modifiers="Ctrl" Key="R" Command="{Binding RevertCommand}" />
                                 </ListBox.InputBindings>
                                 <ListBox.ContextMenu>
                                     <ContextMenu>
                                         <MenuItem Header="Diff" InputGestureText="Ctrl+D" Command="{Binding Path=ModifiedDiffCommand}" />
+                                        <MenuItem Header="Revert" InputGestureText="Ctrl+R" Command="{Binding Path=RevertCommand}" />
                                         <MenuItem Header="Refresh" InputGestureText="F5" Command="{Binding Path=ChangeDirectory}" />
                                     </ContextMenu>
                                 </ListBox.ContextMenu>
