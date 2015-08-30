@@ -6917,7 +6917,7 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="0.50000001"
-     inkscape:cx="669.42575"
+     inkscape:cx="667.42575"
      inkscape:cy="918.14509"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
@@ -7427,8 +7427,8 @@
          y="888.32935">BMP</tspan></text>
     <g
        transform="translate(2453.7881,-70.195957)"
-       inkscape:export-ydpi="1315.4447"
-       inkscape:export-xdpi="1315.4447"
+       inkscape:export-ydpi="190.17999"
+       inkscape:export-xdpi="190.17999"
        inkscape:export-filename="D:\eclipseGanymedeWorkspaceForCpp\ZViewer\ZViewerIcons\Source\zviewer.png"
        id="g4692">
       <path
@@ -7448,26 +7448,34 @@
        id="path4698"
        cx="684.89642"
        cy="107.46575"
-       r="9.4453125" />
+       r="9.4453125"
+       inkscape:export-xdpi="190.17999"
+       inkscape:export-ydpi="190.17999" />
     <circle
        r="9.4453125"
        cy="65.612198"
        cx="640.75"
        id="circle4700"
-       style="fill:#000000;fill-rule:evenodd;stroke:none;stroke-width:0.609375px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;fill-opacity:1" />
+       style="fill:#000000;fill-rule:evenodd;stroke:none;stroke-width:0.609375px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;fill-opacity:1"
+       inkscape:export-xdpi="190.17999"
+       inkscape:export-ydpi="190.17999" />
     <circle
        style="fill:#000000;fill-rule:evenodd;stroke:none;stroke-width:0.609375px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;fill-opacity:1"
        id="circle4702"
        cx="640.75"
        cy="127.6122"
-       r="9.4453125" />
+       r="9.4453125"
+       inkscape:export-xdpi="190.17999"
+       inkscape:export-ydpi="190.17999" />
     <rect
        style="fill:#000000;fill-rule:evenodd;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;fill-opacity:1"
        id="rect4704"
        width="5"
        height="63.5"
        x="638.5"
-       y="63.862209" />
+       y="63.862209"
+       inkscape:export-xdpi="190.17999"
+       inkscape:export-ydpi="190.17999" />
     <rect
        y="505.92014"
        x="394.02539"
@@ -7475,7 +7483,9 @@
        width="5"
        id="rect4706"
        style="fill:#000000;fill-rule:evenodd;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;fill-opacity:1"
-       transform="matrix(0.69232157,-0.72158911,0.72158911,0.69232157,0,0)" />
+       transform="matrix(0.69232157,-0.72158911,0.72158911,0.69232157,0,0)"
+       inkscape:export-xdpi="190.17999"
+       inkscape:export-ydpi="190.17999" />
     <rect
        y="473.85022"
        x="403.56509"
@@ -7483,6 +7493,8 @@
        width="5"
        id="rect5508"
        style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       transform="matrix(0.70710678,-0.70710678,0.70710678,0.70710678,0,0)" />
+       transform="matrix(0.70710678,-0.70710678,0.70710678,0.70710678,0,0)"
+       inkscape:export-xdpi="190.17999"
+       inkscape:export-ydpi="190.17999" />
   </g>
 </svg>
