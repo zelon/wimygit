@@ -23,13 +23,22 @@ namespace WimyGit
 
         public ViewModel()
         {
+            TestCommand = new DelegateCommand(OnTestCommand);
             this.ChangeDirectory = new DelegateCommand(this.OnChangeDirectory);
             this.StageSelected = new DelegateCommand(this.OnStageSelected);
             this.ModifiedDiffCommand = new DelegateCommand(this.OnModifiedDiffCommand);
+            StagedDiffCommand = new DelegateCommand(this.OnStagedDiffCommand);
             this.CommitCommand = new DelegateCommand(this.OnCommitCommand);
             this.Directory = @"E:\git\testGit";
             this.ModifiedList = new System.Collections.ObjectModel.ObservableCollection<FileStatus>();
             this.StagedList = new System.Collections.ObjectModel.ObservableCollection<FileStatus>();
+
+        }
+
+        public ICommand TestCommand { get; private set; }
+        public void OnTestCommand (object parameter)
+        {
+            Console.WriteLine("test here");
         }
 
         public ICommand CommitCommand { get; private set; }
@@ -47,28 +56,13 @@ namespace WimyGit
 
         public void OnModifiedDiffCommand(object parameter)
         {
-            switch (last_focused_list_)
-            {
-                case LastFocusedList.kNone:
-                    return;
-
-                case LastFocusedList.kModifiedList:
-                    DiffModified();
-                    break;
-
-                case LastFocusedList.kStagedList:
-                    DiffStaged();
-                    break;
-            }
-        }
-        private void DiffModified()
-        {
             foreach(var filepath in SelectedModifiedFilePathList)
             {
               git_.Diff(filepath);
             }
         }
-        private void DiffStaged()
+
+        public void OnStagedDiffCommand(object parameter)
         {
             foreach(var filepath in SelectedStagedFilePathList)
             {
@@ -198,6 +192,7 @@ namespace WimyGit
         }
 
         public ICommand ModifiedDiffCommand { get; private set; }
+        public ICommand StagedDiffCommand { get; private set; }
 
         void OnStageSelected(object parameter)
         {

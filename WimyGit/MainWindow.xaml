@@ -4,7 +4,6 @@
         Icon="Icon.ico"
         Title="WimyGit" Height="600" Width="800" Loaded="Window_Loaded" Activated="Window_Activated" MinWidth="500" MinHeight="400">
     <Window.InputBindings>
-        <KeyBinding Modifiers="Ctrl" Key="D" Command="{Binding ModifiedDiffCommand}" />
         <KeyBinding Modifiers="Ctrl" Key="Return" Command="{Binding CommitCommand}" />
         <KeyBinding Key="F5" Command="{Binding ChangeDirectory}" />
     </Window.InputBindings>
@@ -37,7 +36,10 @@
                         <Grid Background="#FFF9F9F9">
                             <TextBox x:Name="textBox" Text="{Binding CommitMessage}" Height="77" Margin="10,10,102,0" TextWrapping="Wrap" VerticalAlignment="Top"/>
                             <Button x:Name="button1" Content="Commit" Command="{Binding Path=CommitCommand}" HorizontalAlignment="Right" Margin="0,10,10,0" VerticalAlignment="Top" Width="87" Height="77"/>
-                            <ListBox Height="102" Margin="10,118,10,0" VerticalAlignment="Top" ItemsSource="{Binding Path=StagedList}" GotFocus="StagedList_GotFocus">
+                            <ListBox Height="102" Margin="10,118,10,0" VerticalAlignment="Top" ItemsSource="{Binding Path=StagedList}" >
+                                <ListBox.InputBindings>
+                                    <KeyBinding Modifiers="Ctrl" Key="D" Command="{Binding StagedDiffCommand}" />
+                                </ListBox.InputBindings>
                                 <ListBox.ItemContainerStyle>
                                     <Style TargetType="{x:Type ListBoxItem}">
                                         <Setter Property="IsSelected" Value="{Binding Mode=TwoWay, Path=IsSelected}" />
@@ -58,7 +60,10 @@
                             </ListBox>
                             <Label Content="Staged" HorizontalAlignment="Left" Margin="10,92,0,0" VerticalAlignment="Top"/>
                             <Label Content="Modified" HorizontalAlignment="Left" Margin="10,243,0,0" VerticalAlignment="Top"/>
-                            <ListBox Margin="10,274,10,10" ItemsSource="{Binding Path=ModifiedList}" SelectionMode="Extended" GotFocus="ModifiedList_GotFocus">
+                            <ListBox Margin="10,274,10,10" ItemsSource="{Binding Path=ModifiedList}" SelectionMode="Extended">
+                                <ListBox.InputBindings>
+                                    <KeyBinding Modifiers="Ctrl" Key="D" Command="{Binding ModifiedDiffCommand}" />
+                                </ListBox.InputBindings>
                                 <ListBox.ContextMenu>
                                     <ContextMenu>
                                         <MenuItem Header="Diff" InputGestureText="Ctrl+D" Command="{Binding Path=ModifiedDiffCommand}" />
