@@ -16,11 +16,17 @@ namespace WimyGit
         
         public ViewModel()
         {
+            InitializeRepositoryList();
             InitializePending();
+            InitializeHistory();
 
             TestCommand = new DelegateCommand(OnTestCommand);
             this.ChangeDirectory = new DelegateCommand(this.OnChangeDirectory);
-            this.Directory = @"E:\git\testGit";
+
+            if (repository_list_.Count > 0)
+            {
+                Directory = repository_list_.ElementAt(0);
+            }
         }
 
         public ICommand TestCommand { get; private set; }
@@ -31,9 +37,15 @@ namespace WimyGit
 
         public void OnChangeDirectory(object parameter)
         {
+            if (String.IsNullOrEmpty(Directory))
+            {
+                return;
+            }
             git_ = new GitWrapper(Directory);
 
             Refresh();
+
+            DirectoryUsed(Directory);
         }
 
         public void Refresh()

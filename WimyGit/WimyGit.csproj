@@ -65,6 +65,7 @@
     </ApplicationDefinition>
     <Compile Include="DelegateCommand.cs" />
     <Compile Include="GitWrapper.cs" />
+    <Compile Include="RecentRepository.cs" />
     <Compile Include="RunExternal.cs" />
     <Compile Include="SelectionRecover.cs" />
     <Compile Include="ViewModel.cs" />
