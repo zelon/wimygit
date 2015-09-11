@@ -71,6 +71,14 @@ namespace WimyGit
                         AddStagedList(filestatus, staged_backup);
                         break;
 
+                    case LibGit2Sharp.FileStatus.Missing:
+                        AddModifiedList(filestatus, modified_backup);
+                        break;
+
+                    case LibGit2Sharp.FileStatus.Removed:
+                        AddStagedList(filestatus, staged_backup);
+                        break;
+
                     default:
                         System.Diagnostics.Debug.Assert(false);
                         AddLog("Cannot execute for filestatus:" + filestatus.State.ToString());
@@ -91,6 +99,11 @@ namespace WimyGit
             if (String.IsNullOrEmpty(CommitMessage))
             {
                 AddLog("Empty commit message. Please fill commit message");
+                return;
+            }
+            if (StagedList.Count == 0)
+            {
+                AddLog("No staged file");
                 return;
             }
             git_.Commit(CommitMessage);
