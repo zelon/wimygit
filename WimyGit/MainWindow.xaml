@@ -53,7 +53,7 @@
                                                 <ColumnDefinition Width="auto" />
                                             </Grid.ColumnDefinitions>
                                             <TextBlock Grid.Column="0" Text="{Binding Status}" />
-                                            <TextBlock Grid.Column="1" Text="{Binding FilePath}" Width="auto" />
+                                            <TextBlock Grid.Column="1" Text="{Binding Display}" Width="auto" />
                                         </Grid>
                                     </DataTemplate>
                                 </ListBox.ItemTemplate>
@@ -85,7 +85,7 @@
                                                 <ColumnDefinition Width="auto" />
                                             </Grid.ColumnDefinitions>
                                             <TextBlock Grid.Column="0" Text="{Binding Status}" />
-                                            <TextBlock Grid.Column="1" Text="{Binding FilePath}" Width="auto" />
+                                            <TextBlock Grid.Column="1" Text="{Binding Display}" Width="auto" />
                                         </Grid>
                                     </DataTemplate>
                                 </ListBox.ItemTemplate>

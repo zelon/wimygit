@@ -12,6 +12,7 @@ namespace WimyGit
         {
             public string Status { get; set; }
             public string FilePath { get; set; }
+            public string Display { get; set; }
             public bool IsSelected { get; set; }
         }
 
@@ -63,6 +64,10 @@ namespace WimyGit
 
                         // renamed
                     case LibGit2Sharp.FileStatus.Staged | LibGit2Sharp.FileStatus.RenamedInIndex:
+                        AddStagedList(filestatus, staged_backup);
+                        break;
+
+                    case LibGit2Sharp.FileStatus.RenamedInIndex:
                         AddStagedList(filestatus, staged_backup);
                         break;
 
@@ -132,6 +137,7 @@ namespace WimyGit
             FileStatus status = new FileStatus();
             status.Status = filestatus.State.ToString();
             status.FilePath = filestatus.FilePath;
+            status.Display = status.FilePath;
             status.IsSelected = backup_selection.WasSelected(filestatus.FilePath);
 
             ModifiedList.Add(status);
@@ -143,6 +149,15 @@ namespace WimyGit
             FileStatus status = new FileStatus();
             status.Status = filestatus.State.ToString();
             status.FilePath = filestatus.FilePath;
+            status.Display = status.FilePath;
+            if ((filestatus.State == LibGit2Sharp.FileStatus.RenamedInIndex) |
+                (filestatus.State == (LibGit2Sharp.FileStatus.RenamedInIndex | LibGit2Sharp.FileStatus.Staged)))
+            {
+                status.Display = string.Format(" {0} -> {1} [{2}%]",
+                    filestatus.HeadToIndexRenameDetails.OldFilePath,
+                    filestatus.HeadToIndexRenameDetails.NewFilePath,
+                    filestatus.HeadToIndexRenameDetails.Similarity);
+            }
             status.IsSelected = backup_selection.WasSelected(filestatus.FilePath);
 
             StagedList.Add(status);
