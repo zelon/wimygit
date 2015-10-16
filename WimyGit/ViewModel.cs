@@ -38,6 +38,17 @@ namespace WimyGit
         {
             if (String.IsNullOrEmpty(Directory))
             {
+                AddLog("Directory is empty");
+                return;
+            }
+            if (System.IO.Directory.Exists(Directory) == false)
+            {
+                AddLog("Directory does not exist");
+                return;
+            }
+            if (LibGit2Sharp.Repository.IsValid(Directory) == false)
+            {
+                AddLog("Directory is not a valid git directory");
                 return;
             }
             git_ = new GitWrapper(Directory);
