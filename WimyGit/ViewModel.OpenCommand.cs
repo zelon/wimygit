@@ -29,7 +29,7 @@ namespace WimyGit
             {
                 return open_git_bash_ ?? (open_git_bash_ = new DelegateCommand((object parameter) =>
                 {
-                    RunExternal runner = new RunExternal(@"C:\Program Files (x86)\Git\bin\sh.exe", Directory, /*output_interface*/null);
+                    RunExternal runner = new RunExternal(ProgramPathFinder.GetGitShell(), Directory, /*output_interface*/null);
                     runner.RunShell("--login -i");
                 }));
             }
