@@ -49,7 +49,7 @@
                                     <DataTemplate>
                                         <Grid Margin="0,2">
                                             <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="100" />
+                                                <ColumnDefinition Width="170" />
                                                 <ColumnDefinition Width="auto" />
                                             </Grid.ColumnDefinitions>
                                             <TextBlock Grid.Column="0" Text="{Binding Status}" />
@@ -81,7 +81,7 @@
                                     <DataTemplate>
                                         <Grid Margin="0,2">
                                             <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="100" />
+                                                <ColumnDefinition Width="170" />
                                                 <ColumnDefinition Width="auto" />
                                             </Grid.ColumnDefinitions>
                                             <TextBlock Grid.Column="0" Text="{Binding Status}" />
