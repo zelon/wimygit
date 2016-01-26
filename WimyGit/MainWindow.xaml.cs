@@ -15,37 +15,40 @@ using System.Windows.Shapes;
 
 namespace WimyGit
 {
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
-    public partial class MainWindow : Window
+  /// <summary>
+  /// Interaction logic for MainWindow.xaml
+  /// </summary>
+  public partial class MainWindow : Window
+  {
+    public MainWindow()
     {
-        public MainWindow()
-        {
-            InitializeComponent();
+      InitializeComponent();
 
-            this.DataContext = new ViewModel();
-        }
-
-        private void Window_Loaded(object sender, RoutedEventArgs e)
-        {
-            GetViewModel().OnChangeDirectory(null);
-        }
-
-        private void TextBox_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            TextBox textbox = (TextBox)sender;
-            textbox.ScrollToEnd();
-        }
-
-        private void Window_Activated(object sender, EventArgs e)
-        {
-            GetViewModel().Refresh();
-        }
-
-        private ViewModel GetViewModel()
-        {
-            return (ViewModel)this.DataContext;
-        }
+      this.DataContext = new ViewModel();
     }
+
+    private void Window_Loaded(object sender, RoutedEventArgs e)
+    {
+      GetViewModel().OnChangeDirectory(null);
+
+      Service.GetInstance().SetWindow(this);
+
+    }
+
+    private void TextBox_TextChanged(object sender, TextChangedEventArgs e)
+    {
+      TextBox textbox = (TextBox)sender;
+      textbox.ScrollToEnd();
+    }
+
+    private void Window_Activated(object sender, EventArgs e)
+    {
+      GetViewModel().Refresh();
+    }
+
+    private ViewModel GetViewModel()
+    {
+      return (ViewModel)this.DataContext;
+    }
+  }
 }
