@@ -18,6 +18,7 @@ namespace WimyGit
     {
       InitializeRepositoryList();
       InitializePending();
+      InitializeHistory();
 
       TestCommand = new DelegateCommand(OnTestCommand);
       this.ChangeDirectory = new DelegateCommand(this.OnChangeDirectory);

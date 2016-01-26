@@ -55,13 +55,9 @@ namespace WimyGit
             repository_.Commit(commitMessage, signature, signature, commitOption);
         }
 
-        internal void GetHistory()
+        internal LibGit2Sharp.IQueryableCommitLog GetHistory()
         {
-            LibGit2Sharp.IQueryableCommitLog commit_list = repository_.Commits;
-            foreach (var log in commit_list)
-            {
-                Console.WriteLine(log.Message);
-            }
+            return repository_.Commits;
         }
 
         internal string GetCurrentBranch()
