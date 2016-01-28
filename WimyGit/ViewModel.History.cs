@@ -11,25 +11,33 @@ namespace WimyGit
     {
       HistoryList = new System.Collections.ObjectModel.ObservableCollection<HistoryStatus>();
       HistoryFileList = new System.Collections.ObjectModel.ObservableCollection<HistoryFile>();
+
       HistorySelectedCommand = new DelegateCommand(OnHistorySelectedCommand);
+      MoreHistoryCommand = new DelegateCommand(OnMoreHistoryCommand);
     }
 
     public class HistoryStatus
     {
       public string CommitId { get; set; }
+      public string Sha { get; set; }
       public string Author { get; set; }
       public string Comment { get; set; }
       public string Message { get; set; }
       public string MessageShort { get; set; }
       public string Detail { get; set; }
-      public bool IsSelected { get { return is_selected_; } set {
+      public bool IsSelected
+      {
+        get { return is_selected_; }
+        set
+        {
           if (is_selected_ == value)
           {
             return;
           }
           is_selected_ = value;
           view_model_.OnHistorySelectedCommand(this);
-        } }
+        }
+      }
       private bool is_selected_ = false;
       public ViewModel view_model_;
     }
@@ -43,7 +51,17 @@ namespace WimyGit
       public bool IsSelected { get; set; }
     }
     public System.Collections.ObjectModel.ObservableCollection<HistoryFile> HistoryFileList { get; set; }
-    
+
+    public ICommand MoreHistoryCommand { get; private set; }
+    public void OnMoreHistoryCommand(object parameter)
+    {
+      if (HistoryList.Count == 0)
+      {
+        return;
+      }
+      AddHistoryFrom(HistoryList[HistoryList.Count - 1].Sha);
+    }
+
     public ICommand HistorySelectedCommand { get; private set; }
     public void OnHistorySelectedCommand(object parameter)
     {
@@ -80,14 +98,30 @@ namespace WimyGit
     {
       HistoryList.Clear();
 
+      AddHistoryFrom(null);
+    }
+
+    void AddHistoryFrom(string sha)
+    {
+      // git log --graph --format="%ai_%t_%an_%d_%s"
       var commits = git_.GetHistory();
 
       Int32 max_count = 20;
       Int32 count = 0;
       foreach (var commit in commits)
       {
+        if (sha != null)
+        {
+          if (commit.Sha != sha)
+          {
+            continue;
+          }
+          sha = null;
+          continue;
+        }
         HistoryStatus status = new HistoryStatus();
         status.CommitId = commit.Sha.Substring(0, 7);
+        status.Sha = commit.Sha;
         status.Author = commit.Author.ToString();
         status.Message = commit.Message;
         status.MessageShort = commit.MessageShort;
