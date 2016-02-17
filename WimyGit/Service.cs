@@ -34,5 +34,10 @@ namespace WimyGit
     {
       System.Windows.MessageBox.Show(window_, msg);
     }
+
+    public void SetRootPath(string directory)
+    {
+      window_.SetRootPath(directory);
+    }
   }
 }

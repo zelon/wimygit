@@ -28,6 +28,7 @@
                 <ColumnDefinition Width="80*" />
             </Grid.ColumnDefinitions>
             <Grid>
+                <TreeView x:Name="treeView" SelectedItemChanged="treeView_SelectedItemChanged"/>
             </Grid>
             <GridSplitter Grid.Column="1" Width="15" HorizontalAlignment="Stretch"/>
             <Grid Grid.Column="2">

@@ -54,6 +54,7 @@ namespace WimyGit
       }
       git_ = new GitWrapper(Directory);
 
+      Service.GetInstance().SetRootPath(Directory);
       Refresh();
 
       DirectoryUsed(Directory);
