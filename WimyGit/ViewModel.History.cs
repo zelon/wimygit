@@ -35,7 +35,11 @@ namespace WimyGit
             return;
           }
           is_selected_ = value;
-          view_model_.OnHistorySelectedCommand(this);
+
+          if (is_selected_)
+          {
+            view_model_.OnHistorySelectedCommand(this);
+          }
         }
       }
       private bool is_selected_ = false;
@@ -76,8 +80,8 @@ namespace WimyGit
         file.FileName = filename;
         file.IsSelected = false;
         HistoryFileList.Add(file);
-        NotifyPropertyChanged("HistoryFileList");
       }
+      NotifyPropertyChanged("HistoryFileList");
     }
 
     private string history_detail_;
