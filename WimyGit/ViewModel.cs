@@ -69,7 +69,7 @@ namespace WimyGit
       AddLog("Check repository:" + Directory);
 
       RefreshPending();
-      RefreshHistory();
+      RefreshHistory(null);
       RefreshBranch();
     }
 

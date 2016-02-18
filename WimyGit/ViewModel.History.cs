@@ -98,10 +98,13 @@ namespace WimyGit
       }
     }
 
-    void RefreshHistory()
+    private string SelectedPath { get; set; }
+
+    public void RefreshHistory(string selected_path)
     {
       HistoryList.Clear();
 
+      SelectedPath = selected_path;
       AddHistoryFrom(null);
     }
 

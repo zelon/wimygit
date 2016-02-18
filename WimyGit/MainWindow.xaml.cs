@@ -184,7 +184,7 @@ namespace WimyGit
         }
         catch { }
         treeViewItem.Expanded += TreeViewItem_Expanded;
-        if (treeViewItem.Tag as string == SelectedTag)
+        if (treeViewItem.Tag as string == SelectedPath)
         {
           treeViewItem.IsSelected = true;
         }
@@ -237,7 +237,7 @@ namespace WimyGit
         TreeViewItem subItem = new TreeViewItem();
         subItem.Header = new FileInfo(file).Name;
         subItem.Tag = file;
-        if (subItem.Tag as string == SelectedTag)
+        if (subItem.Tag as string == SelectedPath)
         {
           subItem.IsSelected = true;
         }
@@ -253,7 +253,7 @@ namespace WimyGit
         FillItemByTag(rootItem);
       }
     }
-    string SelectedTag { get; set; }
+    string SelectedPath { get; set; }
     #endregion
 
     object CloneUsingXaml(object obj)
@@ -269,7 +269,9 @@ namespace WimyGit
       {
         return;
       }
-      SelectedTag = selected_item.Tag as string;
+      SelectedPath = selected_item.Tag as string;
+
+      GetViewModel().RefreshHistory(SelectedPath);
     }
   }
 }
