@@ -86,9 +86,9 @@ namespace WimyGit
       return output;
     }
 
-    public List<CommitInfo> GetHistory(Int32 skip_count, Int32 max_count)
+    public List<CommitInfo> GetHistory(string selected_path, Int32 skip_count, Int32 max_count)
     {
-      string cmd = string.Format("log --encoding=UTF-8 --skip={0} --max-count={1} --graph --format=\"|%ai|%H|%an|%d|%s\"", skip_count, max_count);
+      string cmd = string.Format("log --encoding=UTF-8 --skip={0} --max-count={1} --graph --format=\"|%ai|%H|%an|%d|%s\" -- {2}", skip_count, max_count, selected_path);
       RunExternal runner = new RunExternal(ProgramPathFinder.GetGitBin(), path_);
       return Parse(runner.Run(cmd));
     }

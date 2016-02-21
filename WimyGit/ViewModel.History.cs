@@ -64,7 +64,7 @@ namespace WimyGit
       {
         return;
       }
-      AddHistoryFrom(HistoryList.Count);
+      AddHistoryFrom(SelectedPath, HistoryList.Count);
     }
 
     public ICommand HistorySelectedCommand { get; private set; }
@@ -106,12 +106,12 @@ namespace WimyGit
       HistoryList.Clear();
 
       SelectedPath = selected_path;
-      AddHistoryFrom(/*skip_count=*/0);
+      AddHistoryFrom(selected_path, /*skip_count=*/0);
     }
 
-    void AddHistoryFrom(Int32 skip_count)
+    void AddHistoryFrom(string selected_path, Int32 skip_count)
     {
-      var commits = git_.GetHistory(skip_count, /*max_count=*/20);
+      var commits = git_.GetHistory(selected_path, skip_count, /*max_count=*/20);
 
       foreach (var commit in commits)
       {
