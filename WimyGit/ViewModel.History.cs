@@ -18,12 +18,13 @@ namespace WimyGit
 
     public class HistoryStatus
     {
+      public string LocalDateTime { get; set; }
       public string CommitId { get; set; }
       public string Sha { get; set; }
       public string Author { get; set; }
       public string Comment { get; set; }
       public string Message { get; set; }
-      public string MessageShort { get; set; }
+      public string ListMessage { get; set; }
       public string Detail { get; set; }
       public bool IsSelected
       {
@@ -63,7 +64,7 @@ namespace WimyGit
       {
         return;
       }
-      AddHistoryFrom(HistoryList[HistoryList.Count - 1].Sha);
+      AddHistoryFrom(HistoryList.Count);
     }
 
     public ICommand HistorySelectedCommand { get; private set; }
@@ -105,55 +106,39 @@ namespace WimyGit
       HistoryList.Clear();
 
       SelectedPath = selected_path;
-      AddHistoryFrom(null);
+      AddHistoryFrom(/*skip_count=*/0);
     }
 
-    void AddHistoryFrom(string sha)
+    void AddHistoryFrom(Int32 skip_count)
     {
-      // git log --graph --format="%ai_%t_%an_%d_%s"
-      var commits = git_.GetHistory();
+      var commits = git_.GetHistory(skip_count, /*max_count=*/20);
 
-      Int32 max_count = 20;
-      Int32 count = 0;
       foreach (var commit in commits)
       {
-        if (sha != null)
-        {
-          if (commit.Sha != sha)
-          {
-            continue;
-          }
-          sha = null;
-          continue;
-        }
         HistoryStatus status = new HistoryStatus();
+        status.LocalDateTime = commit.LocalTimeDate;
         status.CommitId = commit.Sha.Substring(0, 7);
         status.Sha = commit.Sha;
         status.Author = commit.Author.ToString();
         status.Message = commit.Message;
-        status.MessageShort = commit.MessageShort;
-        status.Comment = commit.MessageShort;
+        status.ListMessage = commit.RefNames + " " + status.Message;
+        status.Comment = commit.Message;
         status.Detail = MakeDetail(commit);
         status.IsSelected = false;
         status.view_model_ = this;
 
         HistoryList.Add(status);
-        ++count;
-        if (count > max_count)
-        {
-          break;
-        }
       }
 
       PropertyChanged(this, new PropertyChangedEventArgs("HistoryList"));
     }
 
-    private string MakeDetail(Commit commit)
+    private string MakeDetail(CommitInfo commit)
     {
       var builder = new System.Text.StringBuilder();
-      builder.Append("Author: " + commit.Author.ToString());
+      builder.Append("Author: " + commit.Author);
       builder.Append("\n");
-      builder.Append("Date: " + commit.Author.When.ToString("yyyy MM dd HH:mm:ss"));
+      builder.Append("Date: " + commit.LocalTimeDate);
       builder.Append("\n");
       builder.Append("Commit Id: " + commit.Sha);
       builder.Append("\n");

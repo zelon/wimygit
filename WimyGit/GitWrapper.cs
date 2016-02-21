@@ -4,6 +4,15 @@ using System.Linq;
 
 namespace WimyGit
 {
+  class CommitInfo
+  {
+    public string Sha { get; set; }
+    public string Author { get; set; }
+    public string LocalTimeDate { get; set; }
+    public string Message { get; set; }
+    public string RefNames{ get; set; }
+  }
+
   // https://github.com/libgit2/libgit2sharp/wiki/LibGit2Sharp-Hitchhiker's-Guide-to-Git
   class GitWrapper
   {
@@ -59,9 +68,29 @@ namespace WimyGit
       repository_.Commit(commitMessage, signature, signature, commitOption);
     }
 
-    internal LibGit2Sharp.IQueryableCommitLog GetHistory()
+    private List<CommitInfo> Parse(List<string> lines)
     {
-      return repository_.Commits;
+      List<CommitInfo> output = new List<CommitInfo>();
+      foreach (string line in lines)
+      {
+        string[] splited = line.Split('|');
+
+        CommitInfo info = new CommitInfo();
+        info.LocalTimeDate = splited[1];
+        info.Sha = splited[2];
+        info.Author = splited[3];
+        info.RefNames = splited[4];
+        info.Message = splited[5];
+        output.Add(info);
+      }
+      return output;
+    }
+
+    public List<CommitInfo> GetHistory(Int32 skip_count, Int32 max_count)
+    {
+      string cmd = string.Format("log --encoding=UTF-8 --skip={0} --max-count={1} --graph --format=\"|%ai|%H|%an|%d|%s\"", skip_count, max_count);
+      RunExternal runner = new RunExternal(ProgramPathFinder.GetGitBin(), path_);
+      return Parse(runner.Run(cmd));
     }
 
     internal string GetCurrentBranch()

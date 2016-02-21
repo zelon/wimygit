@@ -47,6 +47,7 @@ namespace WimyGit
       process.StartInfo.Arguments = arguments;
       process.StartInfo.UseShellExecute = false;
       process.StartInfo.RedirectStandardOutput = true;
+      process.StartInfo.StandardOutputEncoding = System.Text.Encoding.UTF8;
       process.StartInfo.CreateNoWindow = true;
       process.StartInfo.WorkingDirectory = working_directory_;
 
