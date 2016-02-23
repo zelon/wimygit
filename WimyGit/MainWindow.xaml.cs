@@ -56,7 +56,7 @@ namespace WimyGit
       {
         if (scrollBar.Orientation == Orientation.Vertical)
         {
-          if (scrollBar.Value == scrollBar.Maximum)
+          if (scrollBar.Maximum > 0 && scrollBar.Value == scrollBar.Maximum)
           {
             GetViewModel().MoreHistoryCommand.Execute(sender);
           }
