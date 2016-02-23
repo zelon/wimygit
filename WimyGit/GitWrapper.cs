@@ -6,6 +6,7 @@ namespace WimyGit
 {
   class CommitInfo
   {
+    public string Graph { get; set; }
     public string Sha { get; set; }
     public string Author { get; set; }
     public string LocalTimeDate { get; set; }
@@ -73,14 +74,19 @@ namespace WimyGit
       List<CommitInfo> output = new List<CommitInfo>();
       foreach (string line in lines)
       {
-        string[] splited = line.Split('|');
+        string[] splited = line.Split('`');
 
         CommitInfo info = new CommitInfo();
-        info.LocalTimeDate = splited[1];
-        info.Sha = splited[2];
-        info.Author = splited[3];
-        info.RefNames = splited[4];
-        info.Message = splited[5];
+        info.Graph = splited[0];
+
+        if (splited.Length > 5)
+        {
+          info.LocalTimeDate = splited[1];
+          info.Sha = splited[2];
+          info.Author = splited[3];
+          info.RefNames = splited[4];
+          info.Message = splited[5];
+        }
         output.Add(info);
       }
       return output;
@@ -88,7 +94,7 @@ namespace WimyGit
 
     public List<CommitInfo> GetHistory(string selected_path, Int32 skip_count, Int32 max_count)
     {
-      string cmd = string.Format("log --encoding=UTF-8 --skip={0} --max-count={1} --graph --format=\"|%ai|%H|%an|%d|%s\" -- {2}", skip_count, max_count, selected_path);
+      string cmd = string.Format("log --encoding=UTF-8 --skip={0} --max-count={1} --graph --format=\"`%ai`%H`%an`%d`%s\" -- {2}", skip_count, max_count, selected_path);
       RunExternal runner = new RunExternal(ProgramPathFinder.GetGitBin(), path_);
       return Parse(runner.Run(cmd));
     }

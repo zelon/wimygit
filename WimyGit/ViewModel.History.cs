@@ -18,6 +18,7 @@ namespace WimyGit
 
     public class HistoryStatus
     {
+      public string Graph { get; set; }
       public string LocalDateTime { get; set; }
       public string CommitId { get; set; }
       public string Sha { get; set; }
@@ -74,13 +75,17 @@ namespace WimyGit
       HistoryDetail = status.Detail;
 
       HistoryFileList.Clear();
-      foreach (var filename in git_.GetFilelistOfCommit(status.CommitId))
+
+      if (String.IsNullOrEmpty(status.CommitId) == false)
       {
-        HistoryFile file = new HistoryFile();
-        file.Directory = filename;
-        file.FileName = filename;
-        file.IsSelected = false;
-        HistoryFileList.Add(file);
+        foreach (var filename in git_.GetFilelistOfCommit(status.CommitId))
+        {
+          HistoryFile file = new HistoryFile();
+          file.Directory = filename;
+          file.FileName = filename;
+          file.IsSelected = false;
+          HistoryFileList.Add(file);
+        }
       }
       NotifyPropertyChanged("HistoryFileList");
     }
@@ -116,10 +121,11 @@ namespace WimyGit
       foreach (var commit in commits)
       {
         HistoryStatus status = new HistoryStatus();
+        status.Graph = commit.Graph;
         status.LocalDateTime = commit.LocalTimeDate;
-        status.CommitId = commit.Sha.Substring(0, 7);
+        status.CommitId = commit.Sha?.Substring(0, 7);
         status.Sha = commit.Sha;
-        status.Author = commit.Author.ToString();
+        status.Author = commit.Author;
         status.Message = commit.Message;
         status.ListMessage = commit.RefNames + " " + status.Message;
         status.Comment = commit.Message;
@@ -135,6 +141,10 @@ namespace WimyGit
 
     private string MakeDetail(CommitInfo commit)
     {
+      if (String.IsNullOrEmpty(commit.Sha))
+      {
+        return "No detail";
+      }
       var builder = new System.Text.StringBuilder();
       builder.Append("Author: " + commit.Author);
       builder.Append("\n");
@@ -142,7 +152,7 @@ namespace WimyGit
       builder.Append("\n");
       builder.Append("Commit Id: " + commit.Sha);
       builder.Append("\n");
-      builder.Append(commit.Message.ToString());
+      builder.Append(commit.Message);
       builder.Append("\n");
       return builder.ToString();
     }
