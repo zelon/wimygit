@@ -21,7 +21,7 @@
             <Label x:Name="label" Content="Current Branch:" HorizontalAlignment="Left" Margin="10,37,0,0" VerticalAlignment="Top"/>
             <Label x:Name="label1" Content="{Binding Path=Branch}" HorizontalAlignment="Left" Margin="109,37,0,0" VerticalAlignment="Top" Width="121"/>
         </Grid>
-        <Grid Margin="0,65,0,102" Grid.RowSpan="3">
+        <Grid Grid.Row="1" Margin="0,0,0,0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="20*" />
                 <ColumnDefinition Width="Auto" />
@@ -35,7 +35,7 @@
                 <TabControl x:Name="tabControl" HorizontalContentAlignment="Left" VerticalContentAlignment="Stretch">
                     <TabItem Header="Pending">
                         <Grid Background="#FFF9F9F9">
-                            <TextBox x:Name="textBox" AcceptsReturn="True" Text="{Binding CommitMessage}" Height="77" Margin="10,10,102,0" VerticalAlignment="Top" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"/>
+                            <TextBox x:Name="textBox" AcceptsReturn="True" Text="{Binding CommitMessage}" Height="43" Margin="10,44,102,0" VerticalAlignment="Top" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"/>
                             <Button x:Name="button1" Content="Commit" Command="{Binding Path=CommitCommand}" HorizontalAlignment="Right" Margin="0,10,10,0" VerticalAlignment="Top" Width="87" Height="77"/>
                             <ListBox Height="102" Margin="10,118,10,0" VerticalAlignment="Top" ItemsSource="{Binding Path=StagedList}" >
                                 <ListBox.InputBindings>
@@ -92,6 +92,7 @@
                                 </ListBox.ItemTemplate>
                             </ListBox>
                             <Button x:Name="button" Content="Stage" Command="{Binding Path=StageSelected}" HorizontalAlignment="Left" Margin="270,225,0,0" VerticalAlignment="Top" Width="96" Height="44"/>
+                            <Label x:Name="label2" Content="{Binding DisplayAuthor}" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="683"/>
                         </Grid>
                     </TabItem>
                     <TabItem Header="History">

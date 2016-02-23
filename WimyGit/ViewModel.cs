@@ -71,6 +71,14 @@ namespace WimyGit
       RefreshPending();
       RefreshHistory(null);
       RefreshBranch();
+      RefreshSignature();
+    }
+
+    private void RefreshSignature()
+    {
+      var signature = git_.GetCurrentSignature();
+      DisplayAuthor = String.Format("{0} <{1}>", signature.Name, signature.Email);
+      NotifyPropertyChanged("DisplayAuthor");
     }
 
     public ICommand ChangeDirectory { get; private set; }
@@ -78,6 +86,7 @@ namespace WimyGit
 
     private string branch_;
     public string Branch { get { return branch_; } set { branch_ = value; NotifyPropertyChanged("Branch"); } }
+    public string DisplayAuthor { get; set; }
 
     void RefreshBranch()
     {

@@ -60,6 +60,11 @@ namespace WimyGit
       runner.RunWithoutWaiting("difftool --cached " + path_ + "\\" + filepath);
     }
 
+    public LibGit2Sharp.Signature GetCurrentSignature()
+    {
+      return repository_.Config.BuildSignature(DateTimeOffset.Now);
+    }
+
     internal void Commit(string commitMessage)
     {
       var signature = repository_.Config.BuildSignature(DateTimeOffset.Now);
