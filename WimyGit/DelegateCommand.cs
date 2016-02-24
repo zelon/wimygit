@@ -6,7 +6,7 @@ namespace WimyGit
     {
         private Action<object> execute_;
         private Predicate<object> can_execute_;
-        public event EventHandler CanExecuteChanged;
+        public event EventHandler CanExecuteChanged { add { } remove { } }
 
         public DelegateCommand(Action<object> executeMethod, Predicate<object> canExecuteMethod = null)
         {
