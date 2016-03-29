@@ -24,6 +24,7 @@ namespace WimyGit
             StageSelected = new DelegateCommand(OnStageSelected);
             ModifiedDiffCommand = new DelegateCommand(OnModifiedDiffCommand);
             StagedDiffCommand = new DelegateCommand(OnStagedDiffCommand);
+            UnstageCommand = new DelegateCommand(OnUnstageCommand);
             CommitCommand = new DelegateCommand(OnCommitCommand);
             RevertCommand = new DelegateCommand(OnRevertCommand);
 
@@ -51,6 +52,10 @@ namespace WimyGit
                         AddStagedList(filestatus, staged_backup);
                         break;
 
+                    case LibGit2Sharp.FileStatus.Added | LibGit2Sharp.FileStatus.Modified:
+                        AddStagedList(filestatus, staged_backup);
+                        AddModifiedList(filestatus, modified_backup);
+                        break;
                     case LibGit2Sharp.FileStatus.Untracked:
                         goto case LibGit2Sharp.FileStatus.Modified;
                     case LibGit2Sharp.FileStatus.Modified:
@@ -164,6 +169,12 @@ namespace WimyGit
             }
         }
 
+        public void OnUnstageCommand(object parameter)
+        {
+            git_.Unstage(SelectedStagedFilePathList);
+            Refresh();
+        }
+
         void AddModifiedList(LibGit2Sharp.StatusEntry filestatus, SelectionRecover backup_selection)
         {
             FileStatus status = new FileStatus();
@@ -212,6 +223,7 @@ namespace WimyGit
 
         public ICommand ModifiedDiffCommand { get; private set; }
         public ICommand StagedDiffCommand { get; private set; }
+        public ICommand UnstageCommand { get; private set; }
         public ICommand RevertCommand { get; private set; }
         public void OnRevertCommand(object parameter)
         {
