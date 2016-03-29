@@ -19,7 +19,7 @@
             <Button Command="{Binding Path=OpenExplorer}" x:Name="button2" Content="Open Explorer" HorizontalAlignment="Right" Margin="0,10,115,0" VerticalAlignment="Top" Width="100" Height="22"/>
             <Button Command="{Binding Path=OpenGitBash}" x:Name="button3" Content="Open Git Bash" HorizontalAlignment="Right" Margin="0,10,10,0" VerticalAlignment="Top" Width="100" Height="22"/>
             <Label x:Name="label" Content="Current Branch:" HorizontalAlignment="Left" Margin="10,37,0,0" VerticalAlignment="Top"/>
-            <Label x:Name="label1" Content="{Binding Path=Branch}" HorizontalAlignment="Left" Margin="109,37,0,0" VerticalAlignment="Top" Width="121"/>
+            <Label x:Name="label1" Content="{Binding Path=Branch}" HorizontalAlignment="Left" Margin="109,37,0,0" VerticalAlignment="Top" Width="236"/>
         </Grid>
         <Grid Grid.Row="1" Margin="0,0,0,0">
             <Grid.ColumnDefinitions>
