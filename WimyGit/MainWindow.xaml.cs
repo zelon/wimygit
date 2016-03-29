@@ -39,11 +39,6 @@ namespace WimyGit
       textbox.ScrollToEnd();
     }
 
-    private void Window_Activated(object sender, EventArgs e)
-    {
-      GetViewModel().Refresh();
-    }
-
     private ViewModel GetViewModel()
     {
       return (ViewModel)this.DataContext;
