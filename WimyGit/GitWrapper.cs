@@ -26,6 +26,12 @@ namespace WimyGit
             repository_ = new LibGit2Sharp.Repository(path_);
         }
 
+        public void GitPush()
+        {
+            RunExternal runner = new RunExternal(ProgramPathFinder.GetGitBin(), path_);
+            runner.RunGitCmdInConsoleAndContinue("push");
+        }
+
         public LibGit2Sharp.RepositoryStatus GetModifiedFileList()
         {
             LibGit2Sharp.StatusOptions option = new LibGit2Sharp.StatusOptions();
