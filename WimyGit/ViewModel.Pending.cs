@@ -76,6 +76,11 @@ namespace WimyGit
                         AddStagedList(filestatus, staged_backup);
                         break;
 
+                    case LibGit2Sharp.FileStatus.RenamedInIndex | LibGit2Sharp.FileStatus.Missing:
+                        AddStagedList(filestatus, staged_backup);
+                        AddModifiedList(filestatus, modified_backup);
+                        break;
+
                     case LibGit2Sharp.FileStatus.RenamedInIndex | LibGit2Sharp.FileStatus.Modified:
                         AddStagedList(filestatus, staged_backup);
                         AddModifiedList(filestatus, modified_backup);
