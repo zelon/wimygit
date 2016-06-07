@@ -140,8 +140,13 @@
                                     <TabItem Header="Files">
                                         <ListBox Margin="0,0,0,0" VerticalAlignment="Top" ItemsSource="{Binding Path=HistoryFileList}" >
                                             <ListBox.InputBindings>
-                                                <KeyBinding Modifiers="Ctrl" Key="D" Command="{Binding StagedDiffCommand}" />
+                                                <KeyBinding Modifiers="Ctrl" Key="D" Command="{Binding DiffHistorySelectedFile}" />
                                             </ListBox.InputBindings>
+                                            <ListBox.ContextMenu>
+                                                <ContextMenu>
+                                                    <MenuItem Header="Diff" InputGestureText="Ctrl+D" Command="{Binding Path=DiffHistorySelectedFile}" />
+                                                </ContextMenu>
+                                            </ListBox.ContextMenu>
                                             <ListBox.ItemContainerStyle>
                                                 <Style TargetType="{x:Type ListBoxItem}">
                                                     <Setter Property="IsSelected" Value="{Binding Mode=TwoWay, Path=IsSelected}" />

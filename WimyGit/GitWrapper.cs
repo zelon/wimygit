@@ -38,6 +38,13 @@ namespace WimyGit
             return repository_.RetrieveStatus(option);
         }
 
+        public void DiffHistorySelected(string commit_id, string fileName)
+        {
+            RunExternal runner = new RunExternal(ProgramPathFinder.GetGitBin(), path_);
+            string cmd = String.Format("difftool {0}^! {1}", commit_id, fileName);
+            runner.RunWithoutWaiting(cmd);
+        }
+
         public List<string> GetFilelistOfCommit(string sha)
         {
             RunExternal runner = new RunExternal(ProgramPathFinder.GetGitBin(), path_);
