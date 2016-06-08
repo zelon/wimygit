@@ -59,9 +59,17 @@ namespace WimyGit
             git_ = new GitWrapper(Directory);
 
             Service.GetInstance().SetRootPath(Directory);
-            Refresh();
 
-            DirectoryUsed(Directory);
+            try
+            {
+                Refresh();
+                DirectoryUsed(Directory);
+            }
+            catch (System.IO.FileNotFoundException ex)
+            {
+                Service.GetInstance().ShowMsg(ex.Message);
+                System.Environment.Exit(1);
+            }
         }
 
         public void Refresh()

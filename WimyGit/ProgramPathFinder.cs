@@ -12,6 +12,7 @@ namespace WimyGit
         {
             string[] git_path_candidates =
             {
+                @"C:\Program Files\Git\bin\git.exe",
                 @"C:\Program Files (x86)\Git\bin\git.exe",
                 @"C:\Users\" + Environment.UserName + @"\AppData\Local\Programs\Git\bin\git.exe",
             };
@@ -23,7 +24,7 @@ namespace WimyGit
                     return path;
                 }
             }
-            throw new Exception("Cannot find git binary");
+            throw new System.IO.FileNotFoundException("Cannot find git binary");
         }
 
         public static string GetGitShell()
