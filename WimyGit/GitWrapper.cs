@@ -45,6 +45,19 @@ namespace WimyGit
             runner.RunWithoutWaiting(cmd);
         }
 
+        public void Pull()
+        {
+            RunExternal runner = new RunExternal(ProgramPathFinder.GetGitBin(), path_);
+            runner.RunGitCmdInConsoleAndContinue("pull");
+        }
+
+        public void ViewTimeLapse(string selectedPath)
+        {
+            RunExternal runner = new RunExternal(ProgramPathFinder.GetGitBin(), path_);
+            string cmd = String.Format("gui blame {0}", selectedPath);
+            runner.RunWithoutWaiting(cmd);
+        }
+
         public List<string> GetFilelistOfCommit(string sha)
         {
             RunExternal runner = new RunExternal(ProgramPathFinder.GetGitBin(), path_);

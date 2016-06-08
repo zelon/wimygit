@@ -27,9 +27,23 @@ namespace WimyGit
                 Directory = repository_list_.ElementAt(0);
             }
             RefreshCommand = new DelegateCommand((object parameter) => Refresh());
+            TimelapseCommand = new DelegateCommand((object parameter) => ViewTimeLapse());
+            PullCommand = new DelegateCommand((object parameter) => OnPull());
         }
 
         public ICommand RefreshCommand { get; private set; }
+
+        public ICommand TimelapseCommand { get; private set; }
+        public void ViewTimeLapse()
+        {
+            git_.ViewTimeLapse(SelectedPath);
+        }
+
+        public ICommand PullCommand { get; private set; }
+        public void OnPull()
+        {
+            git_.Pull();
+        }
 
         public ICommand TestCommand { get; private set; }
         public void OnTestCommand(object parameter)
@@ -39,7 +53,7 @@ namespace WimyGit
 
         public ICommand GitPushCommand { get; private set; }
 
-      public void OnChangeDirectory(object parameter)
+        public void OnChangeDirectory(object parameter)
         {
             if (String.IsNullOrEmpty(Directory))
             {

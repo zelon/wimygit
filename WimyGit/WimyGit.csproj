@@ -135,6 +135,9 @@
   <ItemGroup>
     <Resource Include="Images\OpenDirectory.png" />
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\TimeLapse.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>

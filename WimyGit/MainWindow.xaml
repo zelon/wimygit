@@ -23,7 +23,14 @@
                     </StackPanel>
                 </Button>
                 <Separator />
-                <Button Width="75">
+                <Button Width="75" Command="{Binding Path=TimelapseCommand}">
+                    <StackPanel Orientation="Vertical">
+                        <Image Source="Images\TimeLapse.png" Height="30"/>
+                        <TextBlock>TimeLapse</TextBlock>
+                    </StackPanel>
+                </Button>
+                <Separator />
+                <Button Width="75" Command="{Binding Path=PullCommand}">
                     <StackPanel Orientation="Vertical">
                         <Image Source="Images\Pull.png" Height="30"/>
                         <TextBlock>Pull</TextBlock>
