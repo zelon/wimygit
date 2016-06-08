@@ -26,7 +26,10 @@ namespace WimyGit
             {
                 Directory = repository_list_.ElementAt(0);
             }
+            RefreshCommand = new DelegateCommand((object parameter) => Refresh());
         }
+
+        public ICommand RefreshCommand { get; private set; }
 
         public ICommand TestCommand { get; private set; }
         public void OnTestCommand(object parameter)
@@ -84,6 +87,7 @@ namespace WimyGit
             RefreshHistory(null);
             RefreshBranch();
             RefreshSignature();
+            RefreshDirectoryTree();
         }
 
         private void RefreshSignature()
@@ -91,6 +95,11 @@ namespace WimyGit
             var signature = git_.GetCurrentSignature();
             DisplayAuthor = String.Format("{0} <{1}>", signature.Name, signature.Email);
             NotifyPropertyChanged("DisplayAuthor");
+        }
+
+        private void RefreshDirectoryTree()
+        {
+            Service.GetInstance().RefreshDirectoryTree();
         }
 
         public ICommand ChangeDirectory { get; private set; }

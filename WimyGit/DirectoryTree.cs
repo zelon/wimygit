@@ -31,12 +31,9 @@ namespace WimyGit
             }
             /// Create main expanded node of TreeView
             treeView.Items.Add(TreeView_CreateComputerItem(RootPath));
-            /// Update open directories every 5 second
-            DispatcherTimer timer = new DispatcherTimer(TimeSpan.FromSeconds(5),
-                DispatcherPriority.Background, TreeView_Update, Dispatcher);
         }
 
-        void TreeView_Update(object sender, EventArgs e)
+        public void TreeView_Update(object not_used_sender, EventArgs not_used_e)
         {
             if (String.IsNullOrEmpty(RootPath))
             {
