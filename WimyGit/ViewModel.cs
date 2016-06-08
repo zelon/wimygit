@@ -126,7 +126,7 @@ namespace WimyGit
         }
         public void AddLog(string log)
         {
-            log_ += log + "\n";
+            log_ += String.Format("[{0}] {1}\n", DateTime.Now.ToLocalTime(), log);
             NotifyPropertyChanged("Log");
         }
 
