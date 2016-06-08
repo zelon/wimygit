@@ -120,6 +120,21 @@
   <ItemGroup>
     <Resource Include="Icon.ico" />
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Refresh.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Terminal.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Pull.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Push.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\OpenDirectory.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
