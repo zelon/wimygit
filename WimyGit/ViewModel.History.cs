@@ -1,7 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Windows.Input;
-using LibGit2Sharp;
 
 namespace WimyGit
 {
