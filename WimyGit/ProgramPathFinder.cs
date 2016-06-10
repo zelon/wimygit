@@ -8,7 +8,7 @@ namespace WimyGit
         private static string git_path_;
         private static string git_shell_path_;
 
-        private static string ExecuteAndGetOutput(string name, string argument)
+        public static string ExecuteAndGetOutput(string name, string argument)
         {
             Process process = new Process();
             process.StartInfo.FileName = name;

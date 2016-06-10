@@ -21,6 +21,9 @@ namespace WimyGit
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            string output = ProgramPathFinder.ExecuteAndGetOutput(ProgramPathFinder.GetGitBin(),
+                "--version");
+            this.Title += " - " + output;
             Service.GetInstance().SetWindow(this);
 
             GetViewModel().OnChangeDirectory(null);
