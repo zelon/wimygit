@@ -5,7 +5,10 @@ namespace WimyGit
 {
     class ProgramPathFinder
     {
-        public static string ExecuteAndGetOutput(string name, string argument)
+        private static string git_path_;
+        private static string git_shell_path_;
+
+        private static string ExecuteAndGetOutput(string name, string argument)
         {
             Process process = new Process();
             process.StartInfo.FileName = name;
@@ -27,6 +30,10 @@ namespace WimyGit
 
         public static string GetGitBin()
         {
+            if (String.IsNullOrEmpty(git_path_) == false)
+            {
+                return git_path_;
+            }
             string[] git_path_candidates =
             {
                 @"git.exe",
@@ -42,6 +49,7 @@ namespace WimyGit
                     string output = ExecuteAndGetOutput(path, "--version");
                     if (output.IndexOf("git version") != -1)
                     {
+                        git_path_ = path;
                         return path;
                     }
                 }
@@ -56,17 +64,32 @@ namespace WimyGit
 
         public static string GetGitShell()
         {
+            if (String.IsNullOrEmpty(git_shell_path_) == false)
+            {
+                return git_shell_path_;
+            }
             string[] git_path_candidates =
             {
+                @"sh.exe",
                 @"C:\Program Files (x86)\Git\bin\sh.exe",
                 @"C:\Users\" + Environment.UserName + @"\AppData\Local\Programs\Git\bin\sh.exe",
             };
 
             foreach (string path in git_path_candidates)
             {
-                if (System.IO.File.Exists(path))
+                try
                 {
-                    return path;
+                    string output = ExecuteAndGetOutput(path, "--version");
+                    if (output.IndexOf("version") != -1)
+                    {
+                        git_shell_path_ = path;
+                        return path;
+                    }
+                }
+                catch (System.ComponentModel.Win32Exception)
+                {
+                    // Cannot execute the path as git.exe
+                    continue;
                 }
             }
             throw new Exception("Cannot find git sh binary");
