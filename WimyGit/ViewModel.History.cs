@@ -142,7 +142,14 @@ namespace WimyGit
                 HistoryStatus status = new HistoryStatus();
                 status.Graph = commit.Graph;
                 status.LocalDateTime = commit.LocalTimeDate;
-                status.CommitId = commit.Sha?.Substring(0, 7);
+                if (commit.Sha != null)
+                {
+                    status.CommitId = commit.Sha.Substring(0, 7);
+                }
+                else
+                {
+                    status.CommitId = null;
+                }
                 status.Sha = commit.Sha;
                 status.Author = commit.Author;
                 status.Message = commit.Message;
