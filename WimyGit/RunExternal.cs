@@ -4,12 +4,7 @@ using System.Diagnostics;
 
 namespace WimyGit
 {
-    interface OutputInterface
-    {
-        void OnOutput(string output);
-    }
-
-    class StringArrayOutput : OutputInterface
+    class StringArrayOutput
     {
         private List<string> result_ = new List<string>();
 
@@ -31,13 +26,11 @@ namespace WimyGit
     {
         private readonly string execute_filename_;
         private readonly string working_directory_;
-        private readonly StringArrayOutput output_;
 
         public RunExternal(string execute_filename, string working_directory)
         {
             execute_filename_ = execute_filename;
             working_directory_ = working_directory;
-            output_ = new StringArrayOutput();
         }
 
         public void RunGitCmdInConsoleAndContinue(string cmd)
@@ -63,15 +56,17 @@ namespace WimyGit
             process.StartInfo.CreateNoWindow = true;
             process.StartInfo.WorkingDirectory = working_directory_;
 
-            process.OutputDataReceived += OnOutputDataReceived;
+            StringArrayOutput output = new StringArrayOutput();
+            process.OutputDataReceived += (object sender, DataReceivedEventArgs e) => {
+                output.OnOutput(e.Data);
+            };
             process.EnableRaisingEvents = true;
-            process.Exited += OnExit;
 
             process.Start();
             process.BeginOutputReadLine();
             process.WaitForExit();
 
-            return output_.GetResult();
+            return output.GetResult();
         }
 
         public void RunWithoutWaiting(string arguments)
@@ -96,19 +91,6 @@ namespace WimyGit
             process.StartInfo.WorkingDirectory = working_directory_;
 
             process.Start();
-        }
-
-        private void OnOutputDataReceived(object sender, DataReceivedEventArgs e)
-        {
-            if (output_ != null)
-            {
-                output_.OnOutput(e.Data);
-            }
-        }
-
-        private void OnExit(object sender, EventArgs e)
-        {
-            Console.WriteLine(execute_filename_ + " exited");
         }
     }
 }
