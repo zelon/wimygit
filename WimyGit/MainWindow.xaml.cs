@@ -21,10 +21,18 @@ namespace WimyGit
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            string output = ProgramPathFinder.ExecuteAndGetOutput(ProgramPathFinder.GetGitBin(),
-                "--version");
-            this.Title += " - " + output;
             Service.GetInstance().SetWindow(this);
+            try
+            {
+                string output = ProgramPathFinder.ExecuteAndGetOutput(ProgramPathFinder.GetGitBin(),
+                    "--version");
+                this.Title += " - " + output;
+            }
+            catch (System.IO.FileNotFoundException ex)
+            {
+                Service.GetInstance().ShowMsg(ex.Message);
+                System.Environment.Exit(1);
+            }
 
             GetViewModel().OnChangeDirectory(null);
         }

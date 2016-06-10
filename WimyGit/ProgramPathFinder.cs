@@ -59,7 +59,7 @@ namespace WimyGit
                     continue;
                 }
             }
-            throw new System.IO.FileNotFoundException("Cannot find git binary");
+            throw new System.IO.FileNotFoundException("Cannot find git binary. Try to add your git.exe to path");
         }
 
         public static string GetGitShell()

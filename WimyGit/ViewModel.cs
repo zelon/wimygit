@@ -77,16 +77,8 @@ namespace WimyGit
 
             Service.GetInstance().SetRootPath(Directory);
 
-            try
-            {
-                Refresh();
-                DirectoryUsed(Directory);
-            }
-            catch (System.IO.FileNotFoundException ex)
-            {
-                Service.GetInstance().ShowMsg(ex.Message);
-                System.Environment.Exit(1);
-            }
+            Refresh();
+            DirectoryUsed(Directory);
         }
 
         public void Refresh()
