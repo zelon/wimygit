@@ -157,6 +157,7 @@ namespace WimyGit
                     error_msg_list.Add(String.Format("Cannot diff {0}. It is untracked", filepath));
                     continue;
                 }
+                AddLog(String.Format("Diff {0}", filepath));
                 git_.Diff(filepath);
             }
 
