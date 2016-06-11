@@ -87,7 +87,7 @@ namespace WimyGit
             {
                 return;
             }
-            AddLog("Check repository:" + Directory);
+            AddLog("Refreshing Directory:" + Directory);
 
             RefreshPending();
             RefreshHistory(null);

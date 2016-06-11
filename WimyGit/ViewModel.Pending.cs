@@ -104,7 +104,6 @@ namespace WimyGit
                         AddLog("Cannot execute for filestatus:" + filestatus.State.ToString());
                         break;
                 }
-                AddLog(String.Format("[{0}] {1}", filestatus.State.ToString(), filestatus.FilePath));
             }
 
             if (ModifiedList.Count == 0 && StagedList.Count == 0)
@@ -177,6 +176,10 @@ namespace WimyGit
 
         public void OnUnstageCommand(object parameter)
         {
+            foreach (var filepath in SelectedStagedFilePathList)
+            {
+                AddLog("Unstage: " + filepath);
+            }
             git_.Unstage(SelectedStagedFilePathList);
             Refresh();
         }
@@ -235,6 +238,7 @@ namespace WimyGit
         {
             foreach (var item in SelectedModifiedFilePathList)
             {
+                AddLog("Revert: " + item);
                 git_.P4Revert(item);
             }
             Refresh();
@@ -248,7 +252,7 @@ namespace WimyGit
             }
             foreach (var filepath in SelectedModifiedFilePathList)
             {
-                AddLog("Selected:" + filepath);
+                AddLog("Stage: " + filepath);
             }
 
             git_.Stage(SelectedModifiedFilePathList);
