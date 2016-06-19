@@ -71,6 +71,7 @@
     <Compile Include="RunExternal.cs" />
     <Compile Include="SelectionRecover.cs" />
     <Compile Include="Service.cs" />
+    <Compile Include="Util.cs" />
     <Compile Include="ViewModel.cs" />
     <Compile Include="ViewModel.History.cs" />
     <Compile Include="ViewModel.OpenCommand.cs" />

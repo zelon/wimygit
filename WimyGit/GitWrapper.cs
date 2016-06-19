@@ -41,7 +41,7 @@ namespace WimyGit
         public void DiffHistorySelected(string commit_id, string fileName)
         {
             RunExternal runner = new RunExternal(ProgramPathFinder.GetGitBin(), path_);
-            string cmd = String.Format("difftool {0}^! {1}", commit_id, fileName);
+            string cmd = String.Format("difftool {0}^! {1}", commit_id, Util.WrapFilePath(fileName));
             runner.RunWithoutWaiting(cmd);
         }
 
@@ -54,7 +54,7 @@ namespace WimyGit
         public void ViewTimeLapse(string selectedPath)
         {
             RunExternal runner = new RunExternal(ProgramPathFinder.GetGitBin(), path_);
-            string cmd = String.Format("gui blame {0}", selectedPath);
+            string cmd = String.Format("gui blame {0}", Util.WrapFilePath(selectedPath));
             runner.RunWithoutWaiting(cmd);
         }
 
@@ -83,20 +83,20 @@ namespace WimyGit
             foreach (var file in filelist)
             {
                 RunExternal runner = new RunExternal(ProgramPathFinder.GetGitBin(), path_);
-                runner.Run("reset HEAD " + file);
+                runner.Run("reset HEAD " + Util.WrapFilePath(file));
             }
         }
 
         public void Diff(string filepath)
         {
             RunExternal runner = new RunExternal(ProgramPathFinder.GetGitBin(), path_);
-            runner.RunWithoutWaiting("difftool " + path_ + "\\" + filepath);
+            runner.RunWithoutWaiting("difftool " + Util.WrapFilePath(path_ + "\\" + filepath));
         }
 
         public void DiffStaged(string filepath)
         {
             RunExternal runner = new RunExternal(ProgramPathFinder.GetGitBin(), path_);
-            runner.RunWithoutWaiting("difftool --cached " + path_ + "\\" + filepath);
+            runner.RunWithoutWaiting("difftool --cached " + Util.WrapFilePath(path_ + "\\" + filepath));
         }
 
         public LibGit2Sharp.Signature GetCurrentSignature()
