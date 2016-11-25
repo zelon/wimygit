@@ -166,11 +166,11 @@ namespace WimyGit
             return "";
         }
 
-        internal void P4Revert(string path)
+        internal void P4Revert(string filename)
         {
-            LibGit2Sharp.CheckoutOptions option = new LibGit2Sharp.CheckoutOptions();
-            option.CheckoutModifiers = LibGit2Sharp.CheckoutModifiers.Force;
-            repository_.CheckoutPaths(repository_.Head.Tip.Sha, new[] { path }, option);
+            string cmd = string.Format("checkout -- {0}", filename);
+            RunExternal runner = new RunExternal(ProgramPathFinder.GetGitBin(), path_);
+            runner.Run(cmd);
         }
     }
 }
