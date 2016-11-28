@@ -28,8 +28,7 @@ namespace WimyGit
 
         public void GitPush()
         {
-            RunExternal runner = new RunExternal(ProgramPathFinder.GetGitBin(), path_);
-            runner.RunGitCmdInConsoleAndContinue("push");
+            CreateGitRunner().RunGitCmdInConsoleAndContinue("push");
         }
 
         public LibGit2Sharp.RepositoryStatus GetModifiedFileList()
@@ -40,28 +39,24 @@ namespace WimyGit
 
         public void DiffHistorySelected(string commit_id, string fileName)
         {
-            RunExternal runner = new RunExternal(ProgramPathFinder.GetGitBin(), path_);
             string cmd = String.Format("difftool {0}^! {1}", commit_id, Util.WrapFilePath(fileName));
-            runner.RunWithoutWaiting(cmd);
+            CreateGitRunner().RunWithoutWaiting(cmd);
         }
 
         public void Pull()
         {
-            RunExternal runner = new RunExternal(ProgramPathFinder.GetGitBin(), path_);
-            runner.RunGitCmdInConsoleAndContinue("pull");
+            CreateGitRunner().RunGitCmdInConsoleAndContinue("pull");
         }
 
         public void ViewTimeLapse(string selectedPath)
         {
-            RunExternal runner = new RunExternal(ProgramPathFinder.GetGitBin(), path_);
             string cmd = String.Format("gui blame {0}", Util.WrapFilePath(selectedPath));
-            runner.RunWithoutWaiting(cmd);
+            CreateGitRunner().RunWithoutWaiting(cmd);
         }
 
         public List<string> GetFilelistOfCommit(string sha)
         {
-            RunExternal runner = new RunExternal(ProgramPathFinder.GetGitBin(), path_);
-            return runner.Run("diff-tree --no-commit-id --name-only -r " + sha);
+            return CreateGitRunner().Run("diff-tree --no-commit-id --name-only -r " + sha);
         }
 
         internal void Stage(IEnumerable<string> selectedModifiedFilePathList)
@@ -80,23 +75,21 @@ namespace WimyGit
             {
                 return;
             }
+            var runner = CreateGitRunner();
             foreach (var file in filelist)
             {
-                RunExternal runner = new RunExternal(ProgramPathFinder.GetGitBin(), path_);
                 runner.Run("reset HEAD " + Util.WrapFilePath(file));
             }
         }
 
         public void Diff(string filepath)
         {
-            RunExternal runner = new RunExternal(ProgramPathFinder.GetGitBin(), path_);
-            runner.RunWithoutWaiting("difftool " + Util.WrapFilePath(path_ + "\\" + filepath));
+            CreateGitRunner().RunWithoutWaiting("difftool " + Util.WrapFilePath(path_ + "\\" + filepath));
         }
 
         public void DiffStaged(string filepath)
         {
-            RunExternal runner = new RunExternal(ProgramPathFinder.GetGitBin(), path_);
-            runner.RunWithoutWaiting("difftool --cached " + Util.WrapFilePath(path_ + "\\" + filepath));
+            CreateGitRunner().RunWithoutWaiting("difftool --cached " + Util.WrapFilePath(path_ + "\\" + filepath));
         }
 
         public LibGit2Sharp.Signature GetCurrentSignature()
@@ -139,8 +132,7 @@ namespace WimyGit
         public List<CommitInfo> GetHistory(string selected_path, Int32 skip_count, Int32 max_count)
         {
             string cmd = string.Format("log --encoding=UTF-8 --skip={0} --max-count={1} --graph --format=\"`%ai`%H`%an`%d`%s\" -- {2}", skip_count, max_count, selected_path);
-            RunExternal runner = new RunExternal(ProgramPathFinder.GetGitBin(), path_);
-            return Parse(runner.Run(cmd));
+            return Parse(CreateGitRunner().Run(cmd));
         }
 
         internal string GetCurrentBranch()
@@ -166,11 +158,16 @@ namespace WimyGit
             return "";
         }
 
-        internal void P4Revert(string filename)
+        public void P4Revert(string filename)
         {
-            string cmd = string.Format("checkout -- {0}", filename);
+            string cmd = string.Format("checkout -- {0}", Util.WrapFilePath(filename));
+            CreateGitRunner().Run(cmd);
+        }
+
+        private RunExternal CreateGitRunner()
+        {
             RunExternal runner = new RunExternal(ProgramPathFinder.GetGitBin(), path_);
-            runner.Run(cmd);
+            return runner;
         }
     }
 }
