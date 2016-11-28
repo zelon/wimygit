@@ -236,7 +236,21 @@ namespace WimyGit
         public ICommand RevertCommand { get; private set; }
         public void OnRevertCommand(object parameter)
         {
+            List<string> file_list = new List<string>();
+            string msg = "";
             foreach (var item in SelectedModifiedFilePathList)
+            {
+                file_list.Add(item);
+                msg += string.Format("{0}\n", item);
+            }
+            if (file_list.Count == 0) {
+                return;
+            }
+            if (Service.GetInstance().ConfirmMsg(msg, "Revert") == System.Windows.MessageBoxResult.Cancel)
+            {
+                return;
+            }
+            foreach (var item in file_list)
             {
                 AddLog("Revert: " + item);
                 git_.P4Revert(item);

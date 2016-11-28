@@ -35,6 +35,11 @@ namespace WimyGit
             System.Windows.MessageBox.Show(window_, msg);
         }
 
+        public System.Windows.MessageBoxResult ConfirmMsg(string msg, string caption)
+        {
+            return System.Windows.MessageBox.Show(msg, caption, System.Windows.MessageBoxButton.OKCancel);
+        }
+
         public void SetRootPath(string directory)
         {
             window_.SetRootPath(directory);
