@@ -27,6 +27,8 @@ namespace WimyGit
             UnstageCommand = new DelegateCommand(OnUnstageCommand);
             CommitCommand = new DelegateCommand(OnCommitCommand);
             RevertCommand = new DelegateCommand(OnRevertCommand);
+            OpenExplorerSelectedFileCommand = new DelegateCommand(OnOpenExplorerSelectedFileCommand);
+            OpenSelectedFileCommand = new DelegateCommand(OnOpenSelectedFileCommand);
 
             ModifiedList = new System.Collections.ObjectModel.ObservableCollection<FileStatus>();
             StagedList = new System.Collections.ObjectModel.ObservableCollection<FileStatus>();
@@ -234,6 +236,8 @@ namespace WimyGit
         public ICommand StagedDiffCommand { get; private set; }
         public ICommand UnstageCommand { get; private set; }
         public ICommand RevertCommand { get; private set; }
+        public ICommand OpenExplorerSelectedFileCommand { get; private set; }
+        public ICommand OpenSelectedFileCommand { get; private set; }
         public void OnRevertCommand(object parameter)
         {
             List<string> file_list = new List<string>();
@@ -257,7 +261,24 @@ namespace WimyGit
             }
             Refresh();
         }
-
+        public void OnOpenExplorerSelectedFileCommand(object parameter)
+        {
+            foreach (var item in SelectedModifiedFilePathList)
+            {
+                string directory_name = System.IO.Path.GetDirectoryName(Directory + "\\" + item);
+                RunExternal runner = new RunExternal("explorer.exe", directory_name);
+                runner.RunWithoutWaiting(string.Format("/select, \"{0}\"", Directory + "\\" + item));
+            }
+        }
+        public void OnOpenSelectedFileCommand(object parameter)
+        {
+            foreach (var item in SelectedModifiedFilePathList)
+            {
+                string directory_name = System.IO.Path.GetDirectoryName(Directory + "\\" + item);
+                RunExternal runner = new RunExternal("explorer.exe", directory_name);
+                runner.RunWithoutWaiting(Directory + "\\" + item);
+            }
+        }
         void OnStageSelected(object parameter)
         {
             if (SelectedModifiedFilePathList.Count() == 0)
