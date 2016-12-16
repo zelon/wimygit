@@ -17,7 +17,6 @@ namespace WimyGit
             InitializePending();
             InitializeHistory();
 
-            TestCommand = new DelegateCommand(OnTestCommand);
             this.ChangeDirectory = new DelegateCommand(this.OnChangeDirectory);
 
             GitPushCommand = new DelegateCommand((object paramter) => git_.GitPush());
@@ -28,6 +27,7 @@ namespace WimyGit
             }
             RefreshCommand = new DelegateCommand((object parameter) => Refresh());
             TimelapseCommand = new DelegateCommand((object parameter) => ViewTimeLapse());
+            FetchAllCommand = new DelegateCommand((object parameter) => OnFetchAll());
             PullCommand = new DelegateCommand((object parameter) => OnPull());
         }
 
@@ -39,16 +39,16 @@ namespace WimyGit
             git_.ViewTimeLapse(SelectedPath);
         }
 
+        public ICommand FetchAllCommand { get; private set; }
+        public void OnFetchAll()
+        {
+            git_.FetchAll();
+        }
+
         public ICommand PullCommand { get; private set; }
         public void OnPull()
         {
             git_.Pull();
-        }
-
-        public ICommand TestCommand { get; private set; }
-        public void OnTestCommand(object parameter)
-        {
-            Console.WriteLine("test here");
         }
 
         public ICommand GitPushCommand { get; private set; }

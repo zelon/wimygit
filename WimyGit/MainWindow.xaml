@@ -19,40 +19,46 @@
                 <Button Width="75" Command="{Binding Path=RefreshCommand}">
                     <StackPanel Orientation="Vertical">
                         <Image Source="Images\Refresh.png" Height="30"/>
-                        <TextBlock>Refresh</TextBlock>
+                        <TextBlock HorizontalAlignment="Center">Refresh</TextBlock>
                     </StackPanel>
                 </Button>
                 <Separator />
                 <Button Width="75" Command="{Binding Path=TimelapseCommand}">
                     <StackPanel Orientation="Vertical">
                         <Image Source="Images\TimeLapse.png" Height="30"/>
-                        <TextBlock>TimeLapse</TextBlock>
+                        <TextBlock HorizontalAlignment="Center">TimeLapse</TextBlock>
                     </StackPanel>
                 </Button>
                 <Separator />
+                <Button Width="75" Command="{Binding Path=FetchAllCommand}">
+                    <StackPanel Orientation="Vertical">
+                        <Image Source="Images\FetchAll.png" Height="30"/>
+                        <TextBlock HorizontalAlignment="Center">FetchAll</TextBlock>
+                    </StackPanel>
+                </Button>
                 <Button Width="75" Command="{Binding Path=PullCommand}">
                     <StackPanel Orientation="Vertical">
                         <Image Source="Images\Pull.png" Height="30"/>
-                        <TextBlock>Pull</TextBlock>
+                        <TextBlock HorizontalAlignment="Center">Pull</TextBlock>
                     </StackPanel>
                 </Button>
                 <Button Width="75" Command="{Binding Path=GitPushCommand}">
                     <StackPanel Orientation="Vertical">
                         <Image Source="Images\Push.png" Height="30"/>
-                        <TextBlock>Push</TextBlock>
+                        <TextBlock HorizontalAlignment="Center">Push</TextBlock>
                     </StackPanel>
                 </Button>
                 <Separator />
                 <Button Width="75" Command="{Binding Path=OpenExplorer}">
                     <StackPanel Orientation="Vertical">
                         <Image Source="Images\OpenDirectory.png" Height="30"/>
-                        <TextBlock>OpenFolder</TextBlock>
+                        <TextBlock HorizontalAlignment="Center">OpenFolder</TextBlock>
                     </StackPanel>
                 </Button>
                 <Button Width="75" Command="{Binding Path=OpenGitBash}">
                     <StackPanel Orientation="Vertical">
                         <Image Source="Images\Terminal.png" Height="30"/>
-                        <TextBlock>Terminal</TextBlock>
+                        <TextBlock HorizontalAlignment="Center">Terminal</TextBlock>
                     </StackPanel>
                 </Button>
             </ToolBar>

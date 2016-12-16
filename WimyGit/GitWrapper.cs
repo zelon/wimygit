@@ -43,6 +43,11 @@ namespace WimyGit
             CreateGitRunner().RunWithoutWaiting(cmd);
         }
 
+        public void FetchAll()
+        {
+            CreateGitRunner().RunGitCmdInConsoleAndContinue("fetch --all");
+        }
+
         public void Pull()
         {
             CreateGitRunner().RunGitCmdInConsoleAndContinue("pull");
