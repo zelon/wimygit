@@ -39,7 +39,7 @@ namespace WimyGit
 
         public void DiffHistorySelected(string commit_id, string fileName)
         {
-            string cmd = String.Format("difftool {0}^! {1}", commit_id, Util.WrapFilePath(fileName));
+            string cmd = String.Format("difftool --no-prompt {0}^! {1}", commit_id, Util.WrapFilePath(fileName));
             CreateGitRunner().RunWithoutWaiting(cmd);
         }
 
@@ -89,12 +89,12 @@ namespace WimyGit
 
         public void Diff(string filepath)
         {
-            CreateGitRunner().RunWithoutWaiting("difftool " + Util.WrapFilePath(path_ + "\\" + filepath));
+            CreateGitRunner().RunWithoutWaiting("difftool --no-prompt " + Util.WrapFilePath(path_ + "\\" + filepath));
         }
 
         public void DiffStaged(string filepath)
         {
-            CreateGitRunner().RunWithoutWaiting("difftool --cached " + Util.WrapFilePath(path_ + "\\" + filepath));
+            CreateGitRunner().RunWithoutWaiting("difftool --cached --no-prompt " + Util.WrapFilePath(path_ + "\\" + filepath));
         }
 
         public LibGit2Sharp.Signature GetCurrentSignature()
