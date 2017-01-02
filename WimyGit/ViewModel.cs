@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Windows.Input;
 
@@ -19,7 +20,7 @@ namespace WimyGit
 
             this.ChangeDirectory = new DelegateCommand(this.OnChangeDirectory);
 
-            GitPushCommand = new DelegateCommand((object paramter) => git_.GitPush());
+            GitPushCommand = new DelegateCommand((object paramter) => OnPush());
 
             if (repository_list_.Count > 0)
             {
@@ -42,16 +43,31 @@ namespace WimyGit
         public ICommand FetchAllCommand { get; private set; }
         public void OnFetchAll()
         {
-            git_.FetchAll();
+          DoWithProgressWindow("fetch --all");
+        }
+
+        public void DoWithProgressWindow(string cmd)
+        {
+          // http://stackoverflow.com/questions/2796470/wpf-create-a-dialog-prompt
+          var cmds = new List<string>();
+          cmds.Add(cmd);
+          var console_progress_window = new ConsoleProgressWindow(Directory, cmds);
+          console_progress_window.Owner = Service.GetInstance().GetWindow();
+          console_progress_window.ShowDialog();
+          Refresh();
         }
 
         public ICommand PullCommand { get; private set; }
         public void OnPull()
         {
-            git_.Pull();
+          DoWithProgressWindow("pull");
         }
 
         public ICommand GitPushCommand { get; private set; }
+        public void OnPush()
+        {
+          DoWithProgressWindow("push");
+        }
 
         public void OnChangeDirectory(object parameter)
         {

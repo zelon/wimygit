@@ -26,11 +26,6 @@ namespace WimyGit
             repository_ = new LibGit2Sharp.Repository(path_);
         }
 
-        public void GitPush()
-        {
-            CreateGitRunner().RunGitCmdInConsoleAndContinue("push");
-        }
-
         public LibGit2Sharp.RepositoryStatus GetModifiedFileList()
         {
             LibGit2Sharp.StatusOptions option = new LibGit2Sharp.StatusOptions();
@@ -41,16 +36,6 @@ namespace WimyGit
         {
             string cmd = String.Format("difftool --no-prompt {0}^! {1}", commit_id, Util.WrapFilePath(fileName));
             CreateGitRunner().RunWithoutWaiting(cmd);
-        }
-
-        public void FetchAll()
-        {
-            CreateGitRunner().RunGitCmdInConsoleAndContinue("fetch --all");
-        }
-
-        public void Pull()
-        {
-            CreateGitRunner().RunGitCmdInConsoleAndContinue("pull");
         }
 
         public void ViewTimeLapse(string selectedPath)
@@ -136,7 +121,7 @@ namespace WimyGit
 
         public List<CommitInfo> GetHistory(string selected_path, Int32 skip_count, Int32 max_count)
         {
-            string cmd = string.Format("log --encoding=UTF-8 --skip={0} --max-count={1} --graph --format=\"`%ai`%H`%an`%d`%s\" -- {2}", skip_count, max_count, selected_path);
+            string cmd = string.Format("log --all --encoding=UTF-8 --skip={0} --max-count={1} --graph --format=\"`%ai`%H`%an`%d`%s\" -- {2}", skip_count, max_count, selected_path);
             return Parse(CreateGitRunner().Run(cmd));
         }
 

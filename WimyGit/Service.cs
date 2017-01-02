@@ -35,6 +35,11 @@ namespace WimyGit
             System.Windows.MessageBox.Show(window_, msg);
         }
 
+        public MainWindow GetWindow()
+        {
+          return window_;
+        }
+
         public System.Windows.MessageBoxResult ConfirmMsg(string msg, string caption)
         {
             return System.Windows.MessageBox.Show(msg, caption, System.Windows.MessageBoxButton.OKCancel);
