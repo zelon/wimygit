@@ -43,6 +43,7 @@ namespace WimyGit
             public string Message { get; set; }
             public string ListMessage { get; set; }
             public string Detail { get; set; }
+            public string FontWeight { get; set; }
             public bool IsSelected
             {
                 get { return is_selected_; }
@@ -158,7 +159,11 @@ namespace WimyGit
                 status.Detail = MakeDetail(commit);
                 status.IsSelected = false;
                 status.view_model_ = this;
-
+                status.FontWeight = "";
+                if (commit.RefNames.Contains(string.Format("HEAD -> {0}", git_.GetCurrentBranch())))
+                {
+                    status.FontWeight = "Bold";
+                }
                 HistoryList.Add(status);
             }
 
