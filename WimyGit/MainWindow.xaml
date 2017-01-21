@@ -193,6 +193,7 @@
                                             <GridViewColumn Header="DateTime" DisplayMemberBinding="{Binding LocalDateTime}" Width="180"/>
                                             <GridViewColumn Header="CommitId" DisplayMemberBinding="{Binding CommitId}" Width="70" />
                                             <GridViewColumn Header="Graph" DisplayMemberBinding="{Binding Graph}" Width="auto"/>
+                                            <GridViewColumn Header="Author" DisplayMemberBinding="{Binding Author}" Width="auto"/>
                                             <GridViewColumn Header="Message" DisplayMemberBinding="{Binding ListMessage}" Width="auto"/>
                                         </GridView>
                                     </ListView.View>
