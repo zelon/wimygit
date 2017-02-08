@@ -69,6 +69,7 @@ namespace WimyGit
 
         public class HistoryFile
         {
+            public string Status { get; set; }
             public string FileName { get; set; }
             public string Directory { get; set; }
             public bool IsSelected { get; set; }
@@ -96,11 +97,12 @@ namespace WimyGit
 
             if (String.IsNullOrEmpty(status.CommitId) == false)
             {
-                foreach (var filename in git_.GetFilelistOfCommit(status.CommitId))
+                foreach (var file_info in git_.GetFilelistOfCommit(status.CommitId))
                 {
                     HistoryFile file = new HistoryFile();
-                    file.Directory = filename;
-                    file.FileName = filename;
+                    file.Directory = file_info.FileName;
+                    file.Status = file_info.Status;
+                    file.FileName = file_info.FileName;
                     file.IsSelected = false;
                     HistoryFileList.Add(file);
                 }

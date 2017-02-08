@@ -14,6 +14,12 @@ namespace WimyGit
         public string RefNames { get; set; }
     }
 
+    class FileListInfoOfCommit
+    {
+        public string Status { get; set; }
+        public string FileName { get; set; }
+    }
+
     // https://github.com/libgit2/libgit2sharp/wiki/LibGit2Sharp-Hitchhiker's-Guide-to-Git
     class GitWrapper
     {
@@ -44,9 +50,20 @@ namespace WimyGit
             CreateGitRunner().RunWithoutWaiting(cmd);
         }
 
-        public List<string> GetFilelistOfCommit(string sha)
+        public List<FileListInfoOfCommit> GetFilelistOfCommit(string sha)
         {
-            return CreateGitRunner().Run("diff-tree --no-commit-id --name-only -r " + sha);
+            var raw_outputs = CreateGitRunner().Run("diff-tree --no-commit-id --name-status -r " + sha);
+            var output = new List<FileListInfoOfCommit>();
+            foreach (string line in raw_outputs)
+            {
+                var splitted = line.Split('\t');
+                System.Diagnostics.Debug.Assert(splitted.Length == 2);
+                var converted = new FileListInfoOfCommit();
+                converted.Status = splitted[0];
+                converted.FileName = splitted[1];
+                output.Add(converted);
+            }
+            return output;
         }
 
         internal void Stage(IEnumerable<string> selectedModifiedFilePathList)
