@@ -34,9 +34,8 @@ namespace WimyGit
             StagedList = new System.Collections.ObjectModel.ObservableCollection<FileStatus>();
         }
 
-        void RefreshPending()
+        void RefreshPending(LibGit2Sharp.RepositoryStatus filelist)
         {
-            var filelist = git_.GetModifiedFileList();
             var modified_backup = new SelectionRecover(ModifiedList);
             var staged_backup = new SelectionRecover(StagedList);
             this.ModifiedList.Clear();

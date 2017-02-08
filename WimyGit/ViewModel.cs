@@ -105,11 +105,21 @@ namespace WimyGit
             }
             AddLog("Refreshing Directory:" + Directory);
 
-            RefreshPending();
-            RefreshHistory(null);
-            RefreshBranch();
-            RefreshSignature();
-            RefreshDirectoryTree();
+            var waiting_window = new WaitingWindow("Refreshing...", () => {
+              // GetModifiedFileList() call spend most time
+              var filelist = git_.GetModifiedFileList();
+              // invoke for UI update
+              Service.GetInstance().GetWindow().Dispatcher.BeginInvoke(new Action(() => {
+                RefreshPending(filelist);
+                RefreshHistory(null);
+                RefreshBranch();
+                RefreshSignature();
+                RefreshDirectoryTree();
+              }));
+            });
+            waiting_window.Owner = Service.GetInstance().GetWindow();
+            waiting_window.Width = Service.GetInstance().GetWindow().Width - 100;
+            waiting_window.ShowDialog();
         }
 
         private void RefreshSignature()
