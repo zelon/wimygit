@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WimyGit"
         mc:Ignorable="d"
-        Title="ConsoleProgressWindow" Height="346.241" Width="600" WindowStyle="ToolWindow" WindowStartupLocation="CenterOwner" Initialized="Window_Initialized" Loaded="Window_Loaded" MinWidth="600">
+        Title="ConsoleProgressWindow" Height="346.241" Width="600" WindowStyle="ToolWindow" WindowStartupLocation="CenterOwner" Loaded="Window_Loaded" MinWidth="600">
     <Grid Background="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}">
         <Grid.RowDefinitions>
             <RowDefinition Height="*" MinHeight="100" />

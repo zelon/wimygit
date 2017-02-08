@@ -1,7 +1,7 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Threading.Tasks;
 using System.Windows;
 
 namespace WimyGit {
@@ -9,31 +9,53 @@ namespace WimyGit {
   /// Interaction logic for ConsoleProgressWindow.xaml
   /// </summary>
   public partial class ConsoleProgressWindow : Window {
+    enum CommandResult {
+      kOk,
+      kError,
+      kCanceled
+    }
+
     public ConsoleProgressWindow (string repository_path, List<string> cmds) {
       repository_path_ = repository_path;
       cmds_ = cmds;
       InitializeComponent();
     }
 
-    private void Window_Initialized (Object sender, EventArgs e) {
+    private async void Window_Loaded (Object sender, RoutedEventArgs e) {
+      textBlock.Text = "";
+      var task = Task<CommandResult>.Run(() => RunAndWait());
+
+      var result = await task;
+      switch (result) {
+        case CommandResult.kOk:
+          AddOutputText("All ok!!!");
+          break;
+        case CommandResult.kError:
+          AddOutputText("Error!!!");
+          break;
+        case CommandResult.kCanceled:
+          AddOutputText("Canceled!!!");
+          break;
+        default:
+          System.Diagnostics.Debug.Assert(false);
+          break;
+      }
+      done_ = true;
+      button.Content = "Close";
     }
 
-    private void PopOutput() {
-      System.Windows.Forms.Application.DoEvents();
-      while (outputs_.IsEmpty == false) {
-        System.Windows.Forms.Application.DoEvents();
-        string queue_output = "";
-        if (outputs_.TryDequeue(out queue_output)) {
-          textBlock.Text += queue_output;
-        }
+    private void AddOutputText(string text) {
+      string inner_text = text + Environment.NewLine;
+      if (textBlock.Dispatcher.CheckAccess()) {
+        textBlock.Text += inner_text;
+      } else {
+        textBlock.Dispatcher.BeginInvoke(new Action(() => { textBlock.Text += inner_text; }));
       }
     }
 
-    private void Window_Loaded (Object sender, RoutedEventArgs e) {
-      textBlock.Text = "";
-      foreach (var cmd in cmds_)
-      {
-        outputs_.Enqueue(string.Format("git {0}", cmd) + Environment.NewLine);
+    private CommandResult RunAndWait() {
+      foreach (var cmd in cmds_) {
+        AddOutputText(string.Format("git {0}", cmd));
 
         Process process = new Process();
         process.StartInfo.FileName = ProgramPathFinder.GetGitBin();
@@ -50,13 +72,13 @@ namespace WimyGit {
           if (console_output.Data == null) {
             return;
           }
-          outputs_.Enqueue(console_output.Data + Environment.NewLine);
+          AddOutputText(console_output.Data);
         };
         process.ErrorDataReceived += (object _, DataReceivedEventArgs error_output) => {
           if (error_output.Data == null) {
             return;
           }
-          outputs_.Enqueue(error_output.Data + Environment.NewLine);
+          AddOutputText(error_output.Data);
         };
         process.EnableRaisingEvents = true;
 
@@ -69,23 +91,14 @@ namespace WimyGit {
           }
           if (canceled_) {
             process.Kill();
-            break;
+            return CommandResult.kCanceled;
           }
-          PopOutput();
         }
         if (process.ExitCode != 0) {
-          PopOutput();
-          textBlock.Text += "---- Error!!!";
-          button.Content = "Close";
-          return;
+          return CommandResult.kError;
         }
       }
-      PopOutput();
-      if (canceled_ == false) {
-        textBlock.Text += "All ok!!!";
-      }
-      done_ = true;
-      button.Content = "Close";
+      return CommandResult.kOk;
     }
 
     private void button_Click (Object sender, RoutedEventArgs e) {
@@ -99,7 +112,6 @@ namespace WimyGit {
 
     private string repository_path_;
     private List<string> cmds_ = new List<string>();
-    private ConcurrentQueue<string> outputs_ = new ConcurrentQueue<string>();
     private bool canceled_ = false;
     private bool done_ = false;
   }
