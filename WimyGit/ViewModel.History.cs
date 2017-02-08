@@ -160,7 +160,7 @@ namespace WimyGit
                 status.IsSelected = false;
                 status.view_model_ = this;
                 status.FontWeight = "";
-                if (commit.RefNames.Contains(string.Format("HEAD -> {0}", git_.GetCurrentBranch())))
+                if (commit.RefNames != null && commit.RefNames.Contains(string.Format("HEAD -> {0}", git_.GetCurrentBranch())))
                 {
                     status.FontWeight = "Bold";
                 }
