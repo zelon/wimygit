@@ -42,6 +42,7 @@ namespace WimyGit
             public string Author { get; set; }
             public string Comment { get; set; }
             public string Message { get; set; }
+            public string ListMessage_RefNames { get; set; }
             public string ListMessage { get; set; }
             public string Detail { get; set; }
             public FontWeight FontWeight { get; set; }
@@ -157,7 +158,8 @@ namespace WimyGit
                 status.Sha = commit.Sha;
                 status.Author = commit.Author;
                 status.Message = commit.Message;
-                status.ListMessage = commit.RefNames + " " + status.Message;
+                status.ListMessage_RefNames = commit.RefNames?.Trim();
+                status.ListMessage = status.Message;
                 status.Comment = commit.Message;
                 status.Detail = MakeDetail(commit);
                 status.IsSelected = false;

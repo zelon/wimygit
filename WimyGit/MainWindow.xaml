@@ -194,7 +194,23 @@
                                             <GridViewColumn Header="CommitId" DisplayMemberBinding="{Binding CommitId}" Width="70" />
                                             <GridViewColumn Header="Graph" DisplayMemberBinding="{Binding Graph}" Width="auto"/>
                                             <GridViewColumn Header="Author" DisplayMemberBinding="{Binding Author}" Width="auto"/>
-                                            <GridViewColumn Header="Message" DisplayMemberBinding="{Binding ListMessage}" Width="auto"/>
+                                            <GridViewColumn Header="Message" >
+                                                <GridViewColumn.CellTemplate>
+                                                    <DataTemplate>
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <TextBlock Text="{Binding Path=ListMessage_RefNames}" Width="auto" Margin="0,0,3,0" FontSize="11" >
+                                                                <TextBlock.Foreground>
+                                                                    <SolidColorBrush Color="{DynamicResource {x:Static SystemColors.ControlColorKey}}"/>
+                                                                </TextBlock.Foreground>
+                                                                <TextBlock.Background>
+                                                                    <SolidColorBrush Color="{DynamicResource {x:Static SystemColors.HighlightColorKey}}"/>
+                                                                </TextBlock.Background>
+                                                            </TextBlock>
+                                                            <TextBlock Text="{Binding Path=ListMessage}" Width="auto" />
+                                                        </StackPanel>
+                                                    </DataTemplate>
+                                                </GridViewColumn.CellTemplate>
+                                            </GridViewColumn>
                                         </GridView>
                                     </ListView.View>
                                 </ListView>
