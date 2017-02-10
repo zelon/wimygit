@@ -50,6 +50,7 @@ namespace WimyGit
         public void ViewTimeLapse(string selectedPath)
         {
             string cmd = String.Format("gui blame {0}", Util.WrapFilePath(selectedPath));
+            logger_.AddLog(cmd);
             CreateGitRunner().RunWithoutWaiting(cmd);
         }
 
@@ -88,18 +89,24 @@ namespace WimyGit
             var runner = CreateGitRunner();
             foreach (var file in filelist)
             {
-                runner.Run("reset HEAD " + Util.WrapFilePath(file));
+                string cmd = "reset HEAD " + Util.WrapFilePath(file);
+                logger_.AddLog(cmd);
+                runner.Run(cmd);
             }
         }
 
         public void Diff(string filepath)
         {
-            CreateGitRunner().RunWithoutWaiting("difftool --no-prompt -- " + Util.WrapFilePath(path_ + "\\" + filepath));
+            string cmd = "difftool --no-prompt -- " + Util.WrapFilePath(path_ + "\\" + filepath);
+            logger_.AddLog(cmd);
+            CreateGitRunner().RunWithoutWaiting(cmd);
         }
 
         public void DiffStaged(string filepath)
         {
-            CreateGitRunner().RunWithoutWaiting("difftool --cached --no-prompt " + Util.WrapFilePath(path_ + "\\" + filepath));
+            string cmd = "difftool --cached --no-prompt " + Util.WrapFilePath(path_ + "\\" + filepath);
+            logger_.AddLog(cmd);
+            CreateGitRunner().RunWithoutWaiting(cmd);
         }
 
         public LibGit2Sharp.Signature GetCurrentSignature()
@@ -142,6 +149,7 @@ namespace WimyGit
         public List<CommitInfo> GetHistory(string selected_path, Int32 skip_count, Int32 max_count)
         {
             string cmd = string.Format("log --all --encoding=UTF-8 --skip={0} --max-count={1} --graph --format=\"`%ai`%H`%an`%d`%s\" -- {2}", skip_count, max_count, selected_path);
+            logger_.AddLog(cmd);
             return Parse(CreateGitRunner().Run(cmd));
         }
 
@@ -171,6 +179,7 @@ namespace WimyGit
         public void P4Revert(string filename)
         {
             string cmd = string.Format("checkout -- {0}", Util.WrapFilePath(filename));
+            logger_.AddLog(cmd);
             CreateGitRunner().Run(cmd);
         }
 
