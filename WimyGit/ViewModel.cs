@@ -6,7 +6,7 @@ using System.Windows.Input;
 
 namespace WimyGit
 {
-    partial class ViewModel : System.ComponentModel.INotifyPropertyChanged
+    partial class ViewModel : System.ComponentModel.INotifyPropertyChanged, ILogger
     {
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -89,7 +89,7 @@ namespace WimyGit
                 Service.GetInstance().ShowMsg(msg);
                 return;
             }
-            git_ = new GitWrapper(Directory);
+            git_ = new GitWrapper(Directory, this);
 
             Service.GetInstance().SetRootPath(Directory);
 

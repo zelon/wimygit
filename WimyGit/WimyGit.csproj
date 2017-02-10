@@ -70,6 +70,7 @@
     <Compile Include="DelegateCommand.cs" />
     <Compile Include="DirectoryTree.cs" />
     <Compile Include="GitWrapper.cs" />
+    <Compile Include="ILogger.cs" />
     <Compile Include="ProgramPathFinder.cs" />
     <Compile Include="RecentRepository.cs" />
     <Compile Include="RunExternal.cs" />

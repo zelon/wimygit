@@ -25,10 +25,12 @@ namespace WimyGit
     {
         private string path_;
         private LibGit2Sharp.Repository repository_;
+        private ILogger logger_;
 
-        public GitWrapper(string path)
+        public GitWrapper(string path, ILogger logger)
         {
             path_ = path;
+            logger_ = logger;
             repository_ = new LibGit2Sharp.Repository(path_);
         }
 
@@ -40,7 +42,8 @@ namespace WimyGit
 
         public void DiffHistorySelected(string commit_id, string fileName)
         {
-            string cmd = String.Format("difftool --no-prompt {0}^! {1}", commit_id, Util.WrapFilePath(fileName));
+            string cmd = String.Format("difftool --no-prompt {0}^! -- {1}", commit_id, Util.WrapFilePath(fileName));
+            logger_.AddLog(cmd);
             CreateGitRunner().RunWithoutWaiting(cmd);
         }
 
@@ -91,7 +94,7 @@ namespace WimyGit
 
         public void Diff(string filepath)
         {
-            CreateGitRunner().RunWithoutWaiting("difftool --no-prompt " + Util.WrapFilePath(path_ + "\\" + filepath));
+            CreateGitRunner().RunWithoutWaiting("difftool --no-prompt -- " + Util.WrapFilePath(path_ + "\\" + filepath));
         }
 
         public void DiffStaged(string filepath)

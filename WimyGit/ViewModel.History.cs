@@ -24,8 +24,6 @@ namespace WimyGit
         {
             foreach (var filelist in HistoryFileList)
             {
-                Console.WriteLine("Selected filename: " + filelist.FileName);
-
                 if (filelist.IsSelected)
                 {
                     git_.DiffHistorySelected(HistoryDetailCommitId, filelist.FileName);
