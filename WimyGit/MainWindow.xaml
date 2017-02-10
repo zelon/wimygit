@@ -243,8 +243,8 @@
                                                             <ColumnDefinition Width="auto"/>
                                                             <ColumnDefinition Width="auto"/>
                                                         </Grid.ColumnDefinitions>
-                                                        <TextBlock Grid.Column="0" Text="{Binding Status}" Width="auto" Padding="0,0,5,0"/>
-                                                        <TextBlock Grid.Column="1" Text="{Binding FileName}" Width="auto"/>
+                                                        <TextBlock Grid.Column="0" Text="{Binding Status}" Width="auto" Padding="0,0,5,0" FontFamily="Consolas"/>
+                                                        <TextBlock Grid.Column="1" Text="{Binding FileName}" Width="auto" FontFamily="Consolas"/>
                                                     </Grid>
                                                 </DataTemplate>
                                             </ListBox.ItemTemplate>
