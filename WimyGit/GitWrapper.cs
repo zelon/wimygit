@@ -56,7 +56,10 @@ namespace WimyGit
 
         public List<FileListInfoOfCommit> GetFilelistOfCommit(string sha)
         {
-            var raw_outputs = CreateGitRunner().Run("diff-tree --no-commit-id --name-status -r " + sha);
+            // https://answers.atlassian.com/questions/303235/how-to-get-the-list-of-files-from-a-merge-commit-id
+            string cmd = string.Format("diff --name-status {0}^ {0}", sha);
+            logger_.AddLog(cmd);
+            var raw_outputs = CreateGitRunner().Run(cmd);
             var output = new List<FileListInfoOfCommit>();
             foreach (string line in raw_outputs)
             {
