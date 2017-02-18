@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 
 namespace WimyGit {
   /// <summary>
@@ -22,7 +23,7 @@ namespace WimyGit {
     }
 
     private async void Window_Loaded (Object sender, RoutedEventArgs e) {
-      textBlock.Text = "";
+      textBox.Text = "";
       var task = Task<CommandResult>.Run(() => RunAndWait());
 
       var result = await task;
@@ -46,10 +47,10 @@ namespace WimyGit {
 
     private void AddOutputText(string text) {
       string inner_text = text + Environment.NewLine;
-      if (textBlock.Dispatcher.CheckAccess()) {
-        textBlock.Text += inner_text;
+      if (textBox.Dispatcher.CheckAccess()) {
+        textBox.Text += inner_text;
       } else {
-        textBlock.Dispatcher.BeginInvoke(new Action(() => { textBlock.Text += inner_text; }));
+        textBox.Dispatcher.BeginInvoke(new Action(() => { textBox.Text += inner_text; }));
       }
     }
 
@@ -107,7 +108,11 @@ namespace WimyGit {
         return;
       }
       canceled_ = true;
-      textBlock.Text += "Cancel..." + Environment.NewLine;
+      textBox.Text += "Cancel..." + Environment.NewLine;
+    }
+
+    private void textBox_TextChanged (Object sender, System.Windows.Controls.TextChangedEventArgs e) {
+      ((TextBox)sender).ScrollToEnd();
     }
 
     private string repository_path_;
