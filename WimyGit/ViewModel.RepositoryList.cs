@@ -3,7 +3,7 @@ using System.ComponentModel;
 
 namespace WimyGit
 {
-    partial class ViewModel : System.ComponentModel.INotifyPropertyChanged
+    partial class ViewModel : INotifyPropertyChanged
     {
         private RecentRepository recent_repository_;
 
@@ -41,7 +41,7 @@ namespace WimyGit
             }
         }
 
-        private void DirectoryUsed(string directory)
+        private void UpdateRecentUsedDirectoryList(string directory)
         {
             recent_repository_.Used(directory);
             RefreshRepositoryList();

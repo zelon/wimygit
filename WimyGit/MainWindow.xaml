@@ -5,7 +5,7 @@
         Title="WimyGit" Height="800" Width="1024" Loaded="Window_Loaded" MinWidth="800" MinHeight="600">
     <Window.InputBindings>
         <KeyBinding Modifiers="Ctrl" Key="Return" Command="{Binding CommitCommand}" />
-        <KeyBinding Key="F5" Command="{Binding ChangeDirectory}" />
+        <KeyBinding Key="F5" Command="{Binding ChangeDirectoryCommand}" />
     </Window.InputBindings>
     <Grid>
         <Grid.RowDefinitions>
@@ -23,7 +23,7 @@
                     </StackPanel>
                 </Button>
                 <Separator />
-                <Button Width="75" Command="{Binding Path=TimelapseCommand}">
+                <Button Width="75" Command="{Binding Path=ViewTimelapseCommand}">
                     <StackPanel Orientation="Vertical">
                         <Image Source="Images\TimeLapse.png" Height="30"/>
                         <TextBlock HorizontalAlignment="Center">TimeLapse</TextBlock>
@@ -42,7 +42,7 @@
                         <TextBlock HorizontalAlignment="Center">Pull</TextBlock>
                     </StackPanel>
                 </Button>
-                <Button Width="75" Command="{Binding Path=GitPushCommand}">
+                <Button Width="75" Command="{Binding Path=PushCommand}">
                     <StackPanel Orientation="Vertical">
                         <Image Source="Images\Push.png" Height="30"/>
                         <TextBlock HorizontalAlignment="Center">Push</TextBlock>
@@ -65,7 +65,7 @@
         </Grid>
         <Grid Grid.Row="1">
             <ComboBox x:Name="comboBox" Margin="10,10,115,0" VerticalAlignment="Top" IsEditable="True" Text="{Binding Path=Directory}" ItemsSource="{Binding Path=RepositoryList}" />
-            <Button Content="Change Directory" HorizontalAlignment="Right" Margin="0,10,10,0" VerticalAlignment="Top" Width="100" Command="{Binding Path=ChangeDirectory}" Height="22" />
+            <Button Content="Change Directory" HorizontalAlignment="Right" Margin="0,10,10,0" VerticalAlignment="Top" Width="100" Command="{Binding Path=ChangeDirectoryCommand}" Height="22" />
             <Label x:Name="label" Content="Current Branch:" HorizontalAlignment="Left" Margin="10,37,0,0" VerticalAlignment="Top"/>
             <Label x:Name="label1" Content="{Binding Path=Branch}" HorizontalAlignment="Left" Margin="109,37,0,0" VerticalAlignment="Top" Width="236"/>
         </Grid>
@@ -107,7 +107,7 @@
                                         <ContextMenu>
                                             <MenuItem Header="Diff" InputGestureText="Ctrl+D" Command="{Binding Path=StagedDiffCommand}" />
                                             <MenuItem Header="Unstage" InputGestureText="Ctrl+R" Command="{Binding Path=UnstageCommand}" />
-                                            <MenuItem Header="Refresh" InputGestureText="F5" Command="{Binding Path=ChangeDirectory}" />
+                                            <MenuItem Header="Refresh" InputGestureText="F5" Command="{Binding Path=ChangeDirectoryCommand}" />
                                         </ContextMenu>
                                     </ListBox.ContextMenu>
                                     <ListBox.ItemContainerStyle>
@@ -143,7 +143,7 @@
                                         <ContextMenu>
                                             <MenuItem Header="Diff" InputGestureText="Ctrl+D" Command="{Binding Path=ModifiedDiffCommand}" />
                                             <MenuItem Header="Revert" InputGestureText="Ctrl+R" Command="{Binding Path=RevertCommand}" />
-                                            <MenuItem Header="Refresh" InputGestureText="F5" Command="{Binding Path=ChangeDirectory}" />
+                                            <MenuItem Header="Refresh" InputGestureText="F5" Command="{Binding Path=ChangeDirectoryCommand}" />
                                             <MenuItem Header="Open Explorer" InputGestureText="Ctrl+Shift+S" Command="{Binding Path=OpenExplorerSelectedFileCommand}" />
                                             <MenuItem Header="Open" InputGestureText="Return" Command="{Binding Path=OpenSelectedFileCommand}" />
                                         </ContextMenu>

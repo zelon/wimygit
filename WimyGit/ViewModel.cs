@@ -18,30 +18,25 @@ namespace WimyGit
             InitializePending();
             InitializeHistory();
 
-            this.ChangeDirectory = new DelegateCommand(this.OnChangeDirectory);
-
-            GitPushCommand = new DelegateCommand((object paramter) => OnPush());
+            ChangeDirectoryCommand = new DelegateCommand((object parameter) => ChangeDirectory());
+            PushCommand = new DelegateCommand((object parameter) => Push());
+            RefreshCommand = new DelegateCommand((object parameter) => Refresh());
+            ViewTimelapseCommand = new DelegateCommand((object parameter) => ViewTimeLapse());
+            FetchAllCommand = new DelegateCommand((object parameter) => FetchAll());
+            PullCommand = new DelegateCommand(Pull);
 
             if (repository_list_.Count > 0)
             {
                 Directory = repository_list_.ElementAt(0);
             }
-            RefreshCommand = new DelegateCommand((object parameter) => Refresh());
-            TimelapseCommand = new DelegateCommand((object parameter) => ViewTimeLapse());
-            FetchAllCommand = new DelegateCommand((object parameter) => OnFetchAll());
-            PullCommand = new DelegateCommand((object parameter) => OnPull());
         }
 
-        public ICommand RefreshCommand { get; private set; }
-
-        public ICommand TimelapseCommand { get; private set; }
         public void ViewTimeLapse()
         {
             git_.ViewTimeLapse(SelectedPath);
         }
 
-        public ICommand FetchAllCommand { get; private set; }
-        public void OnFetchAll()
+        public void FetchAll()
         {
           DoWithProgressWindow("fetch --all");
         }
@@ -57,19 +52,17 @@ namespace WimyGit
           Refresh();
         }
 
-        public ICommand PullCommand { get; private set; }
-        public void OnPull()
+        public void Pull(object not_used)
         {
           DoWithProgressWindow("pull");
         }
 
-        public ICommand GitPushCommand { get; private set; }
-        public void OnPush()
+        public void Push()
         {
           DoWithProgressWindow("push");
         }
 
-        public void OnChangeDirectory(object parameter)
+        public void ChangeDirectory()
         {
             if (String.IsNullOrEmpty(Directory))
             {
@@ -94,7 +87,7 @@ namespace WimyGit
             Service.GetInstance().SetRootPath(Directory);
 
             Refresh();
-            DirectoryUsed(Directory);
+            UpdateRecentUsedDirectoryList(Directory);
         }
 
         public void Refresh()
@@ -105,7 +98,7 @@ namespace WimyGit
             }
             AddLog("Refreshing Directory:" + Directory);
 
-            var waiting_window = new WaitingWindow("Refreshing...", () => {
+            Service.GetInstance().RunCommandWithWaitingWindow("Refreshing...", () => {
               // GetModifiedFileList() call spend most time
               var filelist = git_.GetModifiedFileList();
               // invoke for UI update
@@ -114,12 +107,10 @@ namespace WimyGit
                 RefreshHistory(null);
                 RefreshBranch();
                 RefreshSignature();
-                RefreshDirectoryTree();
+                Service.GetInstance().RefreshDirectoryTree();
+                AddLog("Refreshed");
               }));
             });
-            waiting_window.Owner = Service.GetInstance().GetWindow();
-            waiting_window.Width = Service.GetInstance().GetWindow().Width - 100;
-            waiting_window.ShowDialog();
         }
 
         private void RefreshSignature()
@@ -129,19 +120,7 @@ namespace WimyGit
             NotifyPropertyChanged("DisplayAuthor");
         }
 
-        private void RefreshDirectoryTree()
-        {
-            Service.GetInstance().RefreshDirectoryTree();
-        }
-
-        public ICommand ChangeDirectory { get; private set; }
-        public string Directory { get; set; }
-
-        private string branch_;
-        public string Branch { get { return branch_; } set { branch_ = value; NotifyPropertyChanged("Branch"); } }
-        public string DisplayAuthor { get; set; }
-
-        void RefreshBranch()
+        private void RefreshBranch()
         {
             if (git_ == null)
             {
@@ -157,17 +136,12 @@ namespace WimyGit
                 }
                 Branch = output;
             }
+            NotifyPropertyChanged("Branch");
         }
 
-        private string log_;
-        public string Log
-        {
-            get { return log_; }
-            set { log_ = value; }
-        }
         public void AddLog(string log)
         {
-            log_ += String.Format("[{0}] {1}\n", DateTime.Now.ToLocalTime(), log);
+            Log += String.Format("[{0}] {1}\n", DateTime.Now.ToLocalTime(), log);
             NotifyPropertyChanged("Log");
         }
 
@@ -178,5 +152,16 @@ namespace WimyGit
                 PropertyChanged(this, new PropertyChangedEventArgs(name));
             }
         }
+        public ICommand ChangeDirectoryCommand { get; private set; }
+        public ICommand RefreshCommand { get; private set; }
+        public ICommand ViewTimelapseCommand { get; private set; }
+        public ICommand FetchAllCommand { get; private set; }
+        public ICommand PullCommand { get; private set; }
+        public ICommand PushCommand { get; private set; }
+
+        public string Directory { get; set; }
+        public string Log { get; set; }
+        public string Branch { get; set; }
+        public string DisplayAuthor { get; set; }
     }
 }

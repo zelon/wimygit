@@ -34,7 +34,7 @@ namespace WimyGit
                 System.Environment.Exit(1);
             }
 
-            GetViewModel().OnChangeDirectory(null);
+            GetViewModel().ChangeDirectory();
         }
 
         private void TextBox_TextChanged(object sender, TextChangedEventArgs e)
