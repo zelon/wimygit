@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using System.Windows.Input;
 
@@ -158,7 +159,8 @@ namespace WimyGit
                 }
                 if (file_status.Status == "Untracked")
                 {
-                    error_msg_list.Add(String.Format("Cannot diff {0}. It is untracked", filepath));
+                    string filename = System.IO.Path.Combine(Directory, filepath);
+                    Service.GetInstance().ViewFile(filename);
                     continue;
                 }
                 AddLog(String.Format("Diff {0}", filepath));

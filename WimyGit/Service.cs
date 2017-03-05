@@ -46,5 +46,11 @@ namespace WimyGit {
       waiting_window.Width = GetWindow().Width - 100;
       waiting_window.ShowDialog();
     }
+
+    public void ViewFile (string filename) {
+      string cmd = String.Format("-d {0}.untracked {0}", filename);
+      RunExternal runner = new RunExternal("gvim.exe", ".");
+      runner.RunWithoutWaiting(cmd);
+    }
   }
 }
