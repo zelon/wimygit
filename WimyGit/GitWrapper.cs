@@ -34,10 +34,10 @@ namespace WimyGit
             repository_ = new LibGit2Sharp.Repository(path_);
         }
 
-        public LibGit2Sharp.RepositoryStatus GetModifiedFileList()
+        public List<string> GetGitStatusPorcelainAll()
         {
-            LibGit2Sharp.StatusOptions option = new LibGit2Sharp.StatusOptions();
-            return repository_.RetrieveStatus(option);
+            string cmd = string.Format("status --porcelain");
+            return CreateGitRunner().Run(cmd);
         }
 
         public void DiffHistorySelected(string commit_id, string fileName)

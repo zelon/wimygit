@@ -38,28 +38,28 @@ namespace WimyGit
 
         public void FetchAll()
         {
-          DoWithProgressWindow("fetch --all");
+            DoWithProgressWindow("fetch --all");
         }
 
         public void DoWithProgressWindow(string cmd)
         {
-          // http://stackoverflow.com/questions/2796470/wpf-create-a-dialog-prompt
-          var cmds = new List<string>();
-          cmds.Add(cmd);
-          var console_progress_window = new ConsoleProgressWindow(Directory, cmds);
-          console_progress_window.Owner = Service.GetInstance().GetWindow();
-          console_progress_window.ShowDialog();
-          Refresh();
+            // http://stackoverflow.com/questions/2796470/wpf-create-a-dialog-prompt
+            var cmds = new List<string>();
+            cmds.Add(cmd);
+            var console_progress_window = new ConsoleProgressWindow(Directory, cmds);
+            console_progress_window.Owner = Service.GetInstance().GetWindow();
+            console_progress_window.ShowDialog();
+            Refresh();
         }
 
         public void Pull(object not_used)
         {
-          DoWithProgressWindow("pull");
+            DoWithProgressWindow("pull");
         }
 
         public void Push()
         {
-          DoWithProgressWindow("push");
+            DoWithProgressWindow("push");
         }
 
         public void ChangeDirectory()
@@ -98,18 +98,21 @@ namespace WimyGit
             }
             AddLog("Refreshing Directory:" + Directory);
 
-            Service.GetInstance().RunCommandWithWaitingWindow("Refreshing...", () => {
-              // GetModifiedFileList() call spend most time
-              var filelist = git_.GetModifiedFileList();
-              // invoke for UI update
-              Service.GetInstance().GetWindow().Dispatcher.BeginInvoke(new Action(() => {
-                RefreshPending(filelist);
-                RefreshHistory(null);
-                RefreshBranch();
-                RefreshSignature();
-                Service.GetInstance().RefreshDirectoryTree();
-                AddLog("Refreshed");
-              }));
+            Service.GetInstance().RunCommandWithWaitingWindow("Refreshing...", () =>
+            {
+                // GetGitStatusPorcelainAll() call spend most time
+                List<string> git_porcelain_result = git_.GetGitStatusPorcelainAll();
+                // invoke for UI update after long time operation
+                Service.GetInstance().GetWindow().Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    RefreshPending(git_porcelain_result);
+                    RefreshHistory(null);
+                    RefreshBranch();
+                    RefreshSignature();
+                    Service.GetInstance().RefreshDirectoryTree();
+                    AddLog(git_porcelain_result);
+                    AddLog("Refreshed");
+                }));
             });
         }
 
@@ -142,6 +145,15 @@ namespace WimyGit
         public void AddLog(string log)
         {
             Log += String.Format("[{0}] {1}\n", DateTime.Now.ToLocalTime(), log);
+            NotifyPropertyChanged("Log");
+        }
+
+        public void AddLog(List<string> logs)
+        {
+            foreach (string log in logs)
+            {
+                Log += String.Format("[{0}] {1}\n", DateTime.Now.ToLocalTime(), log);
+            }
             NotifyPropertyChanged("Log");
         }
 

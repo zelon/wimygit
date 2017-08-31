@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.IO;
+using System.Diagnostics;
 using System.Linq;
 using System.Windows.Input;
 
@@ -35,80 +35,27 @@ namespace WimyGit
             StagedList = new System.Collections.ObjectModel.ObservableCollection<FileStatus>();
         }
 
-        void RefreshPending(LibGit2Sharp.RepositoryStatus filelist)
+        void RefreshPending(List<string> porcelains)
         {
             var modified_backup = new SelectionRecover(ModifiedList);
             var staged_backup = new SelectionRecover(StagedList);
             this.ModifiedList.Clear();
             this.StagedList.Clear();
-            foreach (var filestatus in filelist)
+            foreach (var porcelain in porcelains)
             {
-                switch (filestatus.State)
+                GitFileStatus status = GitPorcelainParser.Parse(porcelain);
+                if (status.Staged != null)
                 {
-                    case LibGit2Sharp.FileStatus.Ignored:
-                        continue;
-
-                    case LibGit2Sharp.FileStatus.Added:
-                        goto case LibGit2Sharp.FileStatus.Staged;
-                    case LibGit2Sharp.FileStatus.Staged:
-                        AddStagedList(filestatus, staged_backup);
-                        break;
-
-                    case LibGit2Sharp.FileStatus.Added | LibGit2Sharp.FileStatus.Modified:
-                        AddStagedList(filestatus, staged_backup);
-                        AddModifiedList(filestatus, modified_backup);
-                        break;
-                    case LibGit2Sharp.FileStatus.Untracked:
-                        goto case LibGit2Sharp.FileStatus.Modified;
-                    case LibGit2Sharp.FileStatus.Modified:
-                        AddModifiedList(filestatus, modified_backup);
-                        break;
-
-                    case LibGit2Sharp.FileStatus.Staged | LibGit2Sharp.FileStatus.Modified:
-                        AddModifiedList(filestatus, modified_backup);
-                        AddStagedList(filestatus, staged_backup);
-                        break;
-
-                    // renamed
-                    case LibGit2Sharp.FileStatus.Staged | LibGit2Sharp.FileStatus.RenamedInIndex:
-                        AddStagedList(filestatus, staged_backup);
-                        break;
-
-                    case LibGit2Sharp.FileStatus.RenamedInIndex:
-                        AddStagedList(filestatus, staged_backup);
-                        break;
-
-                    case LibGit2Sharp.FileStatus.RenamedInIndex | LibGit2Sharp.FileStatus.Missing:
-                        AddStagedList(filestatus, staged_backup);
-                        AddModifiedList(filestatus, modified_backup);
-                        break;
-
-                    case LibGit2Sharp.FileStatus.RenamedInIndex | LibGit2Sharp.FileStatus.Modified:
-                        AddStagedList(filestatus, staged_backup);
-                        AddModifiedList(filestatus, modified_backup);
-                        break;
-
-                    case LibGit2Sharp.FileStatus.Staged | LibGit2Sharp.FileStatus.RenamedInIndex | LibGit2Sharp.FileStatus.Modified:
-                        AddStagedList(filestatus, staged_backup);
-                        AddModifiedList(filestatus, modified_backup);
-                        break;
-
-                    case LibGit2Sharp.FileStatus.Staged | LibGit2Sharp.FileStatus.Missing:
-                        AddStagedList(filestatus, staged_backup);
-                        AddModifiedList(filestatus, modified_backup);
-                      break;
-                    case LibGit2Sharp.FileStatus.Missing:
-                        AddModifiedList(filestatus, modified_backup);
-                        break;
-
-                    case LibGit2Sharp.FileStatus.Removed:
-                        AddStagedList(filestatus, staged_backup);
-                        break;
-
-                    default:
-                        System.Diagnostics.Debug.Assert(false);
-                        AddLog("Cannot execute for filestatus:" + filestatus.State.ToString());
-                        break;
+                    AddStagedList(status, staged_backup);
+                }
+                if (status.Unmerged != null)
+                {
+                    // TODO: Implement
+                    //AddUnmergedList()
+                }
+                if (status.Modified != null)
+                {
+                    AddModifiedList(status, modified_backup);
                 }
             }
 
@@ -191,47 +138,36 @@ namespace WimyGit
             Refresh();
         }
 
-        void AddModifiedList(LibGit2Sharp.StatusEntry filestatus, SelectionRecover backup_selection)
+        void AddModifiedList(GitFileStatus git_file_status, SelectionRecover backup_selection)
         {
             FileStatus status = new FileStatus();
-            status.Status = filestatus.State.ToString();
-            status.FilePath = filestatus.FilePath;
+            status.Status = git_file_status.Modified.Description;
+            status.FilePath = git_file_status.Modified.Filename;
             status.Display = status.FilePath;
-            status.IsSelected = backup_selection.WasSelected(filestatus.FilePath);
+            status.IsSelected = backup_selection.WasSelected(status.FilePath);
 
             ModifiedList.Add(status);
             PropertyChanged(this, new PropertyChangedEventArgs("ModifiedList"));
         }
 
-        void AddStagedList(LibGit2Sharp.StatusEntry filestatus, SelectionRecover backup_selection)
+        void AddStagedList(GitFileStatus git_file_status, SelectionRecover backup_selection)
         {
             FileStatus status = new FileStatus();
-            status.Status = filestatus.State.ToString();
-            status.FilePath = filestatus.FilePath;
+            status.Status = git_file_status.Staged.Description;
+            status.FilePath = git_file_status.Staged.Filename;
             status.Display = status.FilePath;
-            if ((filestatus.State == LibGit2Sharp.FileStatus.RenamedInIndex) |
-                (filestatus.State == (LibGit2Sharp.FileStatus.RenamedInIndex | LibGit2Sharp.FileStatus.Staged)))
-            {
-                status.Display = string.Format(" {0} -> {1} [{2}%]",
-                    filestatus.HeadToIndexRenameDetails.OldFilePath,
-                    filestatus.HeadToIndexRenameDetails.NewFilePath,
-                    filestatus.HeadToIndexRenameDetails.Similarity);
-            }
-            status.IsSelected = backup_selection.WasSelected(filestatus.FilePath);
+            status.IsSelected = backup_selection.WasSelected(status.FilePath);
 
             StagedList.Add(status);
             PropertyChanged(this, new PropertyChangedEventArgs("StagedList"));
         }
 
         private string commit_message_;
-        public string CommitMessage
-        {
-            get
-            {
+        public string CommitMessage {
+            get {
                 return commit_message_;
             }
-            set
-            {
+            set {
                 commit_message_ = value;
                 NotifyPropertyChanged("CommitMessage");
             }
@@ -252,7 +188,8 @@ namespace WimyGit
                 file_list.Add(item);
                 msg += string.Format("{0}\n", item);
             }
-            if (file_list.Count == 0) {
+            if (file_list.Count == 0)
+            {
                 return;
             }
             if (Service.GetInstance().ConfirmMsg(msg, "Revert") == System.Windows.MessageBoxResult.Cancel)
@@ -301,13 +238,11 @@ namespace WimyGit
         }
         public ICommand StageSelected { get; set; }
 
-        public IEnumerable<string> SelectedModifiedFilePathList
-        {
+        public IEnumerable<string> SelectedModifiedFilePathList {
             get { return ModifiedList.Where(o => o.IsSelected).Select(o => o.FilePath); }
         }
 
-        public IEnumerable<string> SelectedStagedFilePathList
-        {
+        public IEnumerable<string> SelectedStagedFilePathList {
             get { return StagedList.Where(o => o.IsSelected).Select(o => o.FilePath); }
         }
     }
