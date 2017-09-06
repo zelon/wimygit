@@ -110,7 +110,7 @@ namespace WimyGit
                     continue;
                 }
                 AddLog(String.Format("Diff {0}", filepath));
-                git_.Diff(filepath);
+                git_.DiffTool(filepath);
             }
 
             foreach (string error_msg in error_msg_list)
@@ -123,7 +123,7 @@ namespace WimyGit
         {
             foreach (var filepath in SelectedStagedFilePathList)
             {
-                git_.DiffStaged(filepath);
+                git_.DiffToolStaged(filepath);
             }
         }
 

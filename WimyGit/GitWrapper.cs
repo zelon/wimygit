@@ -73,7 +73,7 @@ namespace WimyGit
             return output;
         }
 
-        internal void Stage(IEnumerable<string> selectedModifiedFilePathList)
+        public void Stage(IEnumerable<string> selectedModifiedFilePathList)
         {
             if (selectedModifiedFilePathList.Count() == 0)
             {
@@ -98,14 +98,14 @@ namespace WimyGit
             }
         }
 
-        public void Diff(string filepath)
+        public void DiffTool(string filepath)
         {
             string cmd = "difftool --no-prompt -- " + Util.WrapFilePath(path_ + "\\" + filepath);
             logger_.AddLog(cmd);
             CreateGitRunner().RunWithoutWaiting(cmd);
         }
 
-        public void DiffStaged(string filepath)
+        public void DiffToolStaged(string filepath)
         {
             string cmd = "difftool --cached --no-prompt " + Util.WrapFilePath(path_ + "\\" + filepath);
             logger_.AddLog(cmd);
