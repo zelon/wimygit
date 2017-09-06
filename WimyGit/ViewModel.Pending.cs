@@ -46,16 +46,15 @@ namespace WimyGit
                 GitFileStatus status = GitPorcelainParser.Parse(porcelain);
                 if (status.Staged != null)
                 {
-                    AddStagedList(status, staged_backup);
+                    AddStagedList(status.Staged, staged_backup);
                 }
                 if (status.Unmerged != null)
                 {
-                    // TODO: Implement
-                    //AddUnmergedList()
+                    AddModifiedList(status.Unmerged, modified_backup);
                 }
                 if (status.Modified != null)
                 {
-                    AddModifiedList(status, modified_backup);
+                    AddModifiedList(status.Modified, modified_backup);
                 }
             }
 
@@ -138,11 +137,11 @@ namespace WimyGit
             Refresh();
         }
 
-        void AddModifiedList(GitFileStatus git_file_status, SelectionRecover backup_selection)
+        void AddModifiedList(GitFileStatus.Pair git_file_status, SelectionRecover backup_selection)
         {
             FileStatus status = new FileStatus();
-            status.Status = git_file_status.Modified.Description;
-            status.FilePath = git_file_status.Modified.Filename;
+            status.Status = git_file_status.Description;
+            status.FilePath = git_file_status.Filename;
             status.Display = status.FilePath;
             status.IsSelected = backup_selection.WasSelected(status.FilePath);
 
@@ -150,11 +149,11 @@ namespace WimyGit
             PropertyChanged(this, new PropertyChangedEventArgs("ModifiedList"));
         }
 
-        void AddStagedList(GitFileStatus git_file_status, SelectionRecover backup_selection)
+        void AddStagedList(GitFileStatus.Pair git_file_status, SelectionRecover backup_selection)
         {
             FileStatus status = new FileStatus();
-            status.Status = git_file_status.Staged.Description;
-            status.FilePath = git_file_status.Staged.Filename;
+            status.Status = git_file_status.Description;
+            status.FilePath = git_file_status.Filename;
             status.Display = status.FilePath;
             status.IsSelected = backup_selection.WasSelected(status.FilePath);
 
