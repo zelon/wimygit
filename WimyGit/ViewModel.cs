@@ -118,8 +118,7 @@ namespace WimyGit
 
         private void RefreshSignature()
         {
-            var signature = git_.GetCurrentSignature();
-            DisplayAuthor = String.Format("{0} <{1}>", signature.Name, signature.Email);
+            DisplayAuthor = git_.GetSignature();
             NotifyPropertyChanged("DisplayAuthor");
         }
 

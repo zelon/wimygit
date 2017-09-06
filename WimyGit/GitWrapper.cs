@@ -112,9 +112,25 @@ namespace WimyGit
             CreateGitRunner().RunWithoutWaiting(cmd);
         }
 
-        public LibGit2Sharp.Signature GetCurrentSignature()
+        public string GetSignature()
         {
-            return repository_.Config.BuildSignature(DateTimeOffset.Now);
+            List<string> outputs = CreateGitRunner().Run("config --list");
+            string name_prefix = "user.name=";
+            string name = "unknown";
+            string email_prefix = "user.email=";
+            string email = "unknown@unknown.unknown";
+            foreach (string output in outputs)
+            {
+                if (output.StartsWith(name_prefix))
+                {
+                    name = output.Substring(name_prefix.Length);
+                }
+                if (output.StartsWith(email_prefix))
+                {
+                    email = output.Substring(email_prefix.Length);
+                }
+            }
+            return String.Format("{0} <{1}>", name, email);
         }
 
         internal void Commit(string commitMessage)
