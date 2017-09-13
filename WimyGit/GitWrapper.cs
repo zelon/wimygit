@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -133,13 +134,26 @@ namespace WimyGit
             return String.Format("{0} <{1}>", name, email);
         }
 
-        internal void Commit(string commitMessage)
+        public void Commit(string commit_message)
         {
-            var signature = repository_.Config.BuildSignature(DateTimeOffset.Now);
-            var commitOption = new LibGit2Sharp.CommitOptions();
-            commitOption.AllowEmptyCommit = false;
-            commitOption.AmendPreviousCommit = false;
-            repository_.Commit(commitMessage, signature, signature, commitOption);
+            // Use temp file to commit with multiline message
+            string temp_filename;
+            try
+            {
+                temp_filename = Path.GetTempFileName();
+            } catch (IOException)
+            {
+                Service.GetInstance().ShowMsg("Cannot create temp file for commit");
+                return;
+            }
+            using (var stream = File.CreateText(temp_filename))
+            {
+                stream.Write(commit_message);
+            }
+            string cmd = "commit --file=\"" + temp_filename + "\"";
+            CreateGitRunner().Run(cmd);
+
+            File.Delete(temp_filename);
         }
 
         private List<CommitInfo> Parse(List<string> lines)
