@@ -9,12 +9,30 @@ namespace WimyGit
 {
     partial class ViewModel
     {
+        public DelegateCommand StageSelected { get; private set; }
+
         public class FileStatus
         {
+            private DelegateCommand stage_selected_command_;
+            private bool is_selected_ = false;
+
             public string Status { get; set; }
             public string FilePath { get; set; }
             public string Display { get; set; }
-            public bool IsSelected { get; set; }
+            public bool IsSelected
+            {
+                get { return is_selected_; }
+                set
+                {
+                    is_selected_ = value;
+                    stage_selected_command_.RaiseCanExecuteChanged();
+                }
+            }
+
+            public FileStatus(DelegateCommand stage_selected_command)
+            {
+                stage_selected_command_ = stage_selected_command;
+            }
         }
 
         public System.Collections.ObjectModel.ObservableCollection<FileStatus> ModifiedList { get; set; }
@@ -22,7 +40,7 @@ namespace WimyGit
 
         private void InitializePending()
         {
-            StageSelected = new DelegateCommand(OnStageSelected);
+            StageSelected = new DelegateCommand(OnStageSelected, CanStageSelected);
             ModifiedDiffCommand = new DelegateCommand(OnModifiedDiffCommand);
             StagedDiffCommand = new DelegateCommand(OnStagedDiffCommand);
             UnstageCommand = new DelegateCommand(OnUnstageCommand);
@@ -139,7 +157,7 @@ namespace WimyGit
 
         void AddModifiedList(GitFileStatus.Pair git_file_status, SelectionRecover backup_selection)
         {
-            FileStatus status = new FileStatus();
+            FileStatus status = new FileStatus(StageSelected);
             status.Status = git_file_status.Description;
             status.FilePath = git_file_status.Filename;
             status.Display = status.FilePath;
@@ -151,7 +169,7 @@ namespace WimyGit
 
         void AddStagedList(GitFileStatus.Pair git_file_status, SelectionRecover backup_selection)
         {
-            FileStatus status = new FileStatus();
+            FileStatus status = new FileStatus(StageSelected);
             status.Status = git_file_status.Description;
             status.FilePath = git_file_status.Filename;
             status.Display = status.FilePath;
@@ -225,6 +243,7 @@ namespace WimyGit
             if (SelectedModifiedFilePathList.Count() == 0)
             {
                 AddLog("No selected to stage");
+                return;
             }
             foreach (var filepath in SelectedModifiedFilePathList)
             {
@@ -235,7 +254,15 @@ namespace WimyGit
 
             Refresh();
         }
-        public ICommand StageSelected { get; set; }
+
+        bool CanStageSelected(object parameter)
+        {
+            if (SelectedModifiedFilePathList.Count() > 0)
+            {
+                return true;
+            }
+            return false;
+        }
 
         public IEnumerable<string> SelectedModifiedFilePathList {
             get { return ModifiedList.Where(o => o.IsSelected).Select(o => o.FilePath); }
