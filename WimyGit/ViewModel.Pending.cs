@@ -61,7 +61,7 @@ namespace WimyGit
             this.StagedList.Clear();
             foreach (var porcelain in porcelains)
             {
-                GitFileStatus status = GitPorcelainParser.Parse(porcelain);
+                GitFileStatus status = GitPorcelainParser.ParseFileStatus(porcelain);
                 if (status.Staged != null)
                 {
                     AddStagedList(status.Staged, staged_backup);

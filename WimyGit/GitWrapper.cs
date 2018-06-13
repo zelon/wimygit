@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Collections.Generic;
 using System.Linq;
@@ -37,7 +38,7 @@ namespace WimyGit
 
         public List<string> GetGitStatusPorcelainAll()
         {
-            string cmd = string.Format("status --porcelain");
+            string cmd = string.Format("status --porcelain --untracked-files=all");
             return CreateGitRunner().Run(cmd);
         }
 
@@ -186,9 +187,24 @@ namespace WimyGit
             return Parse(CreateGitRunner().Run(cmd));
         }
 
-        internal string GetCurrentBranch()
+        public string GetCurrentBranchName()
         {
-            return repository_.Head.Name;
+            string cmd = "branch";
+            List<string> results = CreateGitRunner().Run(cmd);
+            if (results.Count == 0)
+            {
+                Debug.Assert(false, "Cannot get a valid branch name");
+                return "Cannot get a valid branch name";
+            }
+            foreach (string line in results)
+            {
+                if (line.StartsWith("*"))
+                {
+                    return line.Substring(2);
+                }
+            }
+            Debug.Assert(false, "Cannot get a valid branch name");
+            return "Cannot get a valid branch name";
         }
 
         internal string GetCurrentBranchTrackingRemote()

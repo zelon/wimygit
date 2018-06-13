@@ -46,7 +46,7 @@ namespace WimyGit
     // https://git-scm.com/docs/git-status
     class GitPorcelainParser
     {
-        public static GitFileStatus Parse(string line)
+        public static GitFileStatus ParseFileStatus(string line)
         {
             Debug.Assert(line.Length >= 4);
 
