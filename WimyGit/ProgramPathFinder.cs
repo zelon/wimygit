@@ -68,6 +68,19 @@ namespace WimyGit
             {
                 return git_shell_path_;
             }
+
+            // try to check execute git from cmd.exe
+            try
+            {
+                string output = ExecuteAndGetOutput("git.exe", "--version");
+                git_shell_path_ = "cmd.exe";
+                return git_shell_path_;
+            }
+            catch
+            {
+                // If cannot execute git from cmd.exe, find next candidates
+            }
+
             string[] git_path_candidates =
             {
                 @"sh.exe",
