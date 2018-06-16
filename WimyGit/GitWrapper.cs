@@ -193,8 +193,7 @@ namespace WimyGit
             List<string> results = CreateGitRunner().Run(cmd);
             if (results.Count == 0)
             {
-                Debug.Assert(false, "Cannot get a valid branch name");
-                return "Cannot get a valid branch name";
+                return "[No branch yet]";
             }
             foreach (string line in results)
             {
