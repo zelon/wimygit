@@ -199,7 +199,7 @@ namespace WimyGit
         public void OnRevertCommand(object parameter)
         {
             List<string> file_list = new List<string>();
-            string msg = "";
+            string msg = "Revert below:\n\n";
             foreach (var item in SelectedModifiedFilePathList)
             {
                 file_list.Add(item);
