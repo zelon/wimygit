@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Windows.Input;
 
@@ -224,9 +224,10 @@ namespace WimyGit
         {
             foreach (var item in SelectedModifiedFilePathList)
             {
-                string directory_name = System.IO.Path.GetDirectoryName(Directory + "\\" + item);
+                string full_path = Path.GetFullPath(Path.Combine(Directory, item));
+                string directory_name = System.IO.Path.GetDirectoryName(full_path);
                 RunExternal runner = new RunExternal("explorer.exe", directory_name);
-                runner.RunWithoutWaiting(string.Format("/select, \"{0}\"", Directory + "\\" + item));
+                runner.RunWithoutWaiting(string.Format("/select, \"{0}\"", full_path));
             }
         }
         public void OnOpenSelectedFileCommand(object parameter)
