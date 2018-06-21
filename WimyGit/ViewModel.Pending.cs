@@ -11,6 +11,14 @@ namespace WimyGit
     {
         public DelegateCommand StageSelectedCommand { get; private set; }
         public DelegateCommand StageSelectedPartialCommand { get; private set; }
+        public ICommand CommitCommand { get; private set; }
+        public ICommand ModifiedDiffCommand { get; private set; }
+        public ICommand StagedDiffCommand { get; private set; }
+        public ICommand UnstageCommand { get; private set; }
+        public ICommand RevertCommand { get; private set; }
+        public ICommand OpenExplorerSelectedFileCommand { get; private set; }
+        public ICommand OpenSelectedFileCommand { get; private set; }
+        private string commit_message_;
 
         public class FileStatus
         {
@@ -85,7 +93,6 @@ namespace WimyGit
             }
         }
 
-        public ICommand CommitCommand { get; private set; }
         public void OnCommitCommand(object parameter)
         {
             if (String.IsNullOrEmpty(CommitMessage))
@@ -114,6 +121,7 @@ namespace WimyGit
             }
             return null;
         }
+
         public void OnModifiedDiffCommand(object parameter)
         {
             List<string> error_msg_list = new List<string>();
@@ -182,23 +190,16 @@ namespace WimyGit
             PropertyChanged(this, new PropertyChangedEventArgs("StagedList"));
         }
 
-        private string commit_message_;
-        public string CommitMessage {
-            get {
-                return commit_message_;
-            }
-            set {
+        public string CommitMessage
+        {
+            get { return commit_message_; }
+            set
+            {
                 commit_message_ = value;
                 NotifyPropertyChanged("CommitMessage");
             }
         }
 
-        public ICommand ModifiedDiffCommand { get; private set; }
-        public ICommand StagedDiffCommand { get; private set; }
-        public ICommand UnstageCommand { get; private set; }
-        public ICommand RevertCommand { get; private set; }
-        public ICommand OpenExplorerSelectedFileCommand { get; private set; }
-        public ICommand OpenSelectedFileCommand { get; private set; }
         public void OnRevertCommand(object parameter)
         {
             List<string> file_list = new List<string>();
@@ -223,6 +224,7 @@ namespace WimyGit
             }
             Refresh();
         }
+
         public void OnOpenExplorerSelectedFileCommand(object parameter)
         {
             foreach (var item in SelectedModifiedFilePathList)
@@ -242,6 +244,7 @@ namespace WimyGit
                 runner.RunWithoutWaiting(Directory + "\\" + item);
             }
         }
+
         void OnStageSelected(object parameter)
         {
             if (SelectedModifiedFilePathList.Count() == 0)
@@ -283,11 +286,13 @@ namespace WimyGit
             return SelectedModifiedFilePathList.Count() == 1;
         }
 
-        public IEnumerable<string> SelectedModifiedFilePathList {
+        public IEnumerable<string> SelectedModifiedFilePathList
+        {
             get { return ModifiedList.Where(o => o.IsSelected).Select(o => o.FilePath); }
         }
 
-        public IEnumerable<string> SelectedStagedFilePathList {
+        public IEnumerable<string> SelectedStagedFilePathList
+        {
             get { return StagedList.Where(o => o.IsSelected).Select(o => o.FilePath); }
         }
     }
