@@ -85,6 +85,15 @@ namespace WimyGit
             repository_.Stage(selectedModifiedFilePathList, option);
         }
 
+        public void StagePartial(string filepath)
+        {
+            Debug.Assert(string.IsNullOrEmpty(filepath) == false);
+
+            string cmd = "add --patch " + Util.WrapFilePath(filepath);
+            logger_.AddLog(cmd);
+            CreateGitRunner().RunGitCmdInConsoleAndContinue(cmd);
+        }
+
         public void Unstage(IEnumerable<string> filelist)
         {
             if (filelist.Count() == 0)

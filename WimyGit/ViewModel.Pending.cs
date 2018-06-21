@@ -10,6 +10,7 @@ namespace WimyGit
     partial class ViewModel
     {
         public DelegateCommand StageSelected { get; private set; }
+        public DelegateCommand StageSelectedPartialCommand { get; private set; }
 
         public class FileStatus
         {
@@ -41,6 +42,7 @@ namespace WimyGit
         private void InitializePending()
         {
             StageSelected = new DelegateCommand(OnStageSelected, CanStageSelected);
+            StageSelectedPartialCommand = new DelegateCommand(OnStageSelectedPartial, CanStageSelectedPartial);
             ModifiedDiffCommand = new DelegateCommand(OnModifiedDiffCommand);
             StagedDiffCommand = new DelegateCommand(OnStagedDiffCommand);
             UnstageCommand = new DelegateCommand(OnUnstageCommand);
@@ -263,6 +265,21 @@ namespace WimyGit
                 return true;
             }
             return false;
+        }
+
+        void OnStageSelectedPartial(object parameter)
+        {
+            if (SelectedModifiedFilePathList.Count() != 1)
+            {
+                AddLog("Select only one file at once");
+                return;
+            }
+            git_.StagePartial(SelectedModifiedFilePathList.First());
+        }
+
+        bool CanStageSelectedPartial(object parameter)
+        {
+            return SelectedModifiedFilePathList.Count() == 1;
         }
 
         public IEnumerable<string> SelectedModifiedFilePathList {
