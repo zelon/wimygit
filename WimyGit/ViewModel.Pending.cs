@@ -14,7 +14,7 @@ namespace WimyGit
 
         public class FileStatus
         {
-            private DelegateCommand stage_selected_command_;
+            private ViewModel view_model_;
             private bool is_selected_ = false;
 
             public string Status { get; set; }
@@ -26,13 +26,14 @@ namespace WimyGit
                 set
                 {
                     is_selected_ = value;
-                    stage_selected_command_.RaiseCanExecuteChanged();
+                    view_model_.StageSelected.RaiseCanExecuteChanged();
+                    view_model_.StageSelectedPartialCommand.RaiseCanExecuteChanged();
                 }
             }
 
-            public FileStatus(DelegateCommand stage_selected_command)
+            public FileStatus(ViewModel view_model)
             {
-                stage_selected_command_ = stage_selected_command;
+                view_model_ = view_model;
             }
         }
 
@@ -159,7 +160,7 @@ namespace WimyGit
 
         void AddModifiedList(GitFileStatus.Pair git_file_status, SelectionRecover backup_selection)
         {
-            FileStatus status = new FileStatus(StageSelected);
+            FileStatus status = new FileStatus(this);
             status.Status = git_file_status.Description;
             status.FilePath = git_file_status.Filename;
             status.Display = status.FilePath;
@@ -171,7 +172,7 @@ namespace WimyGit
 
         void AddStagedList(GitFileStatus.Pair git_file_status, SelectionRecover backup_selection)
         {
-            FileStatus status = new FileStatus(StageSelected);
+            FileStatus status = new FileStatus(this);
             status.Status = git_file_status.Description;
             status.FilePath = git_file_status.Filename;
             status.Display = status.FilePath;
