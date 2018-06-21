@@ -142,6 +142,7 @@
                                     </ListBox.InputBindings>
                                     <ListBox.ContextMenu>
                                         <ContextMenu>
+                                            <MenuItem Header="Stage" Command="{Binding Path=StageSelectedCommand}" />
                                             <MenuItem Header="Stage partial" Command="{Binding Path=StageSelectedPartialCommand}" />
                                             <MenuItem Header="Diff" InputGestureText="Ctrl+D" Command="{Binding Path=ModifiedDiffCommand}" />
                                             <MenuItem Header="Revert" InputGestureText="Ctrl+R" Command="{Binding Path=RevertCommand}" />
@@ -168,7 +169,7 @@
                                         </DataTemplate>
                                     </ListBox.ItemTemplate>
                                 </ListBox>
-                                <Button x:Name="button" Content="Stage Selected" Command="{Binding Path=StageSelected}" HorizontalAlignment="Left" Margin="327,9,0,0" VerticalAlignment="Top" Width="181" Height="44"/>
+                                <Button x:Name="button" Content="Stage Selected" Command="{Binding Path=StageSelectedCommand}" HorizontalAlignment="Left" Margin="327,9,0,0" VerticalAlignment="Top" Width="181" Height="44"/>
                             </Grid>
                         </Grid>
                     </TabItem>

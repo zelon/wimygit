@@ -9,7 +9,7 @@ namespace WimyGit
 {
     partial class ViewModel
     {
-        public DelegateCommand StageSelected { get; private set; }
+        public DelegateCommand StageSelectedCommand { get; private set; }
         public DelegateCommand StageSelectedPartialCommand { get; private set; }
 
         public class FileStatus
@@ -26,7 +26,7 @@ namespace WimyGit
                 set
                 {
                     is_selected_ = value;
-                    view_model_.StageSelected.RaiseCanExecuteChanged();
+                    view_model_.StageSelectedCommand.RaiseCanExecuteChanged();
                     view_model_.StageSelectedPartialCommand.RaiseCanExecuteChanged();
                 }
             }
@@ -42,7 +42,7 @@ namespace WimyGit
 
         private void InitializePending()
         {
-            StageSelected = new DelegateCommand(OnStageSelected, CanStageSelected);
+            StageSelectedCommand = new DelegateCommand(OnStageSelected, CanStageSelected);
             StageSelectedPartialCommand = new DelegateCommand(OnStageSelectedPartial, CanStageSelectedPartial);
             ModifiedDiffCommand = new DelegateCommand(OnModifiedDiffCommand);
             StagedDiffCommand = new DelegateCommand(OnStagedDiffCommand);
