@@ -25,7 +25,14 @@ namespace WimyGit
                 string tab_title = path_list[path_list.Length - 1];
 
                 TabItem tab_item = new TabItem();
-                tab_item.Header = tab_title;
+                var tab_header = new UserControls.RepositoryTabHeader();
+                tab_header.Title.Content = tab_title;
+                tab_header.CloseButton.Click += (sender, e) =>
+                {
+                    System.Diagnostics.Debug.WriteLine("close tab");
+                    tab_control_.Items.Remove(tab_item);
+                };
+                tab_item.Header = tab_header;
                 tab_item.Content = new RepositoryTab(path);
 
                 tab_control_.Items.Insert(0, tab_item);
