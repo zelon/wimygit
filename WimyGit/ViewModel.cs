@@ -10,10 +10,13 @@ namespace WimyGit
     {
         public event PropertyChangedEventHandler PropertyChanged;
 
+        private RepositoryTab repository_tab_;
         private GitWrapper git_;
 
-        public ViewModel()
+        public ViewModel(string git_repository_path, RepositoryTab repository_tab)
         {
+            repository_tab_ = repository_tab;
+
             InitializeRepositoryList();
             InitializePending();
             InitializeHistory();
@@ -29,6 +32,7 @@ namespace WimyGit
             {
                 Directory = repository_list_.ElementAt(0);
             }
+            Directory = git_repository_path;
         }
 
         public void ViewTimeLapse()
@@ -84,7 +88,7 @@ namespace WimyGit
             }
             git_ = new GitWrapper(Directory, this);
 
-            Service.GetInstance().SetRootPath(Directory);
+            repository_tab_.SetRootPath(Directory);
 
             Refresh();
             UpdateRecentUsedDirectoryList(Directory);
@@ -109,7 +113,7 @@ namespace WimyGit
                     RefreshHistory(null);
                     RefreshBranch();
                     RefreshSignature();
-                    Service.GetInstance().RefreshDirectoryTree();
+                    repository_tab_.TreeView_Update(null, null);
                     AddLog(git_porcelain_result);
                     AddLog("Refreshed");
                 }));
@@ -170,7 +174,17 @@ namespace WimyGit
         public ICommand PullCommand { get; private set; }
         public ICommand PushCommand { get; private set; }
 
-        public string Directory { get; set; }
+        private string _Directory;
+        public string Directory {
+            get { return _Directory; }
+            set {
+                if (value.Contains("External"))
+                {
+                    System.Diagnostics.Debug.Assert(false);
+                    _Directory = value;
+                }
+                _Directory = value; }
+        }
         public string Log { get; set; }
         public string Branch { get; set; }
         public string DisplayAuthor { get; set; }

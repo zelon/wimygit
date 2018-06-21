@@ -10,7 +10,7 @@ using System.Xml;
 
 namespace WimyGit
 {
-    public partial class MainWindow
+    public partial class RepositoryTab
     {
         // https://code.msdn.microsoft.com/windowsdesktop/File-system-TreeView-72549a6f
         private string RootPath { get; set; }

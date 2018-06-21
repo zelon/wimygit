@@ -2,6 +2,7 @@
 
 namespace WimyGit {
   class Service {
+    public RecentRepository recent_repository_ = new RecentRepository();
     private static Service instance_ = null;
     private MainWindow window_ = null;
 
@@ -30,14 +31,6 @@ namespace WimyGit {
 
     public System.Windows.MessageBoxResult ConfirmMsg (string msg, string caption) {
       return System.Windows.MessageBox.Show(msg, caption, System.Windows.MessageBoxButton.OKCancel);
-    }
-
-    public void SetRootPath (string directory) {
-      window_.SetRootPath(directory);
-    }
-
-    public void RefreshDirectoryTree () {
-      window_.TreeView_Update(null, null);
     }
 
     public void RunCommandWithWaitingWindow (string command, Action action) {

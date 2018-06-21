@@ -5,8 +5,6 @@ namespace WimyGit
 {
     partial class ViewModel : INotifyPropertyChanged
     {
-        private RecentRepository recent_repository_;
-
         private ObservableCollection<string> repository_list_;
         public ObservableCollection<string> RepositoryList
         {
@@ -22,15 +20,13 @@ namespace WimyGit
 
         void InitializeRepositoryList()
         {
-            recent_repository_ = new RecentRepository();
-
             RefreshRepositoryList();
         }
 
         private void RefreshRepositoryList()
         {
             repository_list_ = new ObservableCollection<string>();
-            foreach(string directory_name in recent_repository_.GetList())
+            foreach(string directory_name in Service.GetInstance().recent_repository_.GetList())
             {
                 repository_list_.Add(directory_name);
             }
@@ -43,7 +39,7 @@ namespace WimyGit
 
         private void UpdateRecentUsedDirectoryList(string directory)
         {
-            recent_repository_.Used(directory);
+            Service.GetInstance().recent_repository_.Used(directory);
             RefreshRepositoryList();
         }
     }

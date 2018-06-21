@@ -1,9 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System.IO;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Media;
-using System.Windows.Controls.Primitives;
-
 
 namespace WimyGit
 {
@@ -16,7 +13,29 @@ namespace WimyGit
         {
             InitializeComponent();
 
-            this.DataContext = new ViewModel();
+            RestoreTabs();
+        }
+
+        private void RestoreTabs()
+        {
+            int count = 0;
+            foreach (var path in Service.GetInstance().recent_repository_.GetList())
+            {
+                var path_list = path.Split(Path.DirectorySeparatorChar);
+                string tab_title = path_list[path_list.Length - 1];
+
+                TabItem tab_item = new TabItem();
+                tab_item.Header = tab_title;
+                tab_item.Content = new RepositoryTab(path);
+
+                tab_control_.Items.Insert(0, tab_item);
+
+                ++count;
+                if (count == 3)
+                {
+                    break;
+                }
+            }
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
@@ -32,58 +51,6 @@ namespace WimyGit
             {
                 Service.GetInstance().ShowMsg(ex.Message);
                 System.Environment.Exit(1);
-            }
-
-            GetViewModel().ChangeDirectory();
-        }
-
-        private void TextBox_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            TextBox textbox = (TextBox)sender;
-            textbox.ScrollToEnd();
-        }
-
-        private ViewModel GetViewModel()
-        {
-            return (ViewModel)this.DataContext;
-        }
-
-        private void HistoryList_ScrollChanged(object sender, RoutedEventArgs e)
-        {
-            List<ScrollBar> scrollBarList = GetVisualChildCollection<ScrollBar>(sender);
-            foreach (ScrollBar scrollBar in scrollBarList)
-            {
-                if (scrollBar.Orientation == Orientation.Vertical)
-                {
-                    if (scrollBar.Maximum > 0 && scrollBar.Value == scrollBar.Maximum)
-                    {
-                        GetViewModel().MoreHistoryCommand.Execute(sender);
-                    }
-                }
-            }
-        }
-
-        // http://stackoverflow.com/questions/4139341/wpf-listbox-onscroll-event
-        public static List<T> GetVisualChildCollection<T>(object parent) where T : Visual
-        {
-            List<T> visualCollection = new List<T>();
-            GetVisualChildCollection(parent as DependencyObject, visualCollection);
-            return visualCollection;
-        }
-        private static void GetVisualChildCollection<T>(DependencyObject parent, List<T> visualCollection) where T : Visual
-        {
-            int count = VisualTreeHelper.GetChildrenCount(parent);
-            for (int i = 0; i < count; i++)
-            {
-                DependencyObject child = VisualTreeHelper.GetChild(parent, i);
-                if (child is T)
-                {
-                    visualCollection.Add(child as T);
-                }
-                else if (child != null)
-                {
-                    GetVisualChildCollection(child, visualCollection);
-                }
             }
         }
     }
