@@ -7,7 +7,15 @@
              mc:Ignorable="d" 
              d:DesignHeight="40" d:DesignWidth="150">
     <Grid>
-        <Label Content="TabItem" x:Name="Title" Height="150" />
-        <Button Content="X" x:Name="CloseButton" Width="20" Height="20" />
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="130" />
+            <ColumnDefinition Width="50" />
+        </Grid.ColumnDefinitions>
+        <Grid Grid.Column="0">
+            <Label Content="TabItem" x:Name="Title" Width="130" HorizontalAlignment="Left" VerticalAlignment="Center" />
+        </Grid>
+        <Grid Grid.Column="1">
+            <Button Content="X" x:Name="CloseButton" Width="20" Height="20" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+        </Grid>
     </Grid>
 </UserControl>
