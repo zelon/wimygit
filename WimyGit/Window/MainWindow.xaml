@@ -12,7 +12,7 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <Grid Grid.Row="0" Margin="0,0,0,0">
-            <TabControl x:Name="tab_control_"  HorizontalAlignment="Left" Height="800" Margin="0,0,0,0" VerticalAlignment="Top" Width="1016">
+            <TabControl x:Name="tab_control_"  HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="0,0,0,0">
                 <TabItem Focusable="False" Padding="2" HorizontalAlignment="Left" Width="62" Height="40" Margin="0" VerticalAlignment="Top">
                     <TabItem.Header>
                         <Button Click="OnAddNewTabButtonClick" Width="60" Height="45" Content="+" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold" FontSize="20" />
