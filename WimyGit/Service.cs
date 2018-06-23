@@ -22,7 +22,7 @@ namespace WimyGit {
     }
 
     public void ShowMsg (string msg) {
-      System.Windows.MessageBox.Show(window_, msg);
+      System.Windows.MessageBox.Show(window_, msg, "WimyGit");
     }
 
     public MainWindow GetWindow () {
