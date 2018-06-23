@@ -12,6 +12,11 @@
         </Grid.RowDefinitions>
         <Grid Grid.Row="0" Margin="0,0,0,0">
             <TabControl x:Name="tab_control_"  HorizontalAlignment="Left" Height="800" Margin="0,0,0,0" VerticalAlignment="Top" Width="1016">
+                <TabItem Focusable="False" HorizontalAlignment="Left" Width="62" Height="40" Margin="0" VerticalAlignment="Top">
+                    <TabItem.Header>
+                        <Button Click="OnAddNewTabButtonClick" Width="50" Height="35" Content="+" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </TabItem.Header>
+                </TabItem>
             </TabControl>
         </Grid>
     </Grid>

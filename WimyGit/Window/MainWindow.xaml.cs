@@ -29,7 +29,7 @@ namespace WimyGit
             tab_item.Content = new RepositoryTab(path);
             tab_item.Width = 200;
 
-            tab_control_.Items.Insert(tab_control_.Items.Count , tab_item);
+            tab_control_.Items.Insert(tab_control_.Items.Count - 1, tab_item);
 
             if (is_focused)
             {
@@ -46,37 +46,26 @@ namespace WimyGit
             }
         }
 
-        private void AddPlusTabButton()
+        private void OnAddNewTabButtonClick(object sender, RoutedEventArgs e)
         {
-            var button = new Button();
-            button.Width = 50;
-            button.Content = "+";
-            button.Click += (sender, e) => {
-                TabItem new_tab_item = new TabItem();
-                var tab_header = new UserControls.RepositoryTabHeader();
-                tab_header.Title.Content = "[[New Tab]]";
-                tab_header.CloseButton.Click += (new_sender, new_event) =>
-                {
-                    tab_control_.Items.Remove(new_tab_item);
-                };
-                new_tab_item.Header = tab_header;
-                new_tab_item.Content = new UserControls.NewTab((repo_path) => {
-                    new_tab_item.Content = new RepositoryTab(repo_path);
-                    tab_header.Path.Content = repo_path;
-                    tab_header.Title.Content = Util.GetRepositoryName(repo_path);
-                });
-                new_tab_item.Width = 200;
-
-                tab_control_.Items.Insert(tab_control_.Items.Count - 1, new_tab_item);
-
-                new_tab_item.Focus();
+            TabItem new_tab_item = new TabItem();
+            var tab_header = new UserControls.RepositoryTabHeader();
+            tab_header.Title.Content = "[[New Tab]]";
+            tab_header.CloseButton.Click += (new_sender, new_event) =>
+            {
+                tab_control_.Items.Remove(new_tab_item);
             };
+            new_tab_item.Header = tab_header;
+            new_tab_item.Content = new UserControls.NewTab((repo_path) => {
+                new_tab_item.Content = new RepositoryTab(repo_path);
+                tab_header.Path.Content = repo_path;
+                tab_header.Title.Content = Util.GetRepositoryName(repo_path);
+            });
+            new_tab_item.Width = 200;
 
-            TabItem tab_item = new TabItem();
-            tab_item.Header = button;
-            tab_item.Width = button.Width + 12;
-            tab_item.Focusable = false;
-            tab_control_.Items.Insert(tab_control_.Items.Count, tab_item);
+            tab_control_.Items.Insert(tab_control_.Items.Count - 1, new_tab_item);
+
+            new_tab_item.Focus();
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
@@ -84,7 +73,6 @@ namespace WimyGit
             Service.GetInstance().SetWindow(this);
             SetTitleToGitVersion();
             RestoreTabs();
-            AddPlusTabButton();
         }
 
         private void SetTitleToGitVersion()
