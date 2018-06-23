@@ -13,10 +13,15 @@
         </Grid.RowDefinitions>
         <Grid Grid.Row="0" Margin="0,0,0,0">
             <TabControl x:Name="tab_control_"  HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="0,0,0,0">
-                <TabItem Focusable="False" Padding="2" HorizontalAlignment="Left" Width="62" Height="40" Margin="0" VerticalAlignment="Top">
+                <TabItem Focusable="False" Padding="0" HorizontalAlignment="Center" Width="62" Height="40" Margin="3,3,3,3" VerticalAlignment="Center">
                     <TabItem.Header>
-                        <Button Click="OnAddNewTabButtonClick" Width="60" Height="45" Content="+" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold" FontSize="20" />
+                        <Button Click="OnAddNewTabButtonClick" Width="65" Height="45" Content="+" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold" FontSize="20" />
                     </TabItem.Header>
+                    <TabItem.Content>
+                        <Grid>
+                            <Button Click="OnAddNewTabButtonClick" Content="Add new tab" HorizontalAlignment="Center" Margin="78,64,0,0" VerticalAlignment="Center" Width="200" Height="50" FontWeight="Bold"/>
+                        </Grid>
+                    </TabItem.Content>
                 </TabItem>
             </TabControl>
         </Grid>
