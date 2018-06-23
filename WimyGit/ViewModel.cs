@@ -37,6 +37,11 @@ namespace WimyGit
 
         public void ViewTimeLapse()
         {
+            if (string.IsNullOrEmpty(SelectedPath))
+            {
+                Service.GetInstance().ShowMsg("Select a file first");
+                return;
+            }
             git_.ViewTimeLapse(SelectedPath);
         }
 
