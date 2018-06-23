@@ -179,17 +179,7 @@ namespace WimyGit
         public ICommand PullCommand { get; private set; }
         public ICommand PushCommand { get; private set; }
 
-        private string _Directory;
-        public string Directory {
-            get { return _Directory; }
-            set {
-                if (value.Contains("External"))
-                {
-                    System.Diagnostics.Debug.Assert(false);
-                    _Directory = value;
-                }
-                _Directory = value; }
-        }
+        public string Directory { get; set; }
         public string Log { get; set; }
         public string Branch { get; set; }
         public string DisplayAuthor { get; set; }
