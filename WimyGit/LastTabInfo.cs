@@ -47,27 +47,48 @@ namespace WimyGit
 
         public static void Save(System.Windows.Controls.ItemCollection tab_items)
         {
-            string filename = GetSaveFileName();
-            using (TextWriter writer = File.CreateText(filename))
+            // Collect tab infos
+            LinkedList<TabInfo> tab_infos = new LinkedList<TabInfo>();
+            bool has_focused = false;
+            foreach (TabItem tab_item in tab_items)
             {
-                foreach (TabItem tab_item in tab_items)
+                if (tab_item.Header is UserControls.RepositoryTabHeader == false)
                 {
-                    if (tab_item.Header is UserControls.RepositoryTabHeader == false)
-                    {
-                        continue;
-                    }
+                    continue;
+                }
+                var header = (UserControls.RepositoryTabHeader)tab_item.Header;
+                if (string.IsNullOrEmpty((string)(header.Path.Content)))
+                {
+                    continue;
+                }
+                TabInfo tab_info = new TabInfo();
+                tab_info.IsFocused = tab_item.IsSelected;
+                tab_info.Directory = (string)header.Path.Content;
+
+                if (tab_info.IsFocused)
+                {
+                    has_focused = true;
+                }
+
+                tab_infos.AddLast(tab_info);
+            }
+
+            if (has_focused == false)
+            {
+                tab_infos.Last.Value.IsFocused = true;
+            }
+
+            // Write to file
+            using (TextWriter writer = File.CreateText(GetSaveFileName()))
+            {
+                foreach (TabInfo tab_info in tab_infos)
+                {
                     string line = "";
-                    if (tab_item.IsSelected)
+                    if (tab_info.IsFocused)
                     {
                         line = "*";
                     }
-
-                    var header = (UserControls.RepositoryTabHeader)tab_item.Header;
-                    if (string.IsNullOrEmpty((string)(header.Path.Content)))
-                    {
-                        continue;
-                    }
-                    line += (string)header.Path.Content;
+                    line += tab_info.Directory;
 
                     writer.WriteLine(line);
                 }
