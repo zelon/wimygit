@@ -16,7 +16,7 @@
             <Label Content="TabItem" x:Name="Title" Width="130" HorizontalAlignment="Left" VerticalAlignment="Center" />
         </Grid>
         <Grid Grid.Column="1">
-            <Button Content="X" x:Name="CloseButton" Width="20" Height="20" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+            <Button Content="X" x:Name="CloseButton" Width="20" Height="20" HorizontalAlignment="Right" VerticalAlignment="Center" Background="{x:Null}" BorderBrush="{x:Null}"/>
         </Grid>
     </Grid>
 </UserControl>
