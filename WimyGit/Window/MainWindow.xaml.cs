@@ -58,7 +58,22 @@ namespace WimyGit
             button.Width = 50;
             button.Content = "+";
             button.Click += (sender, e) => {
-                AddTab("C:\\");
+                TabItem new_tab_item = new TabItem();
+                var tab_header = new UserControls.RepositoryTabHeader();
+                tab_header.Title.Content = "[[New]]";
+                tab_header.CloseButton.Click += (new_sender, new_event) =>
+                {
+                    tab_control_.Items.Remove(new_tab_item);
+                };
+                new_tab_item.Header = tab_header;
+                new_tab_item.Content = new UserControls.NewTab((repo_path) => {
+                    new_tab_item.Content = new RepositoryTab(repo_path);
+                });
+                new_tab_item.Width = 200;
+
+                tab_control_.Items.Insert(tab_control_.Items.Count - 1, new_tab_item);
+
+                new_tab_item.Focus();
             };
 
             TabItem tab_item = new TabItem();

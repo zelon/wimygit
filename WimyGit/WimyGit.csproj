@@ -75,6 +75,10 @@
     <Compile Include="ILogger.cs" />
     <Compile Include="ProgramPathFinder.cs" />
     <Compile Include="RecentRepository.cs" />
+    <Compile Include="UserControls\NewTabViewModel.cs" />
+    <Compile Include="UserControls\NewTab.xaml.cs">
+      <DependentUpon>NewTab.xaml</DependentUpon>
+    </Compile>
     <Compile Include="UserControls\RepositoryTab.xaml.cs">
       <DependentUpon>RepositoryTab.xaml</DependentUpon>
     </Compile>
@@ -94,6 +98,10 @@
       <DependentUpon>WaitingWindow.xaml</DependentUpon>
     </Compile>
     <Page Include="ConsoleProgressWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UserControls\NewTab.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
