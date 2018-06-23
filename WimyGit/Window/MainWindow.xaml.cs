@@ -12,15 +12,13 @@ namespace WimyGit
         public MainWindow()
         {
             InitializeComponent();
-
-            RestoreTabs();
-            AddPlusTabButton();
         }
 
-        private void AddTab(string path)
+        private void AddTab(string path, bool is_focused)
         {
             TabItem tab_item = new TabItem();
             var tab_header = new UserControls.RepositoryTabHeader();
+            tab_header.Path.Content = path;
             tab_header.Title.Content = Util.GetRepositoryName(path);
             tab_header.CloseButton.Click += (sender, e) =>
             {
@@ -31,21 +29,20 @@ namespace WimyGit
             tab_item.Content = new RepositoryTab(path);
             tab_item.Width = 200;
 
-            tab_control_.Items.Insert(0, tab_item);
+            tab_control_.Items.Insert(tab_control_.Items.Count , tab_item);
+
+            if (is_focused)
+            {
+                tab_item.Focus();
+            }
         }
 
         private void RestoreTabs()
         {
-            int count = 0;
-            foreach (var path in Service.GetInstance().recent_repository_.GetList())
+            var tab_infos = LastTabInfo.Load();
+            foreach (var tab_info in tab_infos)
             {
-                AddTab(path);
-
-                ++count;
-                if (count == 3)
-                {
-                    break;
-                }
+                AddTab(tab_info.Directory, tab_info.IsFocused);
             }
         }
 
@@ -65,6 +62,7 @@ namespace WimyGit
                 new_tab_item.Header = tab_header;
                 new_tab_item.Content = new UserControls.NewTab((repo_path) => {
                     new_tab_item.Content = new RepositoryTab(repo_path);
+                    tab_header.Path.Content = repo_path;
                     tab_header.Title.Content = Util.GetRepositoryName(repo_path);
                 });
                 new_tab_item.Width = 200;
@@ -84,6 +82,13 @@ namespace WimyGit
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             Service.GetInstance().SetWindow(this);
+            SetTitleToGitVersion();
+            RestoreTabs();
+            AddPlusTabButton();
+        }
+
+        private void SetTitleToGitVersion()
+        {
             try
             {
                 string output = ProgramPathFinder.ExecuteAndGetOutput(ProgramPathFinder.GetGitBin(),
@@ -95,6 +100,11 @@ namespace WimyGit
                 Service.GetInstance().ShowMsg(ex.Message);
                 System.Environment.Exit(1);
             }
+        }
+
+        private void Window_Closed(object sender, System.EventArgs e)
+        {
+            LastTabInfo.Save(tab_control_.Items);
         }
     }
 }
