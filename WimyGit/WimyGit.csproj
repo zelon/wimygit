@@ -78,7 +78,6 @@
     <Compile Include="UserControls\RepositoryTab.xaml.cs">
       <DependentUpon>RepositoryTab.xaml</DependentUpon>
     </Compile>
-    <Compile Include="RepositoryTabViewModel.cs" />
     <Compile Include="RunExternal.cs" />
     <Compile Include="SelectionRecover.cs" />
     <Compile Include="Service.cs" />
