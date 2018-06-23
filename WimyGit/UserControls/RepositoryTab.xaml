@@ -23,46 +23,46 @@
             <ToolBar HorizontalAlignment="Left" VerticalAlignment="Top" Height="65" Background="{x:Null}">
                 <Button Width="75" Command="{Binding RefreshCommand}">
                     <StackPanel Orientation="Vertical">
-                        <Image Source="Images\Refresh.png" Height="30"/>
+                        <Image Source="..\Images\Refresh.png" Height="30"/>
                         <TextBlock HorizontalAlignment="Center"><Run Text="Refresh"/></TextBlock>
                     </StackPanel>
                 </Button>
                 <Separator />
                 <Button Width="75" Command="{Binding ViewTimelapseCommand}">
                     <StackPanel Orientation="Vertical">
-                        <Image Source="Images\TimeLapse.png" Height="30"/>
+                        <Image Source="..\Images\TimeLapse.png" Height="30"/>
                         <TextBlock HorizontalAlignment="Center"><Run Text="TimeLapse"/></TextBlock>
                     </StackPanel>
                 </Button>
                 <Separator />
                 <Button Width="75" Command="{Binding FetchAllCommand}">
                     <StackPanel Orientation="Vertical">
-                        <Image Source="Images\FetchAll.png" Height="30"/>
+                        <Image Source="..\Images\FetchAll.png" Height="30"/>
                         <TextBlock HorizontalAlignment="Center"><Run Text="FetchAll"/></TextBlock>
                     </StackPanel>
                 </Button>
                 <Button Width="75" Command="{Binding PullCommand}">
                     <StackPanel Orientation="Vertical">
-                        <Image Source="Images\Pull.png" Height="30"/>
+                        <Image Source="..\Images\Pull.png" Height="30"/>
                         <TextBlock HorizontalAlignment="Center"><Run Text="Pull"/></TextBlock>
                     </StackPanel>
                 </Button>
                 <Button Width="75" Command="{Binding PushCommand}">
                     <StackPanel Orientation="Vertical">
-                        <Image Source="Images\Push.png" Height="30"/>
+                        <Image Source="..\Images\Push.png" Height="30"/>
                         <TextBlock HorizontalAlignment="Center"><Run Text="Push"/></TextBlock>
                     </StackPanel>
                 </Button>
                 <Separator />
                 <Button Width="75" Command="{Binding OpenExplorer}">
                     <StackPanel Orientation="Vertical">
-                        <Image Source="Images\OpenDirectory.png" Height="30"/>
+                        <Image Source="..\Images\OpenDirectory.png" Height="30"/>
                         <TextBlock HorizontalAlignment="Center"><Run Text="OpenFolder"/></TextBlock>
                     </StackPanel>
                 </Button>
                 <Button Width="75" Command="{Binding OpenGitBash}">
                     <StackPanel Orientation="Vertical">
-                        <Image Source="Images\Terminal.png" Height="30"/>
+                        <Image Source="..\Images\Terminal.png" Height="30"/>
                         <TextBlock HorizontalAlignment="Center"><Run Text="Terminal"/></TextBlock>
                     </StackPanel>
                 </Button>
