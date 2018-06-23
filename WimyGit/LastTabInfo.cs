@@ -63,6 +63,10 @@ namespace WimyGit
                     }
 
                     var header = (UserControls.RepositoryTabHeader)tab_item.Header;
+                    if (string.IsNullOrEmpty((string)(header.Path.Content)))
+                    {
+                        continue;
+                    }
                     line += (string)header.Path.Content;
 
                     writer.WriteLine(line);

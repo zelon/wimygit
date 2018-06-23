@@ -12,7 +12,7 @@
             <ColumnDefinition Width="50" />
         </Grid.ColumnDefinitions>
         <Grid Grid.Column="0">
-            <Label Content="TabItem" x:Name="Path" Width="0" HorizontalAlignment="Left" VerticalAlignment="Center" />
+            <Label x:Name="Path" Width="0" HorizontalAlignment="Left" VerticalAlignment="Center" />
             <Label Content="TabItem" x:Name="Title" Width="130" HorizontalAlignment="Left" VerticalAlignment="Center" />
         </Grid>
         <Grid Grid.Column="1">
