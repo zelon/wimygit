@@ -35,28 +35,22 @@ namespace WimyGit
         private void RestoreTabs()
         {
             var tab_infos = LastTabInfo.Load();
-            foreach (var tab_info in tab_infos)
+            if (tab_infos.Count == 0)
             {
-                AddTab(tab_info.Directory, tab_info.IsFocused);
+                AddNewTab();
+            }
+            else
+            {
+                foreach (var tab_info in tab_infos)
+                {
+                    AddTab(tab_info.Directory, tab_info.IsFocused);
+                }
             }
         }
 
         private void OnAddNewTabButtonClick(object sender, RoutedEventArgs e)
         {
-            TabItem new_tab_item = new TabItem();
-            var tab_header = new UserControls.RepositoryTabHeader(tab_control_);
-            tab_header.Title.Content = "[[New Tab]]";
-            new_tab_item.Header = tab_header;
-            new_tab_item.Content = new UserControls.NewTab((repo_path) => {
-                new_tab_item.Content = new RepositoryTab(repo_path);
-                tab_header.Path.Content = repo_path;
-                tab_header.Title.Content = Util.GetRepositoryName(repo_path);
-            });
-            new_tab_item.Width = 200;
-
-            tab_control_.Items.Insert(tab_control_.Items.Count - 1, new_tab_item);
-
-            new_tab_item.Focus();
+            AddNewTab();
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
@@ -84,6 +78,24 @@ namespace WimyGit
         private void Window_Closed(object sender, System.EventArgs e)
         {
             LastTabInfo.Save(tab_control_.Items);
+        }
+
+        private void AddNewTab()
+        {
+            TabItem new_tab_item = new TabItem();
+            var tab_header = new UserControls.RepositoryTabHeader(tab_control_);
+            tab_header.Title.Content = "[[New Tab]]";
+            new_tab_item.Header = tab_header;
+            new_tab_item.Content = new UserControls.NewTab((repo_path) => {
+                new_tab_item.Content = new RepositoryTab(repo_path);
+                tab_header.Path.Content = repo_path;
+                tab_header.Title.Content = Util.GetRepositoryName(repo_path);
+            });
+            new_tab_item.Width = 200;
+
+            tab_control_.Items.Insert(tab_control_.Items.Count - 1, new_tab_item);
+
+            new_tab_item.Focus();
         }
     }
 }
