@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Diagnostics;
+using System.IO;
 
 namespace WimyGit
 {
@@ -6,6 +7,8 @@ namespace WimyGit
     {
         public static string WrapFilePath(string filename)
         {
+            Debug.Assert(string.IsNullOrEmpty(filename) == false);
+
             if (filename.StartsWith("\""))
             {
                 return filename;
