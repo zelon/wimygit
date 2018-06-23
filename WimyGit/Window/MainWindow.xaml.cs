@@ -22,7 +22,6 @@ namespace WimyGit
             tab_header.Title.Content = Util.GetRepositoryName(path);
             tab_item.Header = tab_header;
             tab_item.Content = new RepositoryTab(path);
-            tab_item.Width = 200;
 
             tab_control_.Items.Insert(tab_control_.Items.Count - 1, tab_item);
 
@@ -91,7 +90,6 @@ namespace WimyGit
                 tab_header.Path.Content = repo_path;
                 tab_header.Title.Content = Util.GetRepositoryName(repo_path);
             });
-            new_tab_item.Width = 200;
 
             tab_control_.Items.Insert(tab_control_.Items.Count - 1, new_tab_item);
 
