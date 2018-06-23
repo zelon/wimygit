@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.IO;
 
 namespace WimyGit
 {
@@ -15,6 +11,12 @@ namespace WimyGit
                 return filename;
             }
             return string.Format("\"{0}\"", filename);
+        }
+
+        public static string GetRepositoryName(string repository_path)
+        {
+            var path_list = repository_path.Split(Path.DirectorySeparatorChar);
+            return path_list[path_list.Length - 1];
         }
     }
 }

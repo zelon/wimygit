@@ -19,12 +19,9 @@ namespace WimyGit
 
         private void AddTab(string path)
         {
-            var path_list = path.Split(Path.DirectorySeparatorChar);
-            string tab_title = path_list[path_list.Length - 1];
-
             TabItem tab_item = new TabItem();
             var tab_header = new UserControls.RepositoryTabHeader();
-            tab_header.Title.Content = tab_title;
+            tab_header.Title.Content = Util.GetRepositoryName(path);
             tab_header.CloseButton.Click += (sender, e) =>
             {
                 System.Diagnostics.Debug.WriteLine("close tab");
@@ -60,7 +57,7 @@ namespace WimyGit
             button.Click += (sender, e) => {
                 TabItem new_tab_item = new TabItem();
                 var tab_header = new UserControls.RepositoryTabHeader();
-                tab_header.Title.Content = "[[New]]";
+                tab_header.Title.Content = "[[New Tab]]";
                 tab_header.CloseButton.Click += (new_sender, new_event) =>
                 {
                     tab_control_.Items.Remove(new_tab_item);
@@ -68,6 +65,7 @@ namespace WimyGit
                 new_tab_item.Header = tab_header;
                 new_tab_item.Content = new UserControls.NewTab((repo_path) => {
                     new_tab_item.Content = new RepositoryTab(repo_path);
+                    tab_header.Title.Content = Util.GetRepositoryName(repo_path);
                 });
                 new_tab_item.Width = 200;
 
