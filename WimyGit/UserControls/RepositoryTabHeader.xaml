@@ -6,7 +6,7 @@
              xmlns:local="clr-namespace:WimyGit.UserControls"
              mc:Ignorable="d" 
              d:DesignHeight="40" d:DesignWidth="150">
-    <Grid>
+    <Grid MouseUp="Grid_MouseUp">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="130" />
             <ColumnDefinition Width="50" />
@@ -16,7 +16,7 @@
             <Label Content="TabItem" x:Name="Title" Width="130" HorizontalAlignment="Left" VerticalAlignment="Center" />
         </Grid>
         <Grid Grid.Column="1">
-            <Button Content="X" x:Name="CloseButton" Width="25" Height="25" HorizontalAlignment="Right" VerticalAlignment="Center">
+            <Button Content="X" Click="CloseButton_Click" x:Name="CloseButton" Width="25" Height="25" HorizontalAlignment="Right" VerticalAlignment="Center">
                 <Button.Background>
                     <SolidColorBrush Opacity="0"/>
                 </Button.Background>

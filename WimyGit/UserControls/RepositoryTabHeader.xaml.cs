@@ -1,28 +1,43 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace WimyGit.UserControls
 {
-    /// <summary>
-    /// Interaction logic for RepositoryTabHeader.xaml
-    /// </summary>
     public partial class RepositoryTabHeader : UserControl
     {
-        public RepositoryTabHeader()
+        private TabControl tab_control_;
+
+        public RepositoryTabHeader(System.Windows.Controls.TabControl tab_control)
         {
+            tab_control_ = tab_control;
+
             InitializeComponent();
+        }
+
+        private void CloseButton_Click(object sender, RoutedEventArgs e)
+        {
+            CloseThisTab();
+        }
+
+        private void Grid_MouseUp(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ChangedButton == MouseButton.Middle)
+            {
+                CloseThisTab();
+            }
+        }
+
+        private void CloseThisTab()
+        {
+            foreach (TabItem tab_item in tab_control_.Items)
+            {
+                if (tab_item.Header == this)
+                {
+                    tab_control_.Items.Remove(tab_item);
+                    return;
+                }
+            }
         }
     }
 }
