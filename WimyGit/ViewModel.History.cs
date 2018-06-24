@@ -136,10 +136,11 @@ namespace WimyGit
             AddHistoryFrom(selected_path, /*skip_count=*/0);
         }
 
-        void AddHistoryFrom(string selected_path, Int32 skip_count)
+        async void AddHistoryFrom(string selected_path, Int32 skip_count)
         {
-            var commits = git_.GetHistory(selected_path, skip_count, /*max_count=*/20);
-
+            var waiter = git_.GetHistory(selected_path, skip_count, /*max_count=*/20);
+            var commits = await waiter;
+            
             foreach (var commit in commits)
             {
                 HistoryStatus status = new HistoryStatus();

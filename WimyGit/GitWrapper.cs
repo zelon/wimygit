@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace WimyGit
 {
@@ -189,11 +190,12 @@ namespace WimyGit
             return output;
         }
 
-        public List<CommitInfo> GetHistory(string selected_path, Int32 skip_count, Int32 max_count)
+        public async Task<List<CommitInfo>> GetHistory(string selected_path, Int32 skip_count, Int32 max_count)
         {
             string cmd = string.Format("log --all --encoding=UTF-8 --skip={0} --max-count={1} --graph --format=\"`%ai`%H`%an`%d`%s\" -- {2}", skip_count, max_count, selected_path);
             logger_.AddLog(cmd);
-            return Parse(CreateGitRunner().Run(cmd));
+            List<string> result = await CreateGitRunner().RunAsync(cmd);
+            return Parse(result);
         }
 
         public string GetCurrentBranchName()

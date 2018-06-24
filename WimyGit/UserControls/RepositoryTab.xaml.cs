@@ -60,6 +60,7 @@ namespace WimyGit
                     if (scrollBar.Maximum > 0 && scrollBar.Value == scrollBar.Maximum)
                     {
                         GetViewModel().MoreHistoryCommand.Execute(sender);
+                        return;
                     }
                 }
             }

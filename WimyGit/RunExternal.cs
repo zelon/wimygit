@@ -1,6 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
+using System.Threading.Tasks;
 
 namespace WimyGit
 {
@@ -66,6 +66,29 @@ namespace WimyGit
             process.BeginOutputReadLine();
             process.WaitForExit();
 
+            return output.GetResult();
+        }
+
+        public async Task<List<string>> RunAsync(string arguments)
+        {
+            Process process = new Process();
+            process.StartInfo.FileName = execute_filename_;
+            process.StartInfo.Arguments = arguments;
+            process.StartInfo.UseShellExecute = false;
+            process.StartInfo.RedirectStandardOutput = true;
+            process.StartInfo.StandardOutputEncoding = System.Text.Encoding.UTF8;
+            process.StartInfo.CreateNoWindow = true;
+            process.StartInfo.WorkingDirectory = working_directory_;
+
+            StringArrayOutput output = new StringArrayOutput();
+            process.OutputDataReceived += (object sender, DataReceivedEventArgs e) => {
+                output.OnOutput(e.Data);
+            };
+            process.EnableRaisingEvents = true;
+
+            process.Start();
+            process.BeginOutputReadLine();
+            await Task.Run(() => process.WaitForExit());
             return output.GetResult();
         }
 
