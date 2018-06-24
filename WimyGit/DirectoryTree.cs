@@ -16,7 +16,7 @@ namespace WimyGit
         private string RootPath { get; set; }
         private string SelectedPath { get; set; }
 
-        public void SetRootPath(string directory)
+        private void SetTreeViewRootPath(string directory)
         {
             RootPath = directory;
             treeView.Items.Clear();

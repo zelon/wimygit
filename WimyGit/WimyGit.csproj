@@ -94,7 +94,6 @@
     <Compile Include="ViewModel.History.cs" />
     <Compile Include="ViewModel.OpenCommand.cs" />
     <Compile Include="ViewModel.Pending.cs" />
-    <Compile Include="ViewModel.RepositoryList.cs" />
     <Compile Include="Window\WaitingWindow.xaml.cs">
       <DependentUpon>WaitingWindow.xaml</DependentUpon>
     </Compile>

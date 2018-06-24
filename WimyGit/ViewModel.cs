@@ -1,7 +1,7 @@
 ﻿using System;
-using System.Linq;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Windows.Input;
 
 namespace WimyGit
@@ -15,24 +15,21 @@ namespace WimyGit
 
         public ViewModel(string git_repository_path, RepositoryTab repository_tab)
         {
+            Debug.Assert(Util.CheckDirectory(git_repository_path) == Util.DirectoryCheckResult.kSuccess);
+
+            Directory = git_repository_path;
+
+            git_ = new GitWrapper(Directory, this);
             repository_tab_ = repository_tab;
 
-            InitializeRepositoryList();
             InitializePending();
             InitializeHistory();
 
-            ChangeDirectoryCommand = new DelegateCommand((object parameter) => ChangeDirectory());
             PushCommand = new DelegateCommand((object parameter) => Push());
             RefreshCommand = new DelegateCommand((object parameter) => Refresh());
             ViewTimelapseCommand = new DelegateCommand((object parameter) => ViewTimeLapse());
             FetchAllCommand = new DelegateCommand((object parameter) => FetchAll());
             PullCommand = new DelegateCommand(Pull);
-
-            if (repository_list_.Count > 0)
-            {
-                Directory = repository_list_.ElementAt(0);
-            }
-            Directory = git_repository_path;
         }
 
         public void ViewTimeLapse()
@@ -71,38 +68,12 @@ namespace WimyGit
             DoWithProgressWindow("push");
         }
 
-        public void ChangeDirectory()
-        {
-            if (String.IsNullOrEmpty(Directory))
-            {
-                string msg = "Directory is empty";
-                Service.GetInstance().ShowMsg(msg);
-                return;
-            }
-            if (System.IO.Directory.Exists(Directory) == false)
-            {
-                string msg = "Directory does not exist";
-                Service.GetInstance().ShowMsg(msg);
-                return;
-            }
-            if (LibGit2Sharp.Repository.IsValid(Directory) == false)
-            {
-                string msg = "Directory is not a valid git directory";
-                Service.GetInstance().ShowMsg(msg);
-                return;
-            }
-            git_ = new GitWrapper(Directory, this);
-
-            repository_tab_.SetRootPath(Directory);
-
-            Refresh();
-            UpdateRecentUsedDirectoryList(Directory);
-        }
-
         public void Refresh()
         {
-            if (git_ == null)
+            if (Util.CheckDirectory(Directory) != Util.DirectoryCheckResult.kSuccess)
             {
+                Service.GetInstance().ShowMsg("{0} is invalid git repository");
+                git_ = null;
                 return;
             }
             AddLog("Refreshing Directory:" + Directory);
@@ -172,7 +143,6 @@ namespace WimyGit
                 PropertyChanged(this, new PropertyChangedEventArgs(name));
             }
         }
-        public ICommand ChangeDirectoryCommand { get; private set; }
         public ICommand RefreshCommand { get; private set; }
         public ICommand ViewTimelapseCommand { get; private set; }
         public ICommand FetchAllCommand { get; private set; }

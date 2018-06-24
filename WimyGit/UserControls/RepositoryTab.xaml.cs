@@ -21,8 +21,12 @@ namespace WimyGit
     /// </summary>
     public partial class RepositoryTab : UserControl
     {
+        private string git_repository_path_;
+
         public RepositoryTab(string git_repository_path)
         {
+            git_repository_path_ = git_repository_path;
+
             InitializeComponent();
 
             DataContext = new ViewModel(git_repository_path, this);
@@ -30,7 +34,9 @@ namespace WimyGit
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            GetViewModel().ChangeDirectory();
+            GetViewModel().Refresh();
+
+            SetTreeViewRootPath(git_repository_path_);
         }
 
         private void TextBox_TextChanged(object sender, TextChangedEventArgs e)

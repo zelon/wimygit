@@ -9,12 +9,12 @@
              Loaded="Window_Loaded">
     <UserControl.InputBindings>
         <KeyBinding Modifiers="Ctrl" Key="Return" Command="{Binding CommitCommand}" />
-        <KeyBinding Key="F5" Command="{Binding ChangeDirectoryCommand}" />
+        <KeyBinding Key="F5" Command="{Binding RefreshCommand}" />
     </UserControl.InputBindings>
     <Grid Margin="0,0,0,0">
         <Grid.RowDefinitions>
             <RowDefinition Height="65" />
-            <RowDefinition Height="65" />
+            <RowDefinition Height="30" />
             <RowDefinition Height="*" />
             <RowDefinition Height="15" />
             <RowDefinition Height="100" />
@@ -69,10 +69,8 @@
             </ToolBar>
         </Grid>
         <Grid Grid.Row="1">
-            <ComboBox x:Name="comboBox" Margin="10,10,115,0" VerticalAlignment="Top" IsEditable="True" Text="{Binding Directory}" ItemsSource="{Binding RepositoryList}" />
-            <Button Content="Change Directory" HorizontalAlignment="Right" Margin="0,10,10,0" VerticalAlignment="Top" Width="100" Command="{Binding ChangeDirectoryCommand}" Height="22" />
-            <Label x:Name="label" Content="Current Branch:" HorizontalAlignment="Left" Margin="10,37,0,0" VerticalAlignment="Top"/>
-            <Label x:Name="label1" Content="{Binding Branch}" HorizontalAlignment="Left" Margin="109,37,0,0" VerticalAlignment="Top" Width="236"/>
+            <Label x:Name="label" Content="Current Branch:" HorizontalAlignment="Left" Margin="10,0,0,0" VerticalAlignment="Top"/>
+            <Label x:Name="label1" Content="{Binding Branch}" HorizontalAlignment="Left" Margin="109,0,0,0" VerticalAlignment="Top" Width="236"/>
         </Grid>
         <Grid Grid.Row="2" Margin="0,0,0,0">
             <Grid.ColumnDefinitions>
@@ -112,7 +110,7 @@
                                         <ContextMenu>
                                             <MenuItem Header="Diff" InputGestureText="Ctrl+D" Command="{Binding StagedDiffCommand}" />
                                             <MenuItem Header="Unstage" InputGestureText="Ctrl+R" Command="{Binding UnstageCommand}" />
-                                            <MenuItem Header="Refresh" InputGestureText="F5" Command="{Binding ChangeDirectoryCommand}" />
+                                            <MenuItem Header="Refresh" InputGestureText="F5" Command="{Binding RefreshCommand}" />
                                         </ContextMenu>
                                     </ListBox.ContextMenu>
                                     <ListBox.ItemContainerStyle>
@@ -150,7 +148,7 @@
                                             <MenuItem Header="Stage partial" Command="{Binding StageSelectedPartialCommand}" />
                                             <MenuItem Header="Diff" InputGestureText="Ctrl+D" Command="{Binding ModifiedDiffCommand}" />
                                             <MenuItem Header="Revert" InputGestureText="Ctrl+R" Command="{Binding RevertCommand}" />
-                                            <MenuItem Header="Refresh" InputGestureText="F5" Command="{Binding ChangeDirectoryCommand}" />
+                                            <MenuItem Header="Refresh" InputGestureText="F5" Command="{Binding RefreshCommand}" />
                                             <MenuItem Header="Open Explorer" InputGestureText="Ctrl+Shift+S" Command="{Binding OpenExplorerSelectedFileCommand}" />
                                             <MenuItem Header="Open" InputGestureText="Return" Command="{Binding OpenSelectedFileCommand}" />
                                         </ContextMenu>
