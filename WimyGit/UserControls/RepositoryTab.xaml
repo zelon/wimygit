@@ -69,8 +69,8 @@
             </ToolBar>
         </Grid>
         <Grid Grid.Row="1">
-            <Label x:Name="label" Content="Current Branch:" HorizontalAlignment="Left" Margin="10,0,0,0" VerticalAlignment="Top"/>
-            <Label x:Name="label1" Content="{Binding Branch}" HorizontalAlignment="Left" Margin="109,0,0,0" VerticalAlignment="Top" Width="236"/>
+            <TextBlock Text="Current Branch:" HorizontalAlignment="Left" Margin="10,0,0,0" VerticalAlignment="Center" Height="18"/>
+            <TextBlock Text="{Binding Branch}" HorizontalAlignment="Left" Margin="109,0,0,0" VerticalAlignment="Center" Width="236" Height="18"/>
         </Grid>
         <Grid Grid.Row="2" Margin="0,0,0,0">
             <Grid.ColumnDefinitions>
