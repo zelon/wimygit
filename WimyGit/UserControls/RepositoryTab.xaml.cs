@@ -24,6 +24,8 @@ namespace WimyGit
             GetViewModel().Refresh();
 
             SetTreeViewRootPath(git_repository_path_);
+
+            tabControl.Focus();
         }
 
         private void TextBox_TextChanged(object sender, TextChangedEventArgs e)
