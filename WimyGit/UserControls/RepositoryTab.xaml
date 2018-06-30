@@ -96,7 +96,7 @@
                             <Grid Grid.Row="0">
                                 <Label x:Name="label2" Content="{Binding DisplayAuthor}" HorizontalAlignment="Left" Margin="10,0,0,0" VerticalAlignment="Top" Width="683"/>
                                 <TextBox x:Name="textBox" AcceptsReturn="True" Text="{Binding CommitMessage}" Margin="10,30,102,10" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"/>
-                                <Button x:Name="button1" Content="Commit" Command="{Binding CommitCommand}" HorizontalAlignment="Right" Margin="0,30,10,10" Width="87"/>
+                                <Button Content="Commit" Command="{Binding CommitCommand}" HorizontalAlignment="Right" Margin="0,30,10,10" Width="87"/>
                             </Grid>
                             <GridSplitter Grid.Row="1" Height="10" HorizontalAlignment="Stretch" VerticalAlignment="Center" />
                             <Grid Grid.Row="2">
@@ -171,7 +171,7 @@
                                         </DataTemplate>
                                     </ListBox.ItemTemplate>
                                 </ListBox>
-                                <Button x:Name="button" Content="Stage Selected" Command="{Binding StageSelectedCommand}" HorizontalAlignment="Left" Margin="327,9,0,0" VerticalAlignment="Top" Width="181" Height="44"/>
+                                <Button Content="Stage Selected" Command="{Binding StageSelectedCommand}" HorizontalAlignment="Left" Margin="327,9,0,0" VerticalAlignment="Top" Width="181" Height="44"/>
                             </Grid>
                         </Grid>
                     </TabItem>
