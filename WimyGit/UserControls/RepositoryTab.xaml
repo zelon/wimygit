@@ -135,7 +135,7 @@
                             <GridSplitter Grid.Row="3" Height="10" HorizontalAlignment="Stretch" VerticalAlignment="Center" />
                             <Grid Grid.Row="4">
                                 <Label Content="Unstaged files" HorizontalAlignment="Left" Margin="10,27,0,0" VerticalAlignment="Top"/>
-                                <ListBox Margin="10,58,10,10" ItemsSource="{Binding ModifiedList}" SelectionMode="Extended">
+                                <ListBox Margin="10,58,10,10" ItemsSource="{Binding ModifiedList}" SelectionMode="Extended" VirtualizingStackPanel.IsVirtualizing="False">
                                     <ListBox.InputBindings>
                                         <KeyBinding Modifiers="Ctrl" Key="D" Command="{Binding ModifiedDiffCommand}" />
                                         <KeyBinding Modifiers="Ctrl" Key="R" Command="{Binding RevertCommand}" />
