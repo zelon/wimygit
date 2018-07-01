@@ -74,9 +74,9 @@
     <Compile Include="GitPorcelainParser.cs" />
     <Compile Include="GitWrapper.cs" />
     <Compile Include="ILogger.cs" />
-    <Compile Include="LastTabInfo.cs" />
+    <Compile Include="Config\LastTabInfo.cs" />
     <Compile Include="ProgramPathFinder.cs" />
-    <Compile Include="RecentRepository.cs" />
+    <Compile Include="Config\RecentRepository.cs" />
     <Compile Include="UserControls\NewTabViewModel.cs" />
     <Compile Include="UserControls\NewTab.xaml.cs">
       <DependentUpon>NewTab.xaml</DependentUpon>

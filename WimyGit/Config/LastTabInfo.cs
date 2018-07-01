@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.IO;
 using System.Windows.Controls;
 
-namespace WimyGit
+namespace WimyGit.Config
 {
     class LastTabInfo
     {
         public class TabInfo
         {
-            public string Directory {  get; set; }
+            public string Directory { get; set; }
             public bool IsFocused { get; set; }
         }
 

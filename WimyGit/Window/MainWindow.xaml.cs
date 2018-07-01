@@ -33,7 +33,7 @@ namespace WimyGit
 
         private void RestoreTabs()
         {
-            var tab_infos = LastTabInfo.Load();
+            var tab_infos = Config.LastTabInfo.Load();
             if (tab_infos.Count == 0)
             {
                 AddNewTab();
@@ -76,7 +76,7 @@ namespace WimyGit
 
         private void Window_Closed(object sender, System.EventArgs e)
         {
-            LastTabInfo.Save(tab_control_.Items);
+            Config.LastTabInfo.Save(tab_control_.Items);
         }
 
         private void AddNewTab()
