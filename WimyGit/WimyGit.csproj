@@ -65,6 +65,8 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Config\ConfigFileController.cs" />
+    <Compile Include="Config\Model.cs" />
     <Compile Include="ConsoleProgressWindow.xaml.cs">
       <DependentUpon>ConsoleProgressWindow.xaml</DependentUpon>
     </Compile>
@@ -74,9 +76,7 @@
     <Compile Include="GitPorcelainParser.cs" />
     <Compile Include="GitWrapper.cs" />
     <Compile Include="ILogger.cs" />
-    <Compile Include="Config\LastTabInfo.cs" />
     <Compile Include="ProgramPathFinder.cs" />
-    <Compile Include="Config\RecentRepository.cs" />
     <Compile Include="UserControls\NewTabViewModel.cs" />
     <Compile Include="UserControls\NewTab.xaml.cs">
       <DependentUpon>NewTab.xaml</DependentUpon>

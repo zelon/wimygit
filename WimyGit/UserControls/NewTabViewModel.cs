@@ -26,7 +26,7 @@ namespace WimyGit.UserControls
 
             RepositoryList = new ObservableCollection<string>();
 
-            foreach (string directory_name in Service.GetInstance().recent_repository_.GetList())
+            foreach (string directory_name in Service.GetInstance().ConfigModel.RecentRepositoryPaths)
             {
                 RepositoryList.Add(directory_name);
             }

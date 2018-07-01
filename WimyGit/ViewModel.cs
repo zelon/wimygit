@@ -68,13 +68,13 @@ namespace WimyGit
             DoWithProgressWindow("push");
         }
 
-        public void Refresh()
+        public bool Refresh()
         {
             if (Util.CheckDirectory(Directory) != Util.DirectoryCheckResult.kSuccess)
             {
                 Service.GetInstance().ShowMsg("{0} is invalid git repository");
                 git_ = null;
-                return;
+                return false;
             }
             AddLog("Refreshing Directory:" + Directory);
 
@@ -94,6 +94,8 @@ namespace WimyGit
                     AddLog("Refreshed");
                 }));
             });
+
+            return true;
         }
 
         private void RefreshSignature()

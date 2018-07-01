@@ -4,7 +4,7 @@ namespace WimyGit
 {
     class Service
     {
-        public Config.RecentRepository recent_repository_ = new Config.RecentRepository();
+        public Config.Model ConfigModel { get; }
         private static Service instance_ = null;
         private MainWindow window_ = null;
 
@@ -19,7 +19,7 @@ namespace WimyGit
 
         private Service()
         {
-
+            ConfigModel = Config.ConfigFileController.Load();
         }
 
         public void SetWindow(MainWindow window)

@@ -32,7 +32,8 @@ namespace WimyGit.UserControls
             {
                 return;
             }
-            new_tab_result_(paths[0]);
+            string repository_path = paths[0];
+            new_tab_result_(repository_path);
         }
     }
 }
