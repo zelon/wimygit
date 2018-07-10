@@ -79,5 +79,10 @@ namespace WimyGit
                 }
             }
         }
+
+        public void SelectAllUnstagedFilesListBox()
+        {
+            unstagedFileListBox.SelectAll();
+        }
     }
 }

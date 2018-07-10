@@ -18,7 +18,7 @@ namespace WimyGit
         public ICommand RevertCommand { get; private set; }
         public ICommand OpenExplorerSelectedFileCommand { get; private set; }
         public ICommand OpenSelectedFileCommand { get; private set; }
-
+        public ICommand SelectAllCommand { get; private set; }
         private string commit_message_;
 
         public System.Collections.ObjectModel.ObservableCollection<FileStatus> ModifiedList { get; set; }
@@ -26,6 +26,7 @@ namespace WimyGit
 
         private void InitializePending()
         {
+            SelectAllCommand = new DelegateCommand(OnSelectAllCommand);
             StageSelectedCommand = new DelegateCommand(OnStageSelected, CanStageSelected);
             StageSelectedPartialCommand = new DelegateCommand(OnStageSelectedPartial, CanStageSelectedPartial);
             ModifiedDiffCommand = new DelegateCommand(OnModifiedDiffCommand);
@@ -96,6 +97,16 @@ namespace WimyGit
                 }
             }
             return null;
+        }
+
+        public void OnSelectAllCommand(object parameter)
+        {
+            foreach (var f in ModifiedList)
+            {
+                f.IsSelected = true;
+            }
+            NotifyPropertyChanged("ModifiedList");
+            repository_tab_.SelectAllUnstagedFilesListBox();
         }
 
         public void OnModifiedDiffCommand(object parameter)
