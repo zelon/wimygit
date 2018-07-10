@@ -26,7 +26,14 @@ namespace WimyGit
             {
                 if (filelist.IsSelected)
                 {
-                    git_.DiffHistorySelected(HistoryDetailCommitId, filelist.FileName);
+                    if (string.IsNullOrEmpty(filelist.FileName2))
+                    {
+                        git_.DiffHistorySelected(HistoryDetailCommitId, filelist.FileName);
+                    }
+                    else
+                    {
+                        git_.DiffHistorySelectedWithRenameTracking(HistoryDetailCommitId, filelist.FileName, filelist.FileName2);
+                    }
                 }
             }
         }
@@ -70,7 +77,9 @@ namespace WimyGit
         public class HistoryFile
         {
             public string Status { get; set; }
+            public string Display { get; set; }
             public string FileName { get; set; }
+            public string FileName2 { get; set; }
             public string Directory { get; set; }
             public bool IsSelected { get; set; }
         }
@@ -103,6 +112,12 @@ namespace WimyGit
                     file.Directory = file_info.FileName;
                     file.Status = file_info.Status;
                     file.FileName = file_info.FileName;
+                    file.FileName2 = file_info.FileName2;
+                    file.Display = file.FileName;
+                    if (string.IsNullOrEmpty(file.FileName2) == false)
+                    {
+                        file.Display += " -> " + file.FileName2;
+                    }
                     file.IsSelected = false;
                     HistoryFileList.Add(file);
                 }

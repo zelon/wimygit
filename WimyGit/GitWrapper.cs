@@ -21,6 +21,7 @@ namespace WimyGit
     {
         public string Status { get; set; }
         public string FileName { get; set; }
+        public string FileName2 { get; set; }
     }
 
     // https://github.com/libgit2/libgit2sharp/wiki/LibGit2Sharp-Hitchhiker's-Guide-to-Git
@@ -50,6 +51,13 @@ namespace WimyGit
             CreateGitRunner().RunWithoutWaiting(cmd);
         }
 
+        public void DiffHistorySelectedWithRenameTracking(string commit_id, string fileName, string fileName2)
+        {
+            string cmd = String.Format("difftool --no-prompt {0}^! -M -- {1} {2}", commit_id, Util.WrapFilePath(fileName), Util.WrapFilePath(fileName2));
+            logger_.AddLog(cmd);
+            CreateGitRunner().RunWithoutWaiting(cmd);
+        }
+
         public void ViewTimeLapse(string selectedPath)
         {
             string cmd = String.Format("gui blame {0}", Util.WrapFilePath(selectedPath));
@@ -66,11 +74,23 @@ namespace WimyGit
             var output = new List<FileListInfoOfCommit>();
             foreach (string line in raw_outputs)
             {
-                var splitted = line.Split('\t');
-                System.Diagnostics.Debug.Assert(splitted.Length == 2);
                 var converted = new FileListInfoOfCommit();
-                converted.Status = splitted[0];
-                converted.FileName = splitted[1];
+                var splitted = line.Split('\t');
+                if (splitted.Length == 2)
+                {
+                    converted.Status = splitted[0];
+                    converted.FileName = splitted[1];
+                }
+                else if (splitted.Length == 3 && splitted[0].StartsWith("R"))
+                {
+                    converted.Status = "Rename";
+                    converted.FileName = splitted[1];
+                    converted.FileName2 = splitted[2];
+                }
+                else
+                {
+                    System.Diagnostics.Debug.Assert(false, "Cannot parse diff output correctly");
+                }
                 output.Add(converted);
             }
             return output;
