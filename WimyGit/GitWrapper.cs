@@ -44,6 +44,12 @@ namespace WimyGit
             return CreateGitRunner().Run(cmd);
         }
 
+        public async Task<List<string>> GetGitStatusPorcelainAllAsync()
+        {
+            string cmd = string.Format("status --porcelain --untracked-files=all");
+            return await CreateGitRunner().RunAsync(cmd);
+        }
+
         public void DiffHistorySelected(string commit_id, string fileName)
         {
             string cmd = String.Format("difftool --no-prompt {0}^! -- {1}", commit_id, Util.WrapFilePath(fileName));

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Threading.Tasks;
 using System.Windows.Input;
 
 namespace WimyGit
@@ -68,7 +69,7 @@ namespace WimyGit
             DoWithProgressWindow("push");
         }
 
-        public bool Refresh()
+        public async Task<bool> Refresh()
         {
             if (Util.CheckDirectory(Directory) != Util.DirectoryCheckResult.kSuccess)
             {
@@ -78,23 +79,18 @@ namespace WimyGit
             }
             AddLog("Refreshing Directory:" + Directory);
 
-            Service.GetInstance().RunCommandWithWaitingWindow("Refreshing...", () =>
-            {
-                // GetGitStatusPorcelainAll() call spend most time
-                List<string> git_porcelain_result = git_.GetGitStatusPorcelainAll();
-                // invoke for UI update after long time operation
-                Service.GetInstance().GetWindow().Dispatcher.BeginInvoke(new Action(() =>
-                {
-                    RefreshPending(git_porcelain_result);
-                    RefreshHistory(null);
-                    RefreshBranch();
-                    RefreshSignature();
-                    repository_tab_.TreeView_Update(null, null);
-                    AddLog(git_porcelain_result);
-                    AddLog("Refreshed");
-                }));
-            });
+            repository_tab_.LoadingScreen.Visibility = System.Windows.Visibility.Visible;
 
+            List<string> git_porcelain_result = await git_.GetGitStatusPorcelainAllAsync();
+            RefreshPending(git_porcelain_result);
+            RefreshHistory(null);
+            RefreshBranch();
+            RefreshSignature();
+            repository_tab_.TreeView_Update(null, null);
+            AddLog(git_porcelain_result);
+            AddLog("Refreshed");
+
+            repository_tab_.LoadingScreen.Visibility = System.Windows.Visibility.Hidden;
             return true;
         }
 

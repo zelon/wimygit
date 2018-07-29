@@ -269,6 +269,7 @@
                 <ColumnDefinition/>
             </Grid.ColumnDefinitions>
             <TextBox Height="Auto" TextWrapping="Wrap" Text="{Binding Log}" VerticalAlignment="Stretch" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="1" VerticalScrollBarVisibility="Auto" IsReadOnlyCaretVisible="True" AllowDrop="False" TextChanged="TextBox_TextChanged" Margin="0,0,0,0"/>
+            <Rectangle x:Name="LoadingScreen" Fill="#7F5858A4" HorizontalAlignment="Left" Height="6000" Margin="-2000,-2000,0,-237" Stroke="Black" VerticalAlignment="Top" Width="6000" />
         </Grid>
     </Grid>
 </UserControl>

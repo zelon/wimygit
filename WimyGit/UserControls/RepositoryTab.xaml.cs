@@ -21,12 +21,12 @@ namespace WimyGit
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            if (GetViewModel().Refresh())
-            {
+            var task = GetViewModel().Refresh();
+            task.GetAwaiter().OnCompleted(() => {
                 Service.GetInstance().ConfigModel.AddRecentRepository(git_repository_path_);
                 SetTreeViewRootPath(git_repository_path_);
-            }
-            tabControl.Focus();
+                tabControl.Focus();
+            });
         }
 
         private void TextBox_TextChanged(object sender, TextChangedEventArgs e)
