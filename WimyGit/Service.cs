@@ -42,14 +42,6 @@ namespace WimyGit
             return System.Windows.MessageBox.Show(msg, caption, System.Windows.MessageBoxButton.OKCancel);
         }
 
-        public void RunCommandWithWaitingWindow(string command, Action action)
-        {
-            var waiting_window = new WaitingWindow(command, action);
-            waiting_window.Owner = GetWindow();
-            waiting_window.Width = GetWindow().Width - 100;
-            waiting_window.ShowDialog();
-        }
-
         public void ViewFile(string filename)
         {
             string cmd = String.Format("-d {0}.untracked {0}", filename);

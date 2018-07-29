@@ -95,9 +95,6 @@
     <Compile Include="ViewModel.History.cs" />
     <Compile Include="ViewModel.OpenCommand.cs" />
     <Compile Include="ViewModel.Pending.cs" />
-    <Compile Include="Window\WaitingWindow.xaml.cs">
-      <DependentUpon>WaitingWindow.xaml</DependentUpon>
-    </Compile>
     <Page Include="ConsoleProgressWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -123,10 +120,6 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="UserControls\RepositoryTabHeader.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Window\WaitingWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
