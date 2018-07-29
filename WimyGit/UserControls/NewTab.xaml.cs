@@ -33,7 +33,14 @@ namespace WimyGit.UserControls
                 return;
             }
             string repository_path = paths[0];
-            new_tab_result_(repository_path);
+            var check_directory_result = Util.CheckDirectory(repository_path);
+            if (check_directory_result == Util.DirectoryCheckResult.kSuccess)
+            {
+                new_tab_result_(repository_path);
+                return;
+            }
+            Service.GetInstance().ShowMsg(string.Format("Invalid directory:{0},error:{1}",
+                                          repository_path, check_directory_result.ToString()));
         }
     }
 }
