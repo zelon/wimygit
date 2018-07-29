@@ -127,10 +127,14 @@ namespace WimyGit
 
         public void AddLog(List<string> logs)
         {
+            string time_string = DateTime.Now.ToLocalTime().ToString();
+            System.Text.StringBuilder string_builder = new System.Text.StringBuilder();
+
             foreach (string log in logs)
             {
-                Log += String.Format("[{0}] {1}\n", DateTime.Now.ToLocalTime(), log);
+                string_builder.Append(string.Format("[{0}] {1}\n", time_string, log));
             }
+            Log += string_builder.ToString();
             NotifyPropertyChanged("Log");
         }
 
