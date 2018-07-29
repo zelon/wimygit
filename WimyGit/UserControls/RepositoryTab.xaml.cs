@@ -29,10 +29,9 @@ namespace WimyGit
             });
         }
 
-        private void TextBox_TextChanged(object sender, TextChangedEventArgs e)
+        public void ScrollToEndLogTextBox()
         {
-            TextBox textbox = (TextBox)sender;
-            textbox.ScrollToEnd();
+            logTextBox.ScrollToEnd();
         }
 
         private ViewModel GetViewModel()

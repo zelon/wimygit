@@ -123,19 +123,14 @@ namespace WimyGit
         {
             Log += String.Format("[{0}] {1}\n", DateTime.Now.ToLocalTime(), log);
             NotifyPropertyChanged("Log");
+            repository_tab_.ScrollToEndLogTextBox();
         }
 
         public void AddLog(List<string> logs)
         {
-            string time_string = DateTime.Now.ToLocalTime().ToString();
-            System.Text.StringBuilder string_builder = new System.Text.StringBuilder();
-
-            foreach (string log in logs)
-            {
-                string_builder.Append(string.Format("[{0}] {1}\n", time_string, log));
-            }
-            Log += string_builder.ToString();
+            Log += string.Format("[{0}] {1}\n", DateTime.Now.ToLocalTime(), string.Join("\n", logs));
             NotifyPropertyChanged("Log");
+            repository_tab_.ScrollToEndLogTextBox();
         }
 
         private void NotifyPropertyChanged(string name)

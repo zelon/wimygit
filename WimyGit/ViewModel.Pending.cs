@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
@@ -21,8 +22,8 @@ namespace WimyGit
         public ICommand SelectAllCommand { get; private set; }
         private string commit_message_;
 
-        public System.Collections.ObjectModel.ObservableCollection<FileStatus> ModifiedList { get; set; }
-        public System.Collections.ObjectModel.ObservableCollection<FileStatus> StagedList { get; set; }
+        public ObservableCollection<FileStatus> ModifiedList { get; set; }
+        public ObservableCollection<FileStatus> StagedList { get; set; }
 
         private void InitializePending()
         {
@@ -37,32 +38,38 @@ namespace WimyGit
             OpenExplorerSelectedFileCommand = new DelegateCommand(OnOpenExplorerSelectedFileCommand);
             OpenSelectedFileCommand = new DelegateCommand(OnOpenSelectedFileCommand);
 
-            ModifiedList = new System.Collections.ObjectModel.ObservableCollection<FileStatus>();
-            StagedList = new System.Collections.ObjectModel.ObservableCollection<FileStatus>();
+            ModifiedList = new ObservableCollection<FileStatus>();
+            StagedList = new ObservableCollection<FileStatus>();
         }
 
         void RefreshPending(List<string> porcelains)
         {
             var modified_backup = new SelectionRecover(ModifiedList);
             var staged_backup = new SelectionRecover(StagedList);
-            this.ModifiedList.Clear();
-            this.StagedList.Clear();
+            var collecting_staged = new ObservableCollection<FileStatus>();
+            var collecting_modified = new ObservableCollection<FileStatus>();
+
             foreach (var porcelain in porcelains)
             {
                 GitFileStatus status = GitPorcelainParser.ParseFileStatus(porcelain);
                 if (status.Staged != null)
                 {
-                    AddStagedList(status.Staged, staged_backup);
+                    AddStagedList(status.Staged, staged_backup, collecting_staged);
                 }
                 if (status.Unmerged != null)
                 {
-                    AddModifiedList(status.Unmerged, modified_backup);
+                    AddModifiedList(status.Unmerged, modified_backup, collecting_modified);
                 }
                 if (status.Modified != null)
                 {
-                    AddModifiedList(status.Modified, modified_backup);
+                    AddModifiedList(status.Modified, modified_backup, collecting_modified);
                 }
             }
+            StagedList = collecting_staged;
+            ModifiedList = collecting_modified;
+
+            PropertyChanged(this, new PropertyChangedEventArgs("StagedList"));
+            PropertyChanged(this, new PropertyChangedEventArgs("ModifiedList"));
 
             if (ModifiedList.Count == 0 && StagedList.Count == 0)
             {
@@ -153,7 +160,8 @@ namespace WimyGit
             Refresh();
         }
 
-        void AddModifiedList(GitFileStatus.Pair git_file_status, SelectionRecover backup_selection)
+        void AddModifiedList(GitFileStatus.Pair git_file_status, SelectionRecover backup_selection,
+                             ObservableCollection<FileStatus> to)
         {
             FileStatus status = new FileStatus(this);
             status.Status = git_file_status.Description;
@@ -161,11 +169,11 @@ namespace WimyGit
             status.Display = status.FilePath;
             status.IsSelected = backup_selection.WasSelected(status.FilePath);
 
-            ModifiedList.Add(status);
-            PropertyChanged(this, new PropertyChangedEventArgs("ModifiedList"));
+            to.Add(status);
         }
 
-        void AddStagedList(GitFileStatus.Pair git_file_status, SelectionRecover backup_selection)
+        void AddStagedList(GitFileStatus.Pair git_file_status, SelectionRecover backup_selection,
+                           ObservableCollection<FileStatus> to)
         {
             FileStatus status = new FileStatus(this);
             status.Status = git_file_status.Description;
@@ -173,8 +181,7 @@ namespace WimyGit
             status.Display = status.FilePath;
             status.IsSelected = backup_selection.WasSelected(status.FilePath);
 
-            StagedList.Add(status);
-            PropertyChanged(this, new PropertyChangedEventArgs("StagedList"));
+            to.Add(status);
         }
 
         public string CommitMessage
