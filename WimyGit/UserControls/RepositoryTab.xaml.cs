@@ -19,15 +19,21 @@ namespace WimyGit
             DataContext = new ViewModel(git_repository_path, this);
         }
 
-        private void Window_Loaded(object sender, RoutedEventArgs e)
-        {
-            var task = GetViewModel().Refresh();
-            task.GetAwaiter().OnCompleted(() => {
-                Service.GetInstance().ConfigModel.AddRecentRepository(git_repository_path_);
-                SetTreeViewRootPath(git_repository_path_);
-                tabControl.Focus();
-            });
-        }
+		private void OnIsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
+		{
+			bool previousVisibled = (bool)e.OldValue;
+			bool newVisibled = (bool)e.NewValue;
+
+			if (previousVisibled == false && newVisibled == true)
+			{
+				var task = GetViewModel().Refresh();
+				task.GetAwaiter().OnCompleted(() => {
+					Service.GetInstance().ConfigModel.AddRecentRepository(git_repository_path_);
+					SetTreeViewRootPath(git_repository_path_);
+					tabControl.Focus();
+				});
+			}
+		}
 
         public void ScrollToEndLogTextBox()
         {
@@ -83,5 +89,5 @@ namespace WimyGit
         {
             unstagedFileListBox.SelectAll();
         }
-    }
+	}
 }
