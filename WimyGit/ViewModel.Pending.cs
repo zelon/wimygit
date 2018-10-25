@@ -77,7 +77,7 @@ namespace WimyGit
             }
         }
 
-        public void OnCommitCommand(object parameter)
+        public async void OnCommitCommand(object parameter)
         {
             if (String.IsNullOrEmpty(CommitMessage))
             {
@@ -91,7 +91,7 @@ namespace WimyGit
             }
             git_.Commit(CommitMessage);
             CommitMessage = "";
-            Refresh();
+            await Refresh();
         }
 
         private FileStatus GetModifiedStatus(string filepath)
@@ -150,14 +150,14 @@ namespace WimyGit
             }
         }
 
-        public void OnUnstageCommand(object parameter)
+        public async void OnUnstageCommand(object parameter)
         {
             foreach (var filepath in SelectedStagedFilePathList)
             {
                 AddLog("Unstage: " + filepath);
             }
             git_.Unstage(SelectedStagedFilePathList);
-            Refresh();
+            await Refresh();
         }
 
         void AddModifiedList(GitFileStatus.Pair git_file_status, SelectionRecover backup_selection,
@@ -194,7 +194,7 @@ namespace WimyGit
             }
         }
 
-        public void OnRevertCommand(object parameter)
+        public async void OnRevertCommand(object parameter)
         {
             List<string> file_list = new List<string>();
             string msg = "Revert below:\n\n";
@@ -216,7 +216,7 @@ namespace WimyGit
                 AddLog("Revert: " + item);
                 git_.P4Revert(item);
             }
-            Refresh();
+            await Refresh();
         }
 
         public void OnOpenExplorerSelectedFileCommand(object parameter)
@@ -239,7 +239,7 @@ namespace WimyGit
             }
         }
 
-        void OnStageSelected(object parameter)
+        async void OnStageSelected(object parameter)
         {
             if (SelectedModifiedFilePathList.Count() == 0)
             {
@@ -253,7 +253,7 @@ namespace WimyGit
 
             git_.Stage(SelectedModifiedFilePathList);
 
-            Refresh();
+            await Refresh();
         }
 
         bool CanStageSelected(object parameter)
