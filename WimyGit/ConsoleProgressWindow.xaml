@@ -12,10 +12,10 @@
             <RowDefinition Height="46" />
         </Grid.RowDefinitions>
         <Grid Grid.Row="0">
-            <TextBox x:Name="textBox" TextWrapping="Wrap" Text="ConsoleOutput" FontFamily="Consolas" FontSize="11" Background="{DynamicResource {x:Static SystemColors.ActiveCaptionBrushKey}}"/>
+            <TextBox x:Name="textBox" TextWrapping="Wrap" Text="" FontFamily="Consolas" FontSize="11" Background="{DynamicResource {x:Static SystemColors.ActiveCaptionBrushKey}}"/>
         </Grid>
         <Grid Grid.Row="1">
-            <Button x:Name="button" Content="Cancel" Margin="507,0,10,11" HorizontalAlignment="Right" VerticalAlignment="Bottom" Width="75" Height="25" Click="button_Click"/>
+            <Button x:Name="button" Content="Cancel" Margin="507,0,10,11" HorizontalAlignment="Right" VerticalAlignment="Bottom" Width="75" Height="25" Click="OnButton_Click"/>
         </Grid>
     </Grid>
 </Window>

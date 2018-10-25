@@ -1,149 +1,136 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
 
 namespace WimyGit
 {
-    /// <summary>
-    /// Interaction logic for ConsoleProgressWindow.xaml
-    /// </summary>
-    public partial class ConsoleProgressWindow : Window
-    {
-        enum CommandResult
-        {
-            kOk,
-            kError,
-            kCanceled
-        }
+	public partial class ConsoleProgressWindow : Window
+	{
+		private Process process_;
+		private string repository_path_;
+		private string command_;
+		private bool canceled_ = false;
 
-        public ConsoleProgressWindow(string repository_path, List<string> cmds)
-        {
-            repository_path_ = repository_path;
-            cmds_ = cmds;
-            InitializeComponent();
-        }
+		public ConsoleProgressWindow(string repository_path, string command)
+		{
+			repository_path_ = repository_path;
+			command_ = command;
+			InitializeComponent();
+		}
 
-        private async void Window_Loaded(Object sender, RoutedEventArgs e)
-        {
-            textBox.Text = "";
-            var task = Task<CommandResult>.Run(() => RunAndWait());
+		private void Window_Loaded(Object sender, RoutedEventArgs e)
+		{
+			RunCommand();
+		}
 
-            var result = await task;
-            switch (result)
-            {
-                case CommandResult.kOk:
-                AddOutputText("All ok!!!");
-                break;
-                case CommandResult.kError:
-                AddOutputText("Error!!!");
-                break;
-                case CommandResult.kCanceled:
-                AddOutputText("Canceled!!!");
-                break;
-                default:
-                System.Diagnostics.Debug.Assert(false);
-                break;
-            }
-            done_ = true;
-            button.Content = "Close";
-        }
+		private void AddOutputText(string text)
+		{
+			string inner_text = text + Environment.NewLine;
+			if (textBox.Dispatcher.CheckAccess())
+			{
+				textBox.Text += inner_text;
+				ScrollToEndConsole();
+			}
+			else
+			{
+				textBox.Dispatcher.BeginInvoke(new Action(() => {
+					textBox.Text += inner_text;
+					ScrollToEndConsole();
+				}));
+			}
+		}
 
-        private void AddOutputText(string text)
-        {
-            string inner_text = text + Environment.NewLine;
-            if (textBox.Dispatcher.CheckAccess())
-            {
-                textBox.Text += inner_text;
-                ScrollToEndConsole();
-            }
-            else
-            {
-                textBox.Dispatcher.BeginInvoke(new Action(() => {
-                    textBox.Text += inner_text;
-                    ScrollToEndConsole();
-                }));
-            }
-        }
+		private void RunCommand()
+		{
+			AddOutputText(string.Format("git {0}", command_));
 
-        private CommandResult RunAndWait()
-        {
-            foreach (var cmd in cmds_)
-            {
-                AddOutputText(string.Format("git {0}", cmd));
+			process_ = new Process();
+			process_.StartInfo.FileName = ProgramPathFinder.GetGitBin();
+			process_.StartInfo.Arguments = command_;
+			process_.StartInfo.UseShellExecute = false;
+			process_.StartInfo.RedirectStandardInput = true;
+			process_.StartInfo.RedirectStandardOutput = true;
+			process_.StartInfo.RedirectStandardError = true;
+			process_.StartInfo.StandardOutputEncoding = System.Text.Encoding.UTF8;
+			process_.StartInfo.CreateNoWindow = true;
+			process_.StartInfo.WorkingDirectory = repository_path_;
 
-                Process process = new Process();
-                process.StartInfo.FileName = ProgramPathFinder.GetGitBin();
-                process.StartInfo.Arguments = cmd;
-                process.StartInfo.UseShellExecute = false;
-                process.StartInfo.RedirectStandardOutput = true;
-                process.StartInfo.RedirectStandardError = true;
-                process.StartInfo.StandardOutputEncoding = System.Text.Encoding.UTF8;
-                process.StartInfo.CreateNoWindow = true;
-                process.StartInfo.WorkingDirectory = repository_path_;
+			StringArrayOutput output = new StringArrayOutput();
+			process_.OutputDataReceived += (object _, DataReceivedEventArgs console_output) => {
+				if (console_output.Data == null)
+				{
+					return;
+				}
+				AddOutputText(console_output.Data);
+			};
+			process_.ErrorDataReceived += (object _, DataReceivedEventArgs error_output) => {
+				if (error_output.Data == null)
+				{
+					return;
+				}
+				AddOutputText(error_output.Data);
+			};
+			process_.Exited += (object sender, EventArgs e) => {
+				if (button.Dispatcher.CheckAccess())
+				{
+					Process_Exited();
+				}
+				else
+				{
+					button.Dispatcher.BeginInvoke(new Action(() => {
+						Process_Exited();
+					}));
+				}
+			};
+			process_.EnableRaisingEvents = true;
 
-                StringArrayOutput output = new StringArrayOutput();
-                process.OutputDataReceived += (object _, DataReceivedEventArgs console_output) => {
-                    if (console_output.Data == null)
-                    {
-                        return;
-                    }
-                    AddOutputText(console_output.Data);
-                };
-                process.ErrorDataReceived += (object _, DataReceivedEventArgs error_output) => {
-                    if (error_output.Data == null)
-                    {
-                        return;
-                    }
-                    AddOutputText(error_output.Data);
-                };
-                process.EnableRaisingEvents = true;
+			process_.Start();
+			process_.BeginOutputReadLine();
+			process_.BeginErrorReadLine();
+		}
 
-                process.Start();
-                process.BeginOutputReadLine();
-                process.BeginErrorReadLine();
-                while (true)
-                {
-                    if (process.WaitForExit(10))
-                    {
-                        break;
-                    }
-                    if (canceled_)
-                    {
-                        process.Kill();
-                        return CommandResult.kCanceled;
-                    }
-                }
-                if (process.ExitCode != 0)
-                {
-                    return CommandResult.kError;
-                }
-            }
-            return CommandResult.kOk;
-        }
+		private void Process_Exited()
+		{
+			Debug.Assert(process_ != null);
+			AddOutputText("Process exited");
 
-        private void button_Click(Object sender, RoutedEventArgs e)
-        {
-            if (canceled_ || done_)
-            {
-                this.Close();
-                return;
-            }
-            canceled_ = true;
-            textBox.Text += "Cancel..." + Environment.NewLine;
-            ScrollToEndConsole();
-        }
+			int exitCode = process_.ExitCode;
+			process_ = null;
 
-        public void ScrollToEndConsole()
-        {
-            textBox.ScrollToEnd();
-        }
+			button.Content = "Close";
 
-        private string repository_path_;
-        private List<string> cmds_ = new List<string>();
-        private bool canceled_ = false;
-        private bool done_ = false;
-    }
+			if (canceled_)
+			{
+				AddOutputText("Canceled!!!");
+				return;
+			}
+			if (exitCode != 0)
+			{
+				AddOutputText("Error!!!");
+				return;
+			}
+			AddOutputText("All ok!!!");
+		}
+
+		private void OnButton_Click(Object sender, RoutedEventArgs e)
+		{
+			Process local_process = process_;
+			if (local_process == null)
+			{
+				this.Close();
+				return;
+			}
+			canceled_ = true;
+
+			local_process.Kill();
+
+			AddOutputText("Cancel...");
+		}
+
+		public void ScrollToEndConsole()
+		{
+			textBox.ScrollToEnd();
+		}
+
+	}
 }

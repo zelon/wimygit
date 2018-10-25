@@ -48,15 +48,13 @@ namespace WimyGit
             DoWithProgressWindow("fetch --all");
         }
 
-        public void DoWithProgressWindow(string cmd)
+        public async void DoWithProgressWindow(string cmd)
         {
             // http://stackoverflow.com/questions/2796470/wpf-create-a-dialog-prompt
-            var cmds = new List<string>();
-            cmds.Add(cmd);
-            var console_progress_window = new ConsoleProgressWindow(Directory, cmds);
+            var console_progress_window = new ConsoleProgressWindow(Directory, cmd);
             console_progress_window.Owner = Service.GetInstance().GetWindow();
             console_progress_window.ShowDialog();
-            Refresh();
+            await Refresh();
         }
 
         public void Pull(object not_used)
