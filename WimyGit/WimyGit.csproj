@@ -67,7 +67,7 @@
     </ApplicationDefinition>
     <Compile Include="Config\ConfigFileController.cs" />
     <Compile Include="Config\Model.cs" />
-    <Compile Include="ConsoleProgressWindow.xaml.cs">
+    <Compile Include="Window\ConsoleProgressWindow.xaml.cs">
       <DependentUpon>ConsoleProgressWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="DelegateCommand.cs" />
@@ -95,7 +95,7 @@
     <Compile Include="ViewModel.History.cs" />
     <Compile Include="ViewModel.OpenCommand.cs" />
     <Compile Include="ViewModel.Pending.cs" />
-    <Page Include="ConsoleProgressWindow.xaml">
+    <Page Include="Window\ConsoleProgressWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
