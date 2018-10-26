@@ -5,17 +5,17 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WimyGit"
         mc:Ignorable="d"
-        Title="ConsoleProgressWindow" Height="346.241" Width="600" WindowStyle="ToolWindow" WindowStartupLocation="CenterOwner" Loaded="Window_Loaded" MinWidth="600">
-    <Grid Background="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="*" MinHeight="100" />
-            <RowDefinition Height="46" />
-        </Grid.RowDefinitions>
-        <Grid Grid.Row="0">
-            <TextBox x:Name="textBox" TextWrapping="Wrap" Text="" FontFamily="Consolas" FontSize="11" Background="{DynamicResource {x:Static SystemColors.ActiveCaptionBrushKey}}"/>
-        </Grid>
-        <Grid Grid.Row="1">
-            <Button x:Name="button" Content="Cancel" Margin="507,0,10,11" HorizontalAlignment="Right" VerticalAlignment="Bottom" Width="75" Height="25" Click="OnButton_Click"/>
-        </Grid>
-    </Grid>
+        Title="WimyGit" Height="346.241" Width="800" WindowStyle="ToolWindow" WindowStartupLocation="CenterOwner" Loaded="Window_Loaded" MinWidth="600">
+	<Grid Background="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}">
+		<Grid.RowDefinitions>
+			<RowDefinition Height="*" MinHeight="100" />
+			<RowDefinition Height="46" />
+		</Grid.RowDefinitions>
+		<Grid Grid.Row="0">
+			<TextBox x:Name="textBox" TextWrapping="Wrap" Text="" FontFamily="Consolas" FontSize="15" Background="{DynamicResource {x:Static SystemColors.ActiveCaptionBrushKey}}"/>
+		</Grid>
+		<Grid Grid.Row="1">
+			<Button x:Name="button" FontSize="15" Content="Cancel" HorizontalAlignment="Right" VerticalAlignment="Bottom" Width="114" Height="46" Click="OnButton_Click"/>
+		</Grid>
+	</Grid>
 </Window>
