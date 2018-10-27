@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Management;
 using System.Windows;
 
 namespace WimyGit
@@ -15,12 +16,21 @@ namespace WimyGit
 		{
 			repository_path_ = repository_path;
 			command_ = command;
+
 			InitializeComponent();
+			InitializeProcess();
+
+			this.Closed += ConsoleProgressWindow_Closed;
+		}
+
+		private void ConsoleProgressWindow_Closed(object sender, EventArgs e)
+		{
+			CloseProcess();
 		}
 
 		private void Window_Loaded(Object sender, RoutedEventArgs e)
 		{
-			RunCommand();
+			StartProcess();
 		}
 
 		private void AddOutputText(string text)
@@ -40,10 +50,8 @@ namespace WimyGit
 			}
 		}
 
-		private void RunCommand()
+		private void InitializeProcess()
 		{
-			AddOutputText(string.Format("git {0}", command_));
-
 			process_ = new Process();
 			process_.StartInfo.FileName = ProgramPathFinder.GetGitBin();
 			process_.StartInfo.Arguments = command_;
@@ -83,19 +91,27 @@ namespace WimyGit
 				}
 			};
 			process_.EnableRaisingEvents = true;
+		}
+
+		private void StartProcess()
+		{
+			AddOutputText(string.Format("git {0}", command_));
 
 			process_.Start();
 			process_.BeginOutputReadLine();
 			process_.BeginErrorReadLine();
 		}
 
+		private void CloseProcess()
+		{
+			process_.EnableRaisingEvents = false;
+			KillProcessAndChildren(process_.Id);
+			process_.Close();
+		}
+
 		private void Process_Exited()
 		{
-			Debug.Assert(process_ != null);
 			AddOutputText("Process exited");
-
-			int exitCode = process_.ExitCode;
-			process_ = null;
 
 			button.Content = "Close";
 
@@ -104,7 +120,7 @@ namespace WimyGit
 				AddOutputText("Canceled!!!");
 				return;
 			}
-			if (exitCode != 0)
+			if (process_.ExitCode != 0)
 			{
 				AddOutputText("Error!!!");
 				return;
@@ -112,22 +128,49 @@ namespace WimyGit
 			AddOutputText("All ok!!!");
 		}
 
+		private static void KillProcessAndChildren(int pid)
+		{
+			// Cannot close 'system idle process'.
+			if (pid == 0)
+			{
+				return;
+			}
+			ManagementObjectSearcher searcher = new ManagementObjectSearcher
+					("Select * From Win32_Process Where ParentProcessID=" + pid);
+			ManagementObjectCollection moc = searcher.Get();
+			foreach (ManagementObject mo in moc)
+			{
+				KillProcessAndChildren(Convert.ToInt32(mo["ProcessID"]));
+			}
+			try
+			{
+				Process proc = Process.GetProcessById(pid);
+				if (proc != null)
+				{
+					proc.Kill();
+				}
+			}
+			catch (Exception)
+			{
+				// Process already exited.
+			}
+		}
+
 		private void OnButton_Click(Object sender, RoutedEventArgs e)
 		{
-			Process local_process = process_;
-			if (local_process == null)
+			if (process_.HasExited)
 			{
 				this.Close();
 				return;
 			}
 			canceled_ = true;
 
-			local_process.Kill();
+			KillProcessAndChildren(process_.Id);
 
-			AddOutputText("Cancel...");
+			AddOutputText("Cancelling...");
 		}
 
-		public void ScrollToEndConsole()
+		private void ScrollToEndConsole()
 		{
 			textBox.ScrollToEnd();
 		}
