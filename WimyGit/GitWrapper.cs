@@ -108,11 +108,17 @@ namespace WimyGit
             {
                 return;
             }
-            LibGit2Sharp.StageOptions option = new LibGit2Sharp.StageOptions();
-            repository_.Stage(selectedModifiedFilePathList, option);
-        }
 
-        public void StagePartial(string filepath)
+			string cmd = "add ";
+			foreach (string filename in selectedModifiedFilePathList)
+			{
+				cmd += string.Format(" {0}", Util.WrapFilePath(filename));
+			}
+			logger_.AddLog(cmd);
+			CreateGitRunner().Run(cmd);
+		}
+
+		public void StagePartial(string filepath)
         {
             Debug.Assert(string.IsNullOrEmpty(filepath) == false);
 
