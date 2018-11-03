@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace WimyGit
@@ -251,20 +252,32 @@ namespace WimyGit
 
         internal string GetCurrentBranchTrackingRemote()
         {
-            var head = repository_.Head;
-            int? ahead_by = head.TrackingDetails.AheadBy;
-            int? behind_by = head.TrackingDetails.BehindBy;
+			string cmd = "status";
+			List<string> results = CreateGitRunner().Run(cmd);
 
-            if (ahead_by != null)
-            {
-                return "+" + ahead_by.ToString() + " ahead";
-            }
-
-            if (behind_by != null)
-            {
-                return "-" + behind_by.ToString() + " behind";
-            }
-            return "";
+			var up_to_date_regex = new Regex("Your branch is up to date");
+			var ahead_regex = new Regex("Your branch is ahead.*by (.*) commit");
+			var behind_regex = new Regex("Your branch is behind.*by (.*) commit");
+			Match match = null;
+			foreach (string line in results)
+			{
+				match = up_to_date_regex.Match(line);
+				if (match.Success)
+				{
+					return "up to date";
+				}
+				match = ahead_regex.Match(line);
+				if (match.Success)
+				{
+					return string.Format("{0} commit ahead", match.Groups[1]);
+				}
+				match = behind_regex.Match(line);
+				if (match.Success)
+				{
+					return string.Format("{0} commit behind", match.Groups[1]);
+				}
+			}
+			return "";
         }
 
         public void P4Revert(string filename)
