@@ -1,16 +1,14 @@
 ﻿using System;
-using System.Windows;
-using System.Windows.Controls;
 using System.Diagnostics;
 using System.IO;
+using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Markup;
-using System.Windows.Threading;
 using System.Xml;
-
 
 namespace WimyGit
 {
-    public partial class RepositoryTab
+	public partial class RepositoryTab
     {
         // https://code.msdn.microsoft.com/windowsdesktop/File-system-TreeView-72549a6f
         private string RootPath { get; set; }
