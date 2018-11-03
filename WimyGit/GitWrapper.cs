@@ -25,21 +25,32 @@ namespace WimyGit
         public string FileName2 { get; set; }
     }
 
-    // https://github.com/libgit2/libgit2sharp/wiki/LibGit2Sharp-Hitchhiker's-Guide-to-Git
     class GitWrapper
     {
         private string path_;
-        private LibGit2Sharp.Repository repository_;
         private ILogger logger_;
 
         public GitWrapper(string path, ILogger logger)
         {
             path_ = path;
             logger_ = logger;
-            repository_ = new LibGit2Sharp.Repository(path_);
         }
 
-        public List<string> GetGitStatusPorcelainAll()
+		public bool IsValidGitDirectory()
+		{
+			string cmd = string.Format("status --porcelain");
+			List<string> results = CreateGitRunner().Run(cmd);
+			foreach (string line in results)
+			{
+				if (line.StartsWith("fatal: not a git repository"))
+				{
+					return false;
+				}
+			}
+			return true;
+		}
+
+		public List<string> GetGitStatusPorcelainAll()
         {
             string cmd = string.Format("status --porcelain --untracked-files=all");
             return CreateGitRunner().Run(cmd);

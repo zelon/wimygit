@@ -52,7 +52,8 @@ namespace WimyGit
             process.StartInfo.Arguments = arguments;
             process.StartInfo.UseShellExecute = false;
             process.StartInfo.RedirectStandardOutput = true;
-            process.StartInfo.StandardOutputEncoding = System.Text.Encoding.UTF8;
+			process.StartInfo.RedirectStandardError = true;
+			process.StartInfo.StandardOutputEncoding = System.Text.Encoding.UTF8;
             process.StartInfo.CreateNoWindow = true;
             process.StartInfo.WorkingDirectory = working_directory_;
 
@@ -60,10 +61,14 @@ namespace WimyGit
             process.OutputDataReceived += (object sender, DataReceivedEventArgs e) => {
                 output.OnOutput(e.Data);
             };
-            process.EnableRaisingEvents = true;
+			process.ErrorDataReceived += (object sender, DataReceivedEventArgs e) => {
+				output.OnOutput(e.Data);
+			};
+			process.EnableRaisingEvents = true;
 
             process.Start();
             process.BeginOutputReadLine();
+			process.BeginErrorReadLine();
             process.WaitForExit();
 
             return output.GetResult();

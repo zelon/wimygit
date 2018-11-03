@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 
 namespace WimyGit
@@ -53,12 +54,12 @@ namespace WimyGit
                 Service.GetInstance().ShowMsg(msg);
                 return DirectoryCheckResult.kNotDirectory;
             }
-            if (LibGit2Sharp.Repository.IsValid(directory) == false)
-            {
-                string msg = "Directory is not a valid git directory";
-                Service.GetInstance().ShowMsg(msg);
-                return DirectoryCheckResult.kNotGitRepository;
-            }
+			GitWrapper git_wrapper = new GitWrapper(directory, null);
+			if (git_wrapper.IsValidGitDirectory() == false) {
+				string msg = "Directory is not a valid git directory";
+				Service.GetInstance().ShowMsg(msg);
+				return DirectoryCheckResult.kNotGitRepository;
+			}
             return DirectoryCheckResult.kSuccess;
         }
     }
