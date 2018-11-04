@@ -67,6 +67,7 @@ namespace WimyGit
 			process_.OutputDataReceived += (object _, DataReceivedEventArgs console_output) => {
 				if (console_output.Data == null)
 				{
+					AddOutputText("---------- Process Exited ----------");
 					return;
 				}
 				AddOutputText(console_output.Data);
@@ -111,6 +112,7 @@ namespace WimyGit
 
 		private void Process_Exited()
 		{
+			textBox.IsEnabled = false;
 			processStatus.Content = "Process exited";
 
 			button.Content = "Close";
