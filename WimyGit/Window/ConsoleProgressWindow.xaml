@@ -16,6 +16,7 @@
 		</Grid>
 		<Grid Grid.Row="1">
 			<Button x:Name="button" FontSize="15" Content="Cancel" HorizontalAlignment="Right" VerticalAlignment="Bottom" Width="114" Height="46" Click="OnButton_Click"/>
+			<Label x:Name="processStatus" Content="Running..." HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="663"/>
 		</Grid>
 	</Grid>
 </Window>

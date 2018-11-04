@@ -111,21 +111,21 @@ namespace WimyGit
 
 		private void Process_Exited()
 		{
-			AddOutputText("Process exited");
+			processStatus.Content = "Process exited";
 
 			button.Content = "Close";
 
 			if (canceled_)
 			{
-				AddOutputText("Canceled!!!");
+				processStatus.Content = "Process exited by cancel";
 				return;
 			}
 			if (process_.ExitCode != 0)
 			{
-				AddOutputText("Error!!!");
+				processStatus.Content = "Process exited with error";
 				return;
 			}
-			AddOutputText("All ok!!!");
+			processStatus.Content = "Process exited with success";
 		}
 
 		private static void KillProcessAndChildren(int pid)
@@ -167,7 +167,7 @@ namespace WimyGit
 
 			KillProcessAndChildren(process_.Id);
 
-			AddOutputText("Cancelling...");
+			processStatus.Content = "Cancelling...";
 		}
 
 		private void ScrollToEndConsole()
