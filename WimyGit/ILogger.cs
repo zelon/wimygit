@@ -1,8 +1,8 @@
 ﻿
 namespace WimyGit
 {
-    interface ILogger
-    {
-        void AddLog(string msg);
-    }
+	interface ILogger
+	{
+		void AddLog(string msg);
+	}
 }

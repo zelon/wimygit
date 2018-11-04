@@ -6,18 +6,18 @@ using System.Windows.Media;
 
 namespace WimyGit
 {
-    public partial class RepositoryTab : UserControl
-    {
-        private string git_repository_path_;
+	public partial class RepositoryTab : UserControl
+	{
+		private string git_repository_path_;
 
-        public RepositoryTab(string git_repository_path)
-        {
-            git_repository_path_ = git_repository_path;
+		public RepositoryTab(string git_repository_path)
+		{
+			git_repository_path_ = git_repository_path;
 
-            InitializeComponent();
+			InitializeComponent();
 
-            DataContext = new ViewModel(git_repository_path, this);
-        }
+			DataContext = new ViewModel(git_repository_path, this);
+		}
 
 		private void OnIsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
 		{
@@ -35,59 +35,59 @@ namespace WimyGit
 			}
 		}
 
-        public void ScrollToEndLogTextBox()
-        {
-            logTextBox.ScrollToEnd();
-        }
+		public void ScrollToEndLogTextBox()
+		{
+			logTextBox.ScrollToEnd();
+		}
 
-        private ViewModel GetViewModel()
-        {
-            return (ViewModel)this.DataContext;
-        }
+		private ViewModel GetViewModel()
+		{
+			return (ViewModel)this.DataContext;
+		}
 
-        private void HistoryList_ScrollChanged(object sender, RoutedEventArgs e)
-        {
-            List<ScrollBar> scrollBarList = GetVisualChildCollection<ScrollBar>(sender);
-            foreach (ScrollBar scrollBar in scrollBarList)
-            {
-                if (scrollBar.Orientation == Orientation.Vertical)
-                {
-                    if (scrollBar.Maximum > 0 && scrollBar.Value == scrollBar.Maximum)
-                    {
-                        GetViewModel().MoreHistoryCommand.Execute(sender);
-                        return;
-                    }
-                }
-            }
-        }
+		private void HistoryList_ScrollChanged(object sender, RoutedEventArgs e)
+		{
+			List<ScrollBar> scrollBarList = GetVisualChildCollection<ScrollBar>(sender);
+			foreach (ScrollBar scrollBar in scrollBarList)
+			{
+				if (scrollBar.Orientation == Orientation.Vertical)
+				{
+					if (scrollBar.Maximum > 0 && scrollBar.Value == scrollBar.Maximum)
+					{
+						GetViewModel().MoreHistoryCommand.Execute(sender);
+						return;
+					}
+				}
+			}
+		}
 
-        // http://stackoverflow.com/questions/4139341/wpf-listbox-onscroll-event
-        public static List<T> GetVisualChildCollection<T>(object parent) where T : Visual
-        {
-            List<T> visualCollection = new List<T>();
-            GetVisualChildCollection(parent as DependencyObject, visualCollection);
-            return visualCollection;
-        }
-        private static void GetVisualChildCollection<T>(DependencyObject parent, List<T> visualCollection) where T : Visual
-        {
-            int count = VisualTreeHelper.GetChildrenCount(parent);
-            for (int i = 0; i < count; i++)
-            {
-                DependencyObject child = VisualTreeHelper.GetChild(parent, i);
-                if (child is T)
-                {
-                    visualCollection.Add(child as T);
-                }
-                else if (child != null)
-                {
-                    GetVisualChildCollection(child, visualCollection);
-                }
-            }
-        }
+		// http://stackoverflow.com/questions/4139341/wpf-listbox-onscroll-event
+		public static List<T> GetVisualChildCollection<T>(object parent) where T : Visual
+		{
+			List<T> visualCollection = new List<T>();
+			GetVisualChildCollection(parent as DependencyObject, visualCollection);
+			return visualCollection;
+		}
+		private static void GetVisualChildCollection<T>(DependencyObject parent, List<T> visualCollection) where T : Visual
+		{
+			int count = VisualTreeHelper.GetChildrenCount(parent);
+			for (int i = 0; i < count; i++)
+			{
+				DependencyObject child = VisualTreeHelper.GetChild(parent, i);
+				if (child is T)
+				{
+					visualCollection.Add(child as T);
+				}
+				else if (child != null)
+				{
+					GetVisualChildCollection(child, visualCollection);
+				}
+			}
+		}
 
-        public void SelectAllUnstagedFilesListBox()
-        {
-            unstagedFileListBox.SelectAll();
-        }
+		public void SelectAllUnstagedFilesListBox()
+		{
+			unstagedFileListBox.SelectAll();
+		}
 	}
 }
