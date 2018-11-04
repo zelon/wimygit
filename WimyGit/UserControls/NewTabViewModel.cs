@@ -1,10 +1,5 @@
-﻿using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System;
+using System.Collections.ObjectModel;
 
 namespace WimyGit.UserControls
 {
@@ -38,7 +33,15 @@ namespace WimyGit.UserControls
 		public DelegateCommand BrowseCommand { get; private set; }
 		void OnBrowseCommand(object sender)
 		{
-
+			using (var dialog = new System.Windows.Forms.FolderBrowserDialog())
+			{
+				var result = dialog.ShowDialog();
+				if (result == System.Windows.Forms.DialogResult.OK)
+				{
+					new_tab_result_(dialog.SelectedPath);
+					return;
+				}
+			}
 		}
 
 		public DelegateCommand OkayCommand { get; private set; }
