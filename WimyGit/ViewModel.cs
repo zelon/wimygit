@@ -27,7 +27,9 @@ namespace WimyGit
 			InitializeHistory();
 
 			PushCommand = new DelegateCommand((object parameter) => Push());
-			RefreshCommand = new DelegateCommand((object parameter) => Refresh());
+			RefreshCommand = new DelegateCommand(async (object parameter) => {
+				await Refresh();
+			});
 			ViewTimelapseCommand = new DelegateCommand((object parameter) => ViewTimeLapse());
 			FetchAllCommand = new DelegateCommand((object parameter) => FetchAll());
 			PullCommand = new DelegateCommand(Pull);
