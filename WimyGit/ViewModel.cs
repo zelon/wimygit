@@ -16,7 +16,7 @@ namespace WimyGit
 
 		public ViewModel(string git_repository_path, RepositoryTab repository_tab)
 		{
-			Debug.Assert(Util.CheckDirectory(git_repository_path) == Util.DirectoryCheckResult.kSuccess);
+			Debug.Assert(Util.IsValidGitDirectory(git_repository_path));
 
 			Directory = git_repository_path;
 
@@ -71,9 +71,9 @@ namespace WimyGit
 
 		public async Task<bool> Refresh()
 		{
-			if (Util.CheckDirectory(Directory) != Util.DirectoryCheckResult.kSuccess)
+			if (Util.IsValidGitDirectory(Directory) == false)
 			{
-				Service.GetInstance().ShowMsg("{0} is invalid git repository");
+				Service.GetInstance().ShowMsg(string.Format("{0} is invalid git repository", Directory));
 				git_ = null;
 				return false;
 			}
