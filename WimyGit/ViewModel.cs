@@ -73,7 +73,7 @@ namespace WimyGit
 		{
 			if (Util.IsValidGitDirectory(Directory) == false)
 			{
-				Service.GetInstance().ShowMsg(string.Format("{0} is invalid git repository", Directory));
+				Service.GetInstance().ShowMsg(string.Format("{0} is a invalid root git repository", Directory));
 				git_ = null;
 				return false;
 			}

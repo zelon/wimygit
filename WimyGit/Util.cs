@@ -41,6 +41,10 @@ namespace WimyGit
 			{
 				return false;
 			}
+			if (Directory.Exists(Path.Combine(directory, ".git")) == false)
+			{
+				return false;
+			}
 			GitWrapper git_wrapper = new GitWrapper(directory, null);
 			if (git_wrapper.IsValidGitDirectory() == false)
 			{

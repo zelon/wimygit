@@ -89,7 +89,7 @@ namespace WimyGit
             new_tab_item.Content = new UserControls.NewTab((repo_path) => {
 				if (Util.IsValidGitDirectory(repo_path) == false)
 				{
-					Service.GetInstance().ShowMsg("Invalid git directory");
+					Service.GetInstance().ShowMsg("Invalid git root directory");
 					return;
 				}
 				new_tab_item.Content = new RepositoryTab(repo_path);
