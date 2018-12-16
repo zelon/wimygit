@@ -127,7 +127,7 @@ namespace WimyGit
 				cmd += string.Format(" {0}", Util.WrapFilePath(filename));
 			}
 			logger_.AddLog(cmd);
-			CreateGitRunner().Run(cmd);
+			logger_.AddLog(CreateGitRunner().Run(cmd));
 		}
 
 		public void StagePartial(string filepath)
