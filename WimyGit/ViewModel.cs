@@ -121,6 +121,10 @@ namespace WimyGit
 
 		public void AddLog(string log)
 		{
+			if (string.IsNullOrEmpty(log))
+			{
+				return;
+			}
 			Log += String.Format("[{0}] {1}\n", DateTime.Now.ToLocalTime(), log);
 			NotifyPropertyChanged("Log");
 			repository_tab_.ScrollToEndLogTextBox();
