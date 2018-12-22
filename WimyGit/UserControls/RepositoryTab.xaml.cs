@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Windows;
+using System.Windows.Input;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Media;
@@ -88,6 +89,24 @@ namespace WimyGit
 		public void SelectAllUnstagedFilesListBox()
 		{
 			unstagedFileListBox.SelectAll();
+		}
+
+		public void EnterLoadingScreen()
+		{
+			Mouse.OverrideCursor = Cursors.Wait;
+
+			LoadingScreen.Visibility = System.Windows.Visibility.Visible;
+			LoadingScreen.Width = 6000;
+			LoadingScreen.Height = 6000;
+		}
+
+		public void LeaveLoadingScreen()
+		{
+			LoadingScreen.Visibility = System.Windows.Visibility.Hidden;
+			LoadingScreen.Width = 1;
+			LoadingScreen.Height = 1;
+
+			Mouse.OverrideCursor = null;
 		}
 	}
 }
