@@ -244,13 +244,15 @@ namespace WimyGit
 				AddLog("No selected to stage");
 				return;
 			}
+			List<string> logs = new List<string>();
 			foreach (var filepath in SelectedModifiedFilePathList)
 			{
-				AddLog("Stage: " + filepath);
+				logs.Add("Stage: " + filepath);
 			}
 
 			git_.Stage(SelectedModifiedFilePathList);
 
+			AddLog(logs);
 			await Refresh();
 		}
 
