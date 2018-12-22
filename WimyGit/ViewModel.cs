@@ -80,6 +80,8 @@ namespace WimyGit
 			AddLog("Refreshing Directory:" + Directory);
 
 			repository_tab_.LoadingScreen.Visibility = System.Windows.Visibility.Visible;
+			repository_tab_.LoadingScreen.Width = 6000;
+			repository_tab_.LoadingScreen.Height = 6000;
 
 			List<string> git_porcelain_result = await git_.GetGitStatusPorcelainAllAsync();
 			RefreshPending(git_porcelain_result);
@@ -91,6 +93,9 @@ namespace WimyGit
 			AddLog("Refreshed");
 
 			repository_tab_.LoadingScreen.Visibility = System.Windows.Visibility.Hidden;
+			repository_tab_.LoadingScreen.Width = 1;
+			repository_tab_.LoadingScreen.Height = 1;
+
 			return true;
 		}
 
