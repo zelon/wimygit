@@ -15,7 +15,7 @@
             <TabControl x:Name="tab_control_"  HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="0,0,0,0">
                 <TabItem Focusable="False" Padding="0" HorizontalAlignment="Center" Width="62" Height="40" Margin="3,3,3,3" VerticalAlignment="Center">
                     <TabItem.Header>
-                        <Button Click="OnAddNewTabButtonClick" Width="65" Height="45" Content="+" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold" FontSize="20" />
+                        <Button Click="OnAddNewTabButtonClick" Width="65" Height="45" Content="+" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold" FontSize="20" AllowDrop="True" DragOver="OnAddTabButtonDragOver" DragDrop.Drop="OnAddTabButtonDrawDrop" />
                     </TabItem.Header>
                     <TabItem.Content>
                         <Grid>

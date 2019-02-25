@@ -101,5 +101,39 @@ namespace WimyGit
 
             new_tab_item.Focus();
         }
+
+        private void OnAddTabButtonDragOver(object sender, System.Windows.DragEventArgs e)
+        {
+            e.Effects = System.Windows.DragDropEffects.All;
+        }
+
+        private void OnAddTabButtonDrawDrop(object sender, System.Windows.DragEventArgs e)
+        {
+            string[] paths = (string[])e.Data.GetData(System.Windows.DataFormats.FileDrop);
+
+            if (paths.Length != 1)
+            {
+                Service.GetInstance().ShowMsg("Please drop one directory only");
+                return;
+            }
+            string repository_path = paths[0];
+            if (Util.IsValidGitDirectory(repository_path) == false)
+            {
+                Service.GetInstance().ShowMsg(string.Format("Invalid git root directory:{0}", repository_path));
+                return;
+            }
+
+            TabItem new_tab_item = new TabItem();
+            var tab_header = new UserControls.RepositoryTabHeader(tab_control_);
+            tab_header.Title.Content = "[[New Tab]]";
+            tab_header.Path.Content = repository_path;
+            tab_header.Title.Content = Util.GetRepositoryName(repository_path);
+            new_tab_item.Header = tab_header;
+            new_tab_item.Content = new RepositoryTab(repository_path);
+
+            tab_control_.Items.Insert(tab_control_.Items.Count - 1, new_tab_item);
+
+            new_tab_item.Focus();
+        }
     }
 }
