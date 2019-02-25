@@ -82,24 +82,7 @@ namespace WimyGit
 
         private void AddNewTab()
         {
-            TabItem new_tab_item = new TabItem();
-            var tab_header = new UserControls.RepositoryTabHeader(tab_control_);
-            tab_header.Title.Content = "[[New Tab]]";
-            new_tab_item.Header = tab_header;
-            new_tab_item.Content = new UserControls.NewTab((repo_path) => {
-				if (Util.IsValidGitDirectory(repo_path) == false)
-				{
-					Service.GetInstance().ShowMsg("Invalid git root directory");
-					return;
-				}
-				new_tab_item.Content = new RepositoryTab(repo_path);
-                tab_header.Path.Content = repo_path;
-                tab_header.Title.Content = Util.GetRepositoryName(repo_path);
-            });
-
-            tab_control_.Items.Insert(tab_control_.Items.Count - 1, new_tab_item);
-
-            new_tab_item.Focus();
+            new NewRepositoryController(tab_control_).AddNewTab();
         }
 
         private void OnAddTabButtonDragOver(object sender, System.Windows.DragEventArgs e)
@@ -122,18 +105,7 @@ namespace WimyGit
                 Service.GetInstance().ShowMsg(string.Format("Invalid git root directory:{0}", repository_path));
                 return;
             }
-
-            TabItem new_tab_item = new TabItem();
-            var tab_header = new UserControls.RepositoryTabHeader(tab_control_);
-            tab_header.Title.Content = "[[New Tab]]";
-            tab_header.Path.Content = repository_path;
-            tab_header.Title.Content = Util.GetRepositoryName(repository_path);
-            new_tab_item.Header = tab_header;
-            new_tab_item.Content = new RepositoryTab(repository_path);
-
-            tab_control_.Items.Insert(tab_control_.Items.Count - 1, new_tab_item);
-
-            new_tab_item.Focus();
+            new NewRepositoryController(tab_control_).OpenRepository(repository_path);
         }
     }
 }

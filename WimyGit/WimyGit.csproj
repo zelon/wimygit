@@ -63,6 +63,7 @@
     </ApplicationDefinition>
     <Compile Include="Config\ConfigFileController.cs" />
     <Compile Include="Config\Model.cs" />
+    <Compile Include="NewRepositoryController.cs" />
     <Compile Include="Window\ConsoleProgressWindow.xaml.cs">
       <DependentUpon>ConsoleProgressWindow.xaml</DependentUpon>
     </Compile>

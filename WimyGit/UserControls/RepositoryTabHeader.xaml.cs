@@ -15,6 +15,17 @@ namespace WimyGit.UserControls
 			InitializeComponent();
 		}
 
+        public void SetRepositoryPath (string path)
+        {
+            if (path == null)
+            {
+                Title.Content = "[[New Tab]]";
+                return;
+            }
+            Path.Content = path;
+            Title.Content = Util.GetRepositoryName(path);
+        }
+
 		private void CloseButton_Click(object sender, RoutedEventArgs e)
 		{
 			CloseThisTab();
