@@ -7,6 +7,7 @@ namespace WimyGit.ViewModels
     public class HistoryTabViewModel : NotifyBase
     {
         public ViewModel viewModel_;
+        private string HistorySelectedPath { get; set; }
         public HistoryTabViewModel(ViewModel viewModel)
         {
             viewModel_ = viewModel;
@@ -91,7 +92,7 @@ namespace WimyGit.ViewModels
             {
                 return;
             }
-            AddHistoryFrom(viewModel_.SelectedPath, HistoryList.Count);
+            AddHistoryFrom(HistorySelectedPath, HistoryList.Count);
         }
 
         public ICommand HistorySelectedCommand { get; private set; }
@@ -114,12 +115,13 @@ namespace WimyGit.ViewModels
 
         public string HistoryDetailCommitId { get; set; }
 
-        public void RefreshHistory(string selected_path)
+        public void RefreshHistory(string selectedPath)
         {
             HistoryList.Clear();
 
-            viewModel_.SelectedPath = selected_path;
-            AddHistoryFrom(selected_path, /*skip_count=*/0);
+            HistorySelectedPath = selectedPath;
+
+            AddHistoryFrom(HistorySelectedPath, /*skip_count=*/0);
         }
 
         async void AddHistoryFrom(string selected_path, Int32 skip_count)
