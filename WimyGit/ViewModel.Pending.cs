@@ -68,8 +68,8 @@ namespace WimyGit
 			StagedList = collecting_staged;
 			ModifiedList = collecting_modified;
 
-			PropertyChanged(this, new PropertyChangedEventArgs("StagedList"));
-			PropertyChanged(this, new PropertyChangedEventArgs("ModifiedList"));
+            NotifyPropertyChanged("StagedList");
+            NotifyPropertyChanged("ModifiedList");
 
 			if (ModifiedList.Count == 0 && StagedList.Count == 0)
 			{

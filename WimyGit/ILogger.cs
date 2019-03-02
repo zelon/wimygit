@@ -1,7 +1,7 @@
 ﻿
 namespace WimyGit
 {
-	interface ILogger
+	public interface ILogger
 	{
 		void AddLog(string msg);
 		void AddLog(System.Collections.Generic.List<string> msgs);

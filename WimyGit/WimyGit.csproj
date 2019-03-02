@@ -61,9 +61,12 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="CommitIdToFileListConverter.cs" />
     <Compile Include="Config\ConfigFileController.cs" />
     <Compile Include="Config\Model.cs" />
+    <Compile Include="ViewModels\HistoryTabViewModel.cs" />
     <Compile Include="NewRepositoryController.cs" />
+    <Compile Include="NotifyBase.cs" />
     <Compile Include="UserControls\HistoryTab.xaml.cs">
       <DependentUpon>HistoryTab.xaml</DependentUpon>
     </Compile>

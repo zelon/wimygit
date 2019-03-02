@@ -97,30 +97,28 @@ namespace WimyGit
 		public void OnHistorySelectedCommand(object parameter)
 		{
 			HistoryStatus status = (HistoryStatus)parameter;
-			HistoryDetail = status.Detail;
+            HistoryDetailCommitId = status.CommitId;
+			//HistoryFileList.Clear();
 
-			HistoryDetailCommitId = status.CommitId;
-			HistoryFileList.Clear();
-
-			if (String.IsNullOrEmpty(status.CommitId) == false)
-			{
-				foreach (var file_info in git_.GetFilelistOfCommit(status.CommitId))
-				{
-					HistoryFile file = new HistoryFile();
-					file.Directory = file_info.FileName;
-					file.Status = file_info.Status;
-					file.FileName = file_info.FileName;
-					file.FileName2 = file_info.FileName2;
-					file.Display = file.FileName;
-					if (string.IsNullOrEmpty(file.FileName2) == false)
-					{
-						file.Display += " -> " + file.FileName2;
-					}
-					file.IsSelected = false;
-					HistoryFileList.Add(file);
-				}
-			}
-			NotifyPropertyChanged("HistoryFileList");
+			//if (String.IsNullOrEmpty(status.CommitId) == false)
+			//{
+			//	foreach (var file_info in git_.GetFilelistOfCommit(status.CommitId))
+			//	{
+			//		HistoryFile file = new HistoryFile();
+			//		file.Directory = file_info.FileName;
+			//		file.Status = file_info.Status;
+			//		file.FileName = file_info.FileName;
+			//		file.FileName2 = file_info.FileName2;
+			//		file.Display = file.FileName;
+			//		if (string.IsNullOrEmpty(file.FileName2) == false)
+			//		{
+			//			file.Display += " -> " + file.FileName2;
+			//		}
+			//		file.IsSelected = false;
+			//		HistoryFileList.Add(file);
+			//	}
+			//}
+			//NotifyPropertyChanged("HistoryFileList");
 		}
 
 		private string history_detail_;
@@ -181,7 +179,7 @@ namespace WimyGit
 				HistoryList.Add(status);
 			}
 
-			PropertyChanged(this, new PropertyChangedEventArgs("HistoryList"));
+			NotifyPropertyChanged("HistoryList");
 		}
 
 		private string MakeDetail(CommitInfo commit)

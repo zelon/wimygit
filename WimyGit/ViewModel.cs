@@ -7,12 +7,10 @@ using System.Windows.Input;
 
 namespace WimyGit
 {
-	partial class ViewModel : System.ComponentModel.INotifyPropertyChanged, ILogger
+    public partial class ViewModel : NotifyBase, ILogger
 	{
-		public event PropertyChangedEventHandler PropertyChanged;
-
 		private RepositoryTab repository_tab_;
-		private GitWrapper git_;
+		public GitWrapper git_;
 
 		public ViewModel(string git_repository_path, RepositoryTab repository_tab)
 		{
@@ -138,13 +136,6 @@ namespace WimyGit
 			repository_tab_.ScrollToEndLogTextBox();
 		}
 
-		private void NotifyPropertyChanged(string name)
-		{
-			if (PropertyChanged != null)
-			{
-				PropertyChanged(this, new PropertyChangedEventArgs(name));
-			}
-		}
 		public ICommand RefreshCommand { get; private set; }
 		public ICommand ViewTimelapseCommand { get; private set; }
 		public ICommand FetchAllCommand { get; private set; }

@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace WimyGit
 {
-	class CommitInfo
+	public class CommitInfo
 	{
 		public string Graph { get; set; }
 		public string Sha { get; set; }
@@ -18,14 +18,14 @@ namespace WimyGit
 		public string RefNames { get; set; }
 	}
 
-	class FileListInfoOfCommit
+	public class FileListInfoOfCommit
 	{
 		public string Status { get; set; }
 		public string FileName { get; set; }
 		public string FileName2 { get; set; }
 	}
 
-	class GitWrapper
+	public class GitWrapper
 	{
 		private string path_;
 		private ILogger logger_;
