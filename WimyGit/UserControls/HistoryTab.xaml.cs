@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Controls.Primitives;
+using WimyGit.ViewModels;
 
 namespace WimyGit.UserControls
 {
@@ -22,7 +23,7 @@ namespace WimyGit.UserControls
                 {
                     if (scrollBar.Maximum > 0 && scrollBar.Value == scrollBar.Maximum)
                     {
-                        ViewModel viewModel = (ViewModel)DataContext;
+                        HistoryTabViewModel viewModel = (HistoryTabViewModel)DataContext;
                         if (viewModel.MoreHistoryCommand.CanExecute(sender))
                         {
                             viewModel.MoreHistoryCommand.Execute(sender);

@@ -178,7 +178,7 @@
                         </Grid>
                     </TabItem>
                     <TabItem Header="History">
-                        <user_control:HistoryTab />
+                        <user_control:HistoryTab DataContext="{Binding HistoryTabMember}" />
                     </TabItem>
                 </TabControl>
             </Grid>

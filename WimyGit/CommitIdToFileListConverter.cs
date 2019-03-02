@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Windows.Data;
+using WimyGit.ViewModels;
 
 namespace WimyGit
 {
@@ -13,12 +14,13 @@ namespace WimyGit
 
         public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
         {
-            if (values[0] is ViewModel == false)
+            if (values[0] is HistoryTabViewModel == false)
             {
                 return null;
             }
-            ViewModel viewModel = (ViewModel)values[0];
-            ViewModel.HistoryStatus historyStatus = (ViewModel.HistoryStatus)values[1];
+            HistoryTabViewModel historyTabViewModel = (HistoryTabViewModel)values[0];
+            ViewModel viewModel = historyTabViewModel.viewModel_;
+            HistoryTabViewModel.HistoryStatus historyStatus = (HistoryTabViewModel.HistoryStatus)values[1];
 
             if (historyStatus == null)
             {
@@ -29,10 +31,10 @@ namespace WimyGit
             {
                 return null;
             }
-            List<ViewModel.HistoryFile> output = new List<ViewModel.HistoryFile>();
+            List<HistoryTabViewModel.HistoryFile> output = new List<HistoryTabViewModel.HistoryFile>();
             foreach (var file_info in viewModel.git_.GetFilelistOfCommit(commitId))
             {
-                ViewModel.HistoryFile file = new ViewModel.HistoryFile();
+                HistoryTabViewModel.HistoryFile file = new HistoryTabViewModel.HistoryFile();
                 file.Directory = file_info.FileName;
                 file.Status = file_info.Status;
                 file.FileName = file_info.FileName;

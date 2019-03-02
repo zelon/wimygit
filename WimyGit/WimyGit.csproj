@@ -95,7 +95,6 @@
     </Compile>
     <Compile Include="Util.cs" />
     <Compile Include="ViewModel.cs" />
-    <Compile Include="ViewModel.History.cs" />
     <Compile Include="ViewModel.OpenCommand.cs" />
     <Compile Include="ViewModel.Pending.cs" />
     <Page Include="UserControls\HistoryTab.xaml">

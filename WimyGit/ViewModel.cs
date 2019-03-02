@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using WimyGit.ViewModels;
 
 namespace WimyGit
 {
@@ -11,18 +12,19 @@ namespace WimyGit
 	{
 		private RepositoryTab repository_tab_;
 		public GitWrapper git_;
+        public HistoryTabViewModel HistoryTabMember { get; set; }
 
-		public ViewModel(string git_repository_path, RepositoryTab repository_tab)
+        public ViewModel(string git_repository_path, RepositoryTab repository_tab)
 		{
 			Debug.Assert(Util.IsValidGitDirectory(git_repository_path));
 
 			Directory = git_repository_path;
 
 			git_ = new GitWrapper(Directory, this);
+            HistoryTabMember = new HistoryTabViewModel(this);
 			repository_tab_ = repository_tab;
 
 			InitializePending();
-			InitializeHistory();
 
 			PushCommand = new DelegateCommand((object parameter) => Push());
 			RefreshCommand = new DelegateCommand(async (object parameter) => {
@@ -33,7 +35,9 @@ namespace WimyGit
 			PullCommand = new DelegateCommand(Pull);
 		}
 
-		public void ViewTimeLapse()
+        public string SelectedPath { get; set; }
+
+        public void ViewTimeLapse()
 		{
 			if (string.IsNullOrEmpty(SelectedPath))
 			{
@@ -81,7 +85,7 @@ namespace WimyGit
 
 			List<string> git_porcelain_result = await git_.GetGitStatusPorcelainAllAsync();
 			RefreshPending(git_porcelain_result);
-			RefreshHistory(null);
+			HistoryTabMember.RefreshHistory(null);
 			RefreshBranch();
 			RefreshSignature();
 			repository_tab_.TreeView_Update(null, null);

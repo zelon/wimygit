@@ -206,7 +206,7 @@ namespace WimyGit
 			}
 			SelectedPath = selected_item.Tag as string;
 
-			GetViewModel().RefreshHistory(SelectedPath);
+			GetViewModel().HistoryTabMember.RefreshHistory(SelectedPath);
 		}
 
 	}
