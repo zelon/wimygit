@@ -23,7 +23,7 @@
         <Grid Grid.Row="0" Grid.ColumnSpan="2">
             <ListView Name="historyList" Margin="0,0,0,0" ItemsSource="{Binding HistoryList}" ScrollViewer.ScrollChanged="HistoryList_ScrollChanged" FontFamily="Consolas">
                 <ListView.InputBindings>
-                    <KeyBinding Modifiers="Ctrl" Key="D" Command="{Binding StagedDiffCommand}" />
+                    <KeyBinding Modifiers="Ctrl" Key="D" Command="{Binding DiffHistorySelectedFile}" />
                 </ListView.InputBindings>
                 <ListView.ItemContainerStyle>
                     <Style TargetType="{x:Type ListBoxItem}">
