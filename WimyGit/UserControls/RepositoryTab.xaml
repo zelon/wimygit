@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:WimyGit"
+             xmlns:user_control="clr-namespace:WimyGit.UserControls"
              mc:Ignorable="d" 
              d:DesignHeight="800" d:DesignWidth="1024" Background="#FFF9F9F9"
              IsVisibleChanged="OnIsVisibleChanged">
@@ -177,88 +178,7 @@
                         </Grid>
                     </TabItem>
                     <TabItem Header="History">
-                        <Grid Background="#FFF9F9F9">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="50*" MinHeight="100" />
-                                <RowDefinition Height="10" />
-                                <RowDefinition Height="50*" MinHeight="100" />
-                            </Grid.RowDefinitions>
-                            <Grid Grid.Row="0">
-                                <ListView Margin="0,0,0,0" ItemsSource="{Binding HistoryList}" ScrollViewer.ScrollChanged="HistoryList_ScrollChanged" FontFamily="Consolas">
-                                    <ListView.InputBindings>
-                                        <KeyBinding Modifiers="Ctrl" Key="D" Command="{Binding StagedDiffCommand}" />
-                                    </ListView.InputBindings>
-                                    <ListView.ItemContainerStyle>
-                                        <Style TargetType="{x:Type ListBoxItem}">
-                                            <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}" />
-                                            <Setter Property="FontWeight" Value="{Binding FontWeight, Mode=TwoWay}" />
-                                        </Style>
-                                    </ListView.ItemContainerStyle>
-                                    <ListView.View>
-                                        <GridView>
-                                            <GridViewColumn Header="DateTime" DisplayMemberBinding="{Binding LocalDateTime}" Width="180"/>
-                                            <GridViewColumn Header="CommitId" DisplayMemberBinding="{Binding CommitId}" Width="70" />
-                                            <GridViewColumn Header="Graph" DisplayMemberBinding="{Binding Graph}" Width="auto"/>
-                                            <GridViewColumn Header="Author" DisplayMemberBinding="{Binding Author}" Width="auto"/>
-                                            <GridViewColumn Header="Message" >
-                                                <GridViewColumn.CellTemplate>
-                                                    <DataTemplate>
-                                                        <StackPanel Orientation="Horizontal">
-                                                            <TextBlock Text="{Binding ListMessage_RefNames}" Width="auto" Margin="0,0,3,0" FontSize="11" >
-                                                                <TextBlock.Foreground>
-                                                                    <SolidColorBrush Color="{DynamicResource {x:Static SystemColors.ControlColorKey}}"/>
-                                                                </TextBlock.Foreground>
-                                                                <TextBlock.Background>
-                                                                    <SolidColorBrush Color="{DynamicResource {x:Static SystemColors.HighlightColorKey}}"/>
-                                                                </TextBlock.Background>
-                                                            </TextBlock>
-                                                            <TextBlock Text="{Binding ListMessage}" Width="auto" />
-                                                        </StackPanel>
-                                                    </DataTemplate>
-                                                </GridViewColumn.CellTemplate>
-                                            </GridViewColumn>
-                                        </GridView>
-                                    </ListView.View>
-                                </ListView>
-                            </Grid>
-                            <GridSplitter Grid.Row="1" Height="10" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
-                            <Grid Grid.Row="2">
-                                <TabControl x:Name="tabControlInHistory" HorizontalContentAlignment="Left" VerticalContentAlignment="Stretch">
-                                    <TabItem Header="Detail">
-                                        <TextBox Height="Auto" Grid.RowSpan="1" Grid.ColumnSpan="1" Text="{Binding HistoryDetail}" Margin="0,0,0,0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"/>
-                                    </TabItem>
-                                    <TabItem Header="Files">
-                                        <ListBox Margin="0,0,0,0" ItemsSource="{Binding HistoryFileList}" >
-                                            <ListBox.InputBindings>
-                                                <KeyBinding Modifiers="Ctrl" Key="D" Command="{Binding DiffHistorySelectedFile}" />
-                                            </ListBox.InputBindings>
-                                            <ListBox.ContextMenu>
-                                                <ContextMenu>
-                                                    <MenuItem Header="Diff" InputGestureText="Ctrl+D" Command="{Binding DiffHistorySelectedFile}" />
-                                                </ContextMenu>
-                                            </ListBox.ContextMenu>
-                                            <ListBox.ItemContainerStyle>
-                                                <Style TargetType="{x:Type ListBoxItem}">
-                                                    <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}" />
-                                                </Style>
-                                            </ListBox.ItemContainerStyle>
-                                            <ListBox.ItemTemplate>
-                                                <DataTemplate>
-                                                    <Grid Margin="0,2">
-                                                        <Grid.ColumnDefinitions>
-                                                            <ColumnDefinition Width="auto"/>
-                                                            <ColumnDefinition Width="auto"/>
-                                                        </Grid.ColumnDefinitions>
-                                                        <TextBlock Grid.Column="0" Text="{Binding Status}" Width="auto" Padding="0,0,5,0" FontFamily="Consolas"/>
-                                                        <TextBlock Grid.Column="1" Text="{Binding Display}" Width="auto" FontFamily="Consolas"/>
-                                                    </Grid>
-                                                </DataTemplate>
-                                            </ListBox.ItemTemplate>
-                                        </ListBox>
-                                    </TabItem>
-                                </TabControl>
-                            </Grid>
-                        </Grid>
+                        <user_control:HistoryTab />
                     </TabItem>
                 </TabControl>
             </Grid>
