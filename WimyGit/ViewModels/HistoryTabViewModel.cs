@@ -6,11 +6,11 @@ namespace WimyGit.ViewModels
 {
     public class HistoryTabViewModel : NotifyBase
     {
-        public ViewModel viewModel_;
+        public GitWrapper GitWrapper { get; private set; }
         private string HistorySelectedPath { get; set; }
-        public HistoryTabViewModel(ViewModel viewModel)
+        public HistoryTabViewModel(GitWrapper gitWrapper)
         {
-            viewModel_ = viewModel;
+            GitWrapper = gitWrapper;
 
             HistoryList = new System.Collections.ObjectModel.ObservableCollection<HistoryStatus>();
             HistoryFileList = new System.Collections.ObjectModel.ObservableCollection<HistoryFile>();
@@ -44,12 +44,12 @@ namespace WimyGit.ViewModels
 
                     if (is_selected_)
                     {
-                        view_model_.HistoryTabMember.OnHistorySelectedCommand(this);
+                        historyTabViewModel_.OnHistorySelectedCommand(this);
                     }
                 }
             }
             private bool is_selected_ = false;
-            public ViewModel view_model_;
+            public HistoryTabViewModel historyTabViewModel_;
         }
 
         public System.Collections.ObjectModel.ObservableCollection<HistoryStatus> HistoryList { get; set; }
@@ -75,11 +75,11 @@ namespace WimyGit.ViewModels
                 {
                     if (string.IsNullOrEmpty(filelist.FileName2))
                     {
-                        viewModel_.git_.DiffHistorySelected(HistoryDetailCommitId, filelist.FileName);
+                        GitWrapper.DiffHistorySelected(HistoryDetailCommitId, filelist.FileName);
                     }
                     else
                     {
-                        viewModel_.git_.DiffHistorySelectedWithRenameTracking(HistoryDetailCommitId, filelist.FileName, filelist.FileName2);
+                        GitWrapper.DiffHistorySelectedWithRenameTracking(HistoryDetailCommitId, filelist.FileName, filelist.FileName2);
                     }
                 }
             }
@@ -126,7 +126,7 @@ namespace WimyGit.ViewModels
 
         async void AddHistoryFrom(string selected_path, Int32 skip_count)
         {
-            var waiter = viewModel_.git_.GetHistory(selected_path, skip_count, /*max_count=*/20);
+            var waiter = GitWrapper.GetHistory(selected_path, skip_count, /*max_count=*/20);
             var commits = await waiter;
 
             foreach (var commit in commits)
@@ -150,9 +150,9 @@ namespace WimyGit.ViewModels
                 status.Comment = commit.Message;
                 status.Detail = MakeDetail(commit);
                 status.IsSelected = false;
-                status.view_model_ = viewModel_;
+                status.historyTabViewModel_ = this;
                 status.FontWeight = FontWeights.Normal;
-                if (commit.RefNames != null && commit.RefNames.Contains(string.Format("HEAD -> {0}", viewModel_.git_.GetCurrentBranchName())))
+                if (commit.RefNames != null && commit.RefNames.Contains(string.Format("HEAD -> {0}", GitWrapper.GetCurrentBranchName())))
                 {
                     status.FontWeight = FontWeights.Bold;
                 }

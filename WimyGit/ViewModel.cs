@@ -21,7 +21,7 @@ namespace WimyGit
 			Directory = git_repository_path;
 
 			git_ = new GitWrapper(Directory, this);
-            HistoryTabMember = new HistoryTabViewModel(this);
+            HistoryTabMember = new HistoryTabViewModel(git_);
 			repository_tab_ = repository_tab;
 
 			InitializePending();

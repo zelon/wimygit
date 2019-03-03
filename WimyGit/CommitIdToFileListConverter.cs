@@ -19,7 +19,6 @@ namespace WimyGit
                 return null;
             }
             HistoryTabViewModel historyTabViewModel = (HistoryTabViewModel)values[0];
-            ViewModel viewModel = historyTabViewModel.viewModel_;
             HistoryTabViewModel.HistoryStatus historyStatus = (HistoryTabViewModel.HistoryStatus)values[1];
 
             if (historyStatus == null)
@@ -32,7 +31,7 @@ namespace WimyGit
                 return null;
             }
             List<HistoryTabViewModel.HistoryFile> output = new List<HistoryTabViewModel.HistoryFile>();
-            foreach (var file_info in viewModel.git_.GetFilelistOfCommit(commitId))
+            foreach (var file_info in historyTabViewModel.GitWrapper.GetFilelistOfCommit(commitId))
             {
                 HistoryTabViewModel.HistoryFile file = new HistoryTabViewModel.HistoryFile();
                 file.Directory = file_info.FileName;
