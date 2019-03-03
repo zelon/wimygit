@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -12,7 +11,8 @@ namespace WimyGit
 	{
 		private RepositoryTab repository_tab_;
 		public GitWrapper git_;
-        public HistoryTabViewModel HistoryTabMember { get; set; }
+        public DirectoryTreeViewModel DirectoryTree { get; private set; }
+        public HistoryTabViewModel HistoryTabMember { get; private set; }
 
         public ViewModel(string git_repository_path, RepositoryTab repository_tab)
 		{
@@ -21,7 +21,10 @@ namespace WimyGit
 			Directory = git_repository_path;
 
 			git_ = new GitWrapper(Directory, this);
+
+            DirectoryTree = new DirectoryTreeViewModel(this);
             HistoryTabMember = new HistoryTabViewModel(git_);
+
 			repository_tab_ = repository_tab;
 
 			InitializePending();
@@ -88,7 +91,7 @@ namespace WimyGit
 			HistoryTabMember.RefreshHistory(null);
 			RefreshBranch();
 			RefreshSignature();
-			repository_tab_.TreeView_Update(null, null);
+			DirectoryTree.TreeView_Update(null, null);
 			AddLog(git_porcelain_result);
 			AddLog("Refreshed");
 

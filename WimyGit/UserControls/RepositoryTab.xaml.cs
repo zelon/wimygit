@@ -1,8 +1,6 @@
-﻿using System.Collections.Generic;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Input;
 using System.Windows.Controls;
-using System.Windows.Media;
 
 namespace WimyGit
 {
@@ -29,7 +27,7 @@ namespace WimyGit
 				var task = GetViewModel().Refresh();
 				task.GetAwaiter().OnCompleted(() => {
 					Service.GetInstance().ConfigModel.AddRecentRepository(git_repository_path_);
-					SetTreeViewRootPath(git_repository_path_);
+					GetViewModel().DirectoryTree.SetTreeViewRootPath(git_repository_path_);
 					tabControl.Focus();
 				});
 			}

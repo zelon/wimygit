@@ -64,17 +64,20 @@
     <Compile Include="CommitIdToFileListConverter.cs" />
     <Compile Include="Config\ConfigFileController.cs" />
     <Compile Include="Config\Model.cs" />
+    <Compile Include="ViewModels\DirectoryTreeViewModel.cs" />
     <Compile Include="ViewModels\HistoryTabViewModel.cs" />
     <Compile Include="NewRepositoryController.cs" />
     <Compile Include="NotifyBase.cs" />
     <Compile Include="UserControls\HistoryTab.xaml.cs">
       <DependentUpon>HistoryTab.xaml</DependentUpon>
     </Compile>
+    <Compile Include="View\DirectoryTree.xaml.cs">
+      <DependentUpon>DirectoryTree.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Window\ConsoleProgressWindow.xaml.cs">
       <DependentUpon>ConsoleProgressWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="DelegateCommand.cs" />
-    <Compile Include="DirectoryTree.cs" />
     <Compile Include="FileStatus.cs" />
     <Compile Include="GitPorcelainParser.cs" />
     <Compile Include="GitWrapper.cs" />
@@ -98,6 +101,10 @@
     <Compile Include="ViewModel.OpenCommand.cs" />
     <Compile Include="ViewModel.Pending.cs" />
     <Page Include="UserControls\HistoryTab.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\DirectoryTree.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
