@@ -11,7 +11,6 @@ namespace WimyGit.ViewModels
             get { return TreeItems_; }
             set {
                 TreeItems_ = value;
-                NotifyPropertyChanged("TreeItems");
             }
         }
 
@@ -31,12 +30,14 @@ namespace WimyGit.ViewModels
             {
                 return;
             }
-            TreeItems_ = new ObservableCollection<TreeData>();
+            ObservableCollection<TreeData> newTreeItems = new ObservableCollection<TreeData>();
 
-            TreeItems_.Add(CreateRootNode(RootPath));
+            newTreeItems.Add(CreateRootNode(RootPath));
 
-            TreeItems_[0].IsSelected = true;
-            TreeItems_[0].IsExpanded = true;
+            newTreeItems[0].IsSelected = true;
+            newTreeItems[0].IsExpanded = true;
+
+            TreeItems = newTreeItems;
 
             NotifyPropertyChanged("TreeItems");
         }
@@ -98,11 +99,13 @@ namespace WimyGit.ViewModels
                 return;
             }
             ObservableCollection<TreeData> oldTreeItems = TreeItems_;
-            TreeItems_ = new ObservableCollection<TreeData>();
 
-            TreeItems_.Add(CreateRootNode(RootPath));
+            ObservableCollection<TreeData> newTreeItems = new ObservableCollection<TreeData>();
+            newTreeItems.Add(CreateRootNode(RootPath));
 
-            CompareAndUpdate(oldTreeItems, TreeItems_);
+            CompareAndUpdate(oldTreeItems, newTreeItems);
+
+            TreeItems = newTreeItems;
 
             NotifyPropertyChanged("TreeItems");
         }
