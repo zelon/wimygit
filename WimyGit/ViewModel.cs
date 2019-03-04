@@ -91,8 +91,8 @@ namespace WimyGit
 			HistoryTabMember.RefreshHistory(null);
 			RefreshBranch();
 			RefreshSignature();
-			DirectoryTree.TreeView_Update(null, null);
-			AddLog(git_porcelain_result);
+            DirectoryTree.ReloadTreeView();
+            AddLog(git_porcelain_result);
 			AddLog("Refreshed");
 
 			repository_tab_.LeaveLoadingScreen();

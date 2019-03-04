@@ -1,209 +1,211 @@
 ﻿using System;
 using System.IO;
-using System.Diagnostics;
-using System.Xml;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Markup;
+using System.Collections.ObjectModel;
 
 namespace WimyGit.ViewModels
 {
     public class DirectoryTreeViewModel : NotifyBase
     {
-        public ViewModel ViewModel { get; private set; }
-        // https://code.msdn.microsoft.com/windowsdesktop/File-system-TreeView-72549a6f
-        private string RootPath { get; set; }
-        private string SelectedPath { get; set; }
+        ObservableCollection<TreeData> TreeItems_ = new ObservableCollection<TreeData>();
+        public ObservableCollection<TreeData> TreeItems {
+            get { return TreeItems_; }
+            set {
+                TreeItems_ = value;
+                NotifyPropertyChanged("TreeItems");
+            }
+        }
 
-        public TreeView treeView;
+        private ViewModel viewModel_;
+        private string RootPath { get; set; }
 
         public DirectoryTreeViewModel(ViewModel viewModel)
         {
-            ViewModel = viewModel;
+            viewModel_ = viewModel;
         }
 
         public void SetTreeViewRootPath(string directory)
         {
             RootPath = directory;
-            treeView.Items.Clear();
-            TreeView_Loaded(null, null);
-        }
 
-        void TreeView_Loaded(object sender, RoutedEventArgs e)
-        {
             if (String.IsNullOrEmpty(RootPath))
             {
                 return;
             }
-            /// Create main expanded node of TreeView
-            treeView.Items.Add(TreeView_CreateComputerItem(RootPath));
+            TreeItems_ = new ObservableCollection<TreeData>();
+
+            TreeItems_.Add(CreateRootNode(RootPath));
+
+            TreeItems_[0].IsSelected = true;
+            TreeItems_[0].IsExpanded = true;
+
+            NotifyPropertyChanged("TreeItems");
         }
 
-        public void TreeView_Update(object not_used_sender, EventArgs not_used_e)
+        TreeData CreateRootNode(string path)
         {
-            if (String.IsNullOrEmpty(RootPath))
-            {
-                return;
-            }
-            Stopwatch s = new Stopwatch();
-            s.Start();
-            /// Update drives and folders in Computer
-            /// create copy for detect what item was expanded
-            TreeView oldTreeView = CloneUsingXaml(treeView) as TreeView;
-            /// populate items from scratch
-            treeView.Items.Clear();
-            /// add computer expanded node with all drives
-            treeView.Items.Add(TreeView_CreateComputerItem(RootPath));
-            TreeViewItem newComputerItem = treeView.Items[0] as TreeViewItem;
-            TreeViewItem oldComputerItem = oldTreeView.Items[0] as TreeViewItem;
-            /// Save old state of item
-            newComputerItem.IsExpanded = oldComputerItem.IsExpanded;
-            newComputerItem.IsSelected = oldComputerItem.IsSelected;
-            /// check all drives for creating it's root folders
-            foreach (TreeViewItem newDrive in (treeView.Items[0] as TreeViewItem).Items)
-            {
-                if (newDrive.Items.Contains(null))
-                {
-                    /// Find relative old item for newDrive
-                    foreach (TreeViewItem oldDrive in oldComputerItem.Items)
-                    {
-                        if (oldDrive.Tag as string == newDrive.Tag as string)
-                        {
-                            newDrive.IsSelected = oldDrive.IsSelected;
-                            if (oldDrive.IsExpanded)
-                            {
-                                newDrive.Items.Clear();
-                                TreeView_AddDirectoryItems(oldDrive, newDrive);
-                            }
-                            break;
-                        }
-                    }
-                }
-            }
-            s.Stop();
-            Debug.WriteLine(String.Format("TreeView_Update finished with {0} ms.", s.ElapsedMilliseconds));
-        }
-
-        void TreeView_AddDirectoryItems(TreeViewItem oldItem, TreeViewItem newItem)
-        {
-            newItem.IsExpanded = oldItem.IsExpanded;
-            newItem.IsSelected = oldItem.IsSelected;
-            /// add folders in this drive
-            string[] directories = Directory.GetDirectories(newItem.Tag as string);
-            /// for each folder create TreeViewItem
-            foreach (string directory in directories)
-            {
-                TreeViewItem treeViewItem = new TreeViewItem();
-                treeViewItem.Header = "[" + new DirectoryInfo(directory).Name + "]";
-                treeViewItem.Tag = directory;
-                try
-                {
-                    if (Directory.GetDirectories(directory).Length > 0 ||
-                        Directory.GetFiles(directory).Length > 0)
-                    {
-                        /// find respective old folder
-                        foreach (TreeViewItem oldDir in oldItem.Items)
-                        {
-                            if (oldDir.Tag as string == directory)
-                            {
-                                if (oldDir.IsExpanded)
-                                {
-                                    TreeView_AddDirectoryItems(oldDir, treeViewItem);
-                                }
-                                else
-                                {
-                                    treeViewItem.Items.Add(null);
-                                }
-                                break;
-                            }
-                        }
-                    }
-                }
-                catch { }
-                treeViewItem.Expanded += TreeViewItem_Expanded;
-                if (treeViewItem.Tag as string == SelectedPath)
-                {
-                    treeViewItem.IsSelected = true;
-                }
-                newItem.Items.Add(treeViewItem);
-            }
-            AddFileItems(newItem, newItem.Tag as string);
-        }
-
-        TreeViewItem TreeView_CreateComputerItem(string root_directory)
-        {
-            TreeViewItem root = new TreeViewItem { Header = root_directory, IsExpanded = true, Tag = root_directory };
+            TreeData root = new TreeData() { Name = path, Path = path, IsExpanded = false };
             FillItemByTag(root);
             return root;
         }
 
-        void FillItemByTag(TreeViewItem item)
+        static private void FillItemByTag(TreeData treeData)
         {
-            item.Items.Clear();
+            treeData.Children = null;
 
             string[] dirs;
             try
             {
-                dirs = Directory.GetDirectories((string)item.Tag);
+                if (Directory.Exists(treeData.Path) == false)
+                {
+                    return;
+                }
+                dirs = Directory.GetDirectories(treeData.Path);
             }
-            catch
+            catch(Exception)
             {
                 return;
             }
 
             foreach (var dir in dirs)
             {
-                TreeViewItem subItem = new TreeViewItem();
-                subItem.Header = "[" + new DirectoryInfo(dir).Name + "]";
-                subItem.Tag = dir;
+                TreeData subItem = new TreeData();
+                subItem.Name = "[" + new DirectoryInfo(dir).Name + "]";
+                subItem.Path = dir;
                 try
                 {
                     if (Directory.GetDirectories(dir).Length > 0 ||
                         Directory.GetFiles(dir).Length > 0)
                     {
-                        subItem.Items.Add(null);
+                        subItem.Children = new ObservableCollection<TreeData>();
+                        subItem.Children.Add(null);
                     }
                 }
                 catch { }
-                subItem.Expanded += TreeViewItem_Expanded;
-                item.Items.Add(subItem);
+
+                if (treeData.Children == null)
+                {
+                    treeData.Children = new ObservableCollection<TreeData>();
+                }
+                treeData.Children.Add(subItem);
             }
-
-            AddFileItems(item, (string)item.Tag);
-
+            AddFileItems(treeData, treeData.Path);
         }
 
-        void AddFileItems(TreeViewItem root, string directory)
+        public void ReloadTreeView()
+        {
+            if (string.IsNullOrEmpty(RootPath))
+            {
+                return;
+            }
+            ObservableCollection<TreeData> oldTreeItems = TreeItems_;
+            TreeItems_ = new ObservableCollection<TreeData>();
+
+            TreeItems_.Add(CreateRootNode(RootPath));
+
+            CompareAndUpdate(oldTreeItems, TreeItems_);
+
+            NotifyPropertyChanged("TreeItems");
+        }
+
+        private void CompareAndUpdate(ObservableCollection<TreeData> oldTreeDatas, ObservableCollection<TreeData> newTreeDatas)
+        {
+            foreach (var newTreeData in newTreeDatas)
+            {
+                foreach (var oldTreeData in oldTreeDatas)
+                {
+                    if (newTreeData.Path != oldTreeData.Path)
+                    {
+                        continue;
+                    }
+                    newTreeData.IsSelected = oldTreeData.IsSelected;
+                    newTreeData.IsExpanded = oldTreeData.IsExpanded;
+                    if (newTreeData.IsExpanded)
+                    {
+                        FillItemByTag(newTreeData);
+                        newTreeData.IsSelected = oldTreeData.IsSelected;
+                        CompareAndUpdate(oldTreeDatas:oldTreeData.Children, newTreeDatas:newTreeData.Children);
+                    }
+                }
+            }
+        }
+
+        static void AddFileItems(TreeData root, string directory)
         {
             foreach (var file in Directory.GetFiles(directory))
             {
-                TreeViewItem subItem = new TreeViewItem();
-                subItem.Header = new FileInfo(file).Name;
-                subItem.Tag = file;
-                if (subItem.Tag as string == SelectedPath)
+                TreeData subItem = new TreeData();
+                subItem.Name = new FileInfo(file).Name;
+                subItem.Path = file;
+                if (root.Children == null)
                 {
-                    subItem.IsSelected = true;
+                    root.Children = new ObservableCollection<TreeData>();
                 }
-                root.Items.Add(subItem);
+                root.Children.Add(subItem);
             }
         }
 
-        void TreeViewItem_Expanded(object sender, RoutedEventArgs e)
+        public void OnSelectedPathChanged(string path)
         {
-            TreeViewItem rootItem = (TreeViewItem)sender;
+            viewModel_.SelectedPath = path;
+            viewModel_.HistoryTabMember.RefreshHistory(path);
+        }
 
-            if (rootItem.Items.Count == 1 && rootItem.Items[0] == null)
+        public class TreeData : NotifyBase
+        {
+            private string _Name;
+            public string Name {
+                get { return _Name; }
+                set {
+                    _Name = value;
+                    NotifyPropertyChanged("Name");
+                }
+            }
+
+            private string _Path;
+            public string Path {
+                get { return _Path; }
+                set {
+                    _Path = value;
+                    NotifyPropertyChanged("Path");
+                }
+            }
+
+            private bool _IsExpanded;
+            public bool IsExpanded {
+                get { return _IsExpanded; }
+                set {
+                    _IsExpanded = value;
+                    NotifyPropertyChanged("IsExpanded");
+
+                    if (_IsExpanded)
+                    {
+                        OnExpanded();
+                    }
+                }
+            }
+
+            private bool _IsSelected;
+            public bool IsSelected {
+                get { return _IsSelected; }
+                set {
+                    _IsSelected = value;
+                    NotifyPropertyChanged("IsSelected");
+                }
+            }
+
+            private ObservableCollection<TreeData> _Children = new ObservableCollection<TreeData>();
+            public ObservableCollection<TreeData> Children {
+                get { return _Children; }
+                set {
+                    _Children = value;
+                    NotifyPropertyChanged("Children");
+                }
+            }
+
+            void OnExpanded()
             {
-                FillItemByTag(rootItem);
+                FillItemByTag(this);
             }
         }
-
-        object CloneUsingXaml(object obj)
-        {
-            string xaml = XamlWriter.Save(obj);
-            return XamlReader.Load(new XmlTextReader(new StringReader(xaml)));
-        }
-
-
     }
 }

@@ -121,10 +121,10 @@ namespace WimyGit.ViewModels
 
             HistorySelectedPath = selectedPath;
 
-            AddHistoryFrom(HistorySelectedPath, /*skip_count=*/0);
+            AddHistoryFrom(HistorySelectedPath, skip_count:0);
         }
 
-        async void AddHistoryFrom(string selected_path, Int32 skip_count)
+        async void AddHistoryFrom(string selected_path, int skip_count)
         {
             var waiter = GitWrapper.GetHistory(selected_path, skip_count, /*max_count=*/20);
             var commits = await waiter;
