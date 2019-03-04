@@ -128,7 +128,7 @@ namespace WimyGit.ViewModels
         {
             var waiter = GitWrapper.GetHistory(selected_path, skip_count, /*max_count=*/20);
             var commits = await waiter;
-
+            string currentBranchName = GitWrapper.GetCurrentBranchName();
             foreach (var commit in commits)
             {
                 HistoryStatus status = new HistoryStatus();
@@ -152,7 +152,7 @@ namespace WimyGit.ViewModels
                 status.IsSelected = false;
                 status.historyTabViewModel_ = this;
                 status.FontWeight = FontWeights.Normal;
-                if (commit.RefNames != null && commit.RefNames.Contains(string.Format("HEAD -> {0}", GitWrapper.GetCurrentBranchName())))
+                if (commit.RefNames != null && commit.RefNames.Contains(string.Format("HEAD -> {0}", currentBranchName)))
                 {
                     status.FontWeight = FontWeights.Bold;
                 }
