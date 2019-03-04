@@ -7,8 +7,9 @@ namespace WimyGit
 		public Config.Model ConfigModel { get; }
 		private static Service instance_ = null;
 		private MainWindow window_ = null;
+        static private string signature_;
 
-		public static Service GetInstance()
+        public static Service GetInstance()
 		{
 			if (instance_ == null)
 			{
@@ -48,5 +49,15 @@ namespace WimyGit
 			RunExternal runner = new RunExternal("gvim.exe", ".");
 			runner.RunWithoutWaiting(cmd);
 		}
+
+        public string GetSignature()
+        {
+            if (string.IsNullOrEmpty(signature_) == false)
+            {
+                return signature_;
+            }
+            signature_ = GitWrapper.GetSignature();
+            return signature_;
+        }
 	}
 }

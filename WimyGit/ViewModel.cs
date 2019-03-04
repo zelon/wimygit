@@ -36,6 +36,8 @@ namespace WimyGit
 			ViewTimelapseCommand = new DelegateCommand((object parameter) => ViewTimeLapse());
 			FetchAllCommand = new DelegateCommand((object parameter) => FetchAll());
 			PullCommand = new DelegateCommand(Pull);
+
+            DisplayAuthor = Service.GetInstance().GetSignature();
 		}
 
         public string SelectedPath { get; set; }
@@ -88,9 +90,7 @@ namespace WimyGit
 
 			List<string> git_porcelain_result = await git_.GetGitStatusPorcelainAllAsync();
 			RefreshPending(git_porcelain_result);
-			HistoryTabMember.RefreshHistory(null);
 			RefreshBranch();
-			RefreshSignature();
             DirectoryTree.ReloadTreeView();
             AddLog(git_porcelain_result);
 			AddLog("Refreshed");
@@ -98,12 +98,6 @@ namespace WimyGit
 			repository_tab_.LeaveLoadingScreen();
 
 			return true;
-		}
-
-		private void RefreshSignature()
-		{
-			DisplayAuthor = git_.GetSignature();
-			NotifyPropertyChanged("DisplayAuthor");
 		}
 
 		private void RefreshBranch()

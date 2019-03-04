@@ -168,10 +168,11 @@ namespace WimyGit
 			CreateGitRunner().RunWithoutWaiting(cmd);
 		}
 
-		public string GetSignature()
+		static public string GetSignature()
 		{
-			List<string> outputs = CreateGitRunner().Run("config --list");
-			string name_prefix = "user.name=";
+            RunExternal runner = new RunExternal(ProgramPathFinder.GetGitBin(), ".");
+            List<string> outputs = runner.Run("config --list");
+            string name_prefix = "user.name=";
 			string name = "unknown";
 			string email_prefix = "user.email=";
 			string email = "unknown@unknown.unknown";
@@ -186,7 +187,7 @@ namespace WimyGit
 					email = output.Substring(email_prefix.Length);
 				}
 			}
-			return String.Format("{0} <{1}>", name, email);
+			return string.Format("{0} <{1}>", name, email);
 		}
 
 		public void Commit(string commit_message)
