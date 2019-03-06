@@ -47,6 +47,11 @@ namespace WimyGit.UserControls
 		public DelegateCommand OkayCommand { get; private set; }
 		void OnOkayCommand(object sender)
 		{
+            if (Util.IsValidGitDirectory(Directory) == false)
+            {
+                Service.GetInstance().ShowMsg("Invalid git repository");
+                return;
+            }
 			new_tab_result_(Directory);
 		}
 	}
