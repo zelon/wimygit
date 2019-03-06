@@ -18,7 +18,8 @@ namespace WimyGit
 		{
 			Debug.Assert(Util.IsValidGitDirectory(git_repository_path));
 
-			Directory = git_repository_path;
+            DisplayAuthor = Service.GetInstance().GetSignature();
+            Directory = git_repository_path;
 
 			git_ = new GitWrapper(Directory, this);
 
@@ -36,8 +37,6 @@ namespace WimyGit
 			ViewTimelapseCommand = new DelegateCommand((object parameter) => ViewTimeLapse());
 			FetchAllCommand = new DelegateCommand((object parameter) => FetchAll());
 			PullCommand = new DelegateCommand(Pull);
-
-            DisplayAuthor = Service.GetInstance().GetSignature();
 		}
 
         public string SelectedPath { get; set; }
