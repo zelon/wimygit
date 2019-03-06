@@ -50,12 +50,6 @@ namespace WimyGit
 			return true;
 		}
 
-		public List<string> GetGitStatusPorcelainAll()
-		{
-			string cmd = string.Format("status --porcelain --untracked-files=all");
-			return CreateGitRunner().Run(cmd);
-		}
-
 		public async Task<List<string>> GetGitStatusPorcelainAllAsync()
 		{
 			string cmd = string.Format("status --porcelain --untracked-files=all");
