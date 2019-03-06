@@ -74,19 +74,19 @@ namespace WimyGit
 
 		public async Task<bool> Refresh()
 		{
-			if (Util.IsValidGitDirectory(Directory) == false)
-			{
+            AddLog("Refreshing Directory: " + Directory);
+            repository_tab_.EnterLoadingScreen();
+
+            if (RefreshBranch() == false)
+            {// invalid repository
+                repository_tab_.LeaveLoadingScreen();
                 repository_tab_.EnterFailedScreen();
-				git_ = null;
-				return false;
-			}
-			AddLog("Refreshing Directory:" + Directory);
+                git_ = null;
+                return false;
+            }
 
-			repository_tab_.EnterLoadingScreen();
-
-			List<string> git_porcelain_result = await git_.GetGitStatusPorcelainAllAsync();
-			RefreshPending(git_porcelain_result);
-			RefreshBranch();
+            List<string> git_porcelain_result = await git_.GetGitStatusPorcelainAllAsync();
+            RefreshPending(git_porcelain_result);
             DirectoryTree.ReloadTreeView();
             AddLog(git_porcelain_result);
 			AddLog("Refreshed");
@@ -96,25 +96,30 @@ namespace WimyGit
 			return true;
 		}
 
-		private void RefreshBranch()
+		private bool RefreshBranch()
 		{
-			if (git_ == null)
+            if (git_ == null)
+            {
+                return false;
+            }
+            BranchInfo branchInfo = git_.GetCurrentBranchInfo();
+            if (branchInfo == null)
+            {
+                return false;
+            }
+            string currentBranchName = branchInfo.CurrentBranchName;
+            HistoryTabMember.CurrentBranchName = currentBranchName;
+            string output = currentBranchName;
+            string ahead_or_behind = branchInfo.BranchTrackingRemoteStatus;
+			if (string.IsNullOrEmpty(ahead_or_behind) == false)
 			{
-				Branch = "Unknown";
+				output = string.Format("{0} - ({1})", currentBranchName, ahead_or_behind);
 			}
-			else
-			{
-                string currentBranchName = git_.GetCurrentBranchName();
-                HistoryTabMember.CurrentBranchName = currentBranchName;
-                string output = currentBranchName;
-				string ahead_or_behind = git_.GetCurrentBranchTrackingRemote();
-				if (ahead_or_behind.Length > 0)
-				{
-					output = string.Format("{0} - ({1})", currentBranchName, ahead_or_behind);
-				}
-				Branch = output;
-			}
+			Branch = output;
+
 			NotifyPropertyChanged("Branch");
+
+            return true;
 		}
 
 		public void AddLog(string log)
