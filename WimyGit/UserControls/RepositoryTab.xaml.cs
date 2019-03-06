@@ -65,5 +65,16 @@ namespace WimyGit
 
 			Mouse.OverrideCursor = null;
 		}
-	}
+
+        public void EnterFailedScreen()
+        {
+            LoadingScreen.Visibility = System.Windows.Visibility.Visible;
+            LoadingScreen.Width = 6000;
+            LoadingScreen.Height = 6000;
+
+            var newColor = System.Windows.Media.Brushes.Red.Clone();
+            newColor.Opacity = 0.5;
+            LoadingScreen.Fill = newColor;
+        }
+    }
 }
