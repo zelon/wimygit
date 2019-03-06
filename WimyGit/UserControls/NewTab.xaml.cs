@@ -26,6 +26,7 @@ namespace WimyGit.UserControls
 
 		private void Grid_Drop(object sender, System.Windows.DragEventArgs e)
 		{
+            e.Handled = true;
 			string[] paths = (string[])e.Data.GetData(System.Windows.DataFormats.FileDrop);
 
 			if (paths.Length != 1)
