@@ -13,7 +13,13 @@ namespace WimyGit.View
 
         private void OnTreeViewSelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
         {
-            ((DirectoryTreeViewModel)DataContext).OnSelectedPathChanged(treeView.SelectedValue as string);
+            string selectedPath = treeView.SelectedValue as string;
+            if (string.IsNullOrEmpty(selectedPath))
+            {
+                return;
+            }
+            DirectoryTreeViewModel viewModel = (DirectoryTreeViewModel)DataContext;
+            viewModel.OnSelectedPathChanged(selectedPath);
         }
     }
 }

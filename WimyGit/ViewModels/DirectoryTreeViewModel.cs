@@ -105,7 +105,11 @@ namespace WimyGit.ViewModels
 
             CompareAndUpdate(oldTreeItems, newTreeItems);
 
-            TreeItems = newTreeItems;
+            TreeItems.Clear();
+            foreach (var item in newTreeItems)
+            {
+                TreeItems.Add(item);
+            }
 
             NotifyPropertyChanged("TreeItems");
         }
