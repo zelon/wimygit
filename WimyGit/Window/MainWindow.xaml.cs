@@ -38,10 +38,6 @@ namespace WimyGit
             {
                 foreach (var tab_info in tab_infos)
                 {
-					if (Util.IsValidGitDirectory(tab_info.Directory) == false)
-					{
-						continue;
-					}
                     AddTab(tab_info.Directory, tab_info.IsFocused);
                 }
             }
