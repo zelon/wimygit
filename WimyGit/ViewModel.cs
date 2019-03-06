@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using WimyGit.ViewModels;
@@ -16,8 +15,6 @@ namespace WimyGit
 
         public ViewModel(string git_repository_path, RepositoryTab repository_tab)
 		{
-			Debug.Assert(Util.IsValidGitDirectory(git_repository_path));
-
             DisplayAuthor = Service.GetInstance().GetSignature();
             Directory = git_repository_path;
 
