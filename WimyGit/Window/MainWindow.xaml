@@ -6,8 +6,9 @@
         Title="WimyGit"
         WindowState="Maximized"
         Width="1324" Height="800" MinWidth="800" MinHeight="600"
-        Loaded="Window_Loaded" Closed="Window_Closed">
-    <Grid Margin="0,0,0,0" AllowDrop="True" DragOver="OnAddTabButtonDragOver" DragDrop.Drop="OnAddTabButtonDrawDrop">
+        Loaded="Window_Loaded" Closed="Window_Closed"
+        DragOver="OnWindowDragOver" DragDrop.Drop="OnWindowDragDrop">
+    <Grid Margin="0,0,0,0" AllowDrop="True">
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>

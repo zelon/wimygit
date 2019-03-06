@@ -81,12 +81,12 @@ namespace WimyGit
             new NewRepositoryController(tab_control_).AddNewTab();
         }
 
-        private void OnAddTabButtonDragOver(object sender, System.Windows.DragEventArgs e)
+        private void OnWindowDragOver(object sender, System.Windows.DragEventArgs e)
         {
             e.Effects = System.Windows.DragDropEffects.All;
         }
 
-        private void OnAddTabButtonDrawDrop(object sender, System.Windows.DragEventArgs e)
+        private void OnWindowDragDrop(object sender, System.Windows.DragEventArgs e)
         {
             string[] paths = (string[])e.Data.GetData(System.Windows.DataFormats.FileDrop);
 
