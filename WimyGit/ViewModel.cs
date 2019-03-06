@@ -109,6 +109,7 @@ namespace WimyGit
 			else
 			{
                 string currentBranchName = git_.GetCurrentBranchName();
+                HistoryTabMember.CurrentBranchName = currentBranchName;
                 string output = currentBranchName;
 				string ahead_or_behind = git_.GetCurrentBranchTrackingRemote();
 				if (ahead_or_behind.Length > 0)
