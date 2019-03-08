@@ -31,13 +31,13 @@ namespace WimyGit.UserControls
 
 			if (paths.Length != 1)
 			{
-				Service.GetInstance().ShowMsg("Please drop one directory only");
+				GlobalSetting.GetInstance().ShowMsg("Please drop one directory only");
 				return;
 			}
 			string repository_path = paths[0];
 			if (Util.IsValidGitDirectory(repository_path) == false)
 			{
-				Service.GetInstance().ShowMsg(string.Format("Invalid git root directory:{0}", repository_path));
+				GlobalSetting.GetInstance().ShowMsg(string.Format("Invalid git root directory:{0}", repository_path));
 				return;
 			}
 			new_tab_result_(repository_path);

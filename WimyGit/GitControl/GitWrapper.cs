@@ -200,7 +200,7 @@ namespace WimyGit
 			}
 			catch (IOException)
 			{
-				Service.GetInstance().ShowMsg("Cannot create temp file for commit");
+				GlobalSetting.GetInstance().ShowMsg("Cannot create temp file for commit");
 				return;
 			}
 			using (var stream = File.CreateText(temp_filename))

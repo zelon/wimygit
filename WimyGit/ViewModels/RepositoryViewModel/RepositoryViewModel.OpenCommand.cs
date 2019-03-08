@@ -1,9 +1,9 @@
 ﻿using System.Windows.Input;
 
-namespace WimyGit
+namespace WimyGit.ViewModels
 {
-	partial class ViewModel
-	{
+	partial class RepositoryViewModel
+    {
 		private ICommand open_explorer_;
 		public ICommand OpenExplorer {
 			get {

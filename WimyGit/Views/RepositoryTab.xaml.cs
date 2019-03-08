@@ -14,7 +14,7 @@ namespace WimyGit
 
 			InitializeComponent();
 
-			DataContext = new ViewModel(git_repository_path, this);
+			DataContext = new ViewModels.RepositoryViewModel(git_repository_path, this);
 		}
 
 		private void OnIsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
@@ -26,7 +26,7 @@ namespace WimyGit
 			{
 				var task = GetViewModel().Refresh();
 				task.GetAwaiter().OnCompleted(() => {
-					Service.GetInstance().ConfigModel.AddRecentRepository(git_repository_path_);
+					GlobalSetting.GetInstance().ConfigModel.AddRecentRepository(git_repository_path_);
 					GetViewModel().DirectoryTree.SetTreeViewRootPath(git_repository_path_);
 					tabControl.Focus();
 				});
@@ -38,9 +38,9 @@ namespace WimyGit
 			logTextBox.ScrollToEnd();
 		}
 
-		private ViewModel GetViewModel()
+		private ViewModels.RepositoryViewModel GetViewModel()
 		{
-			return (ViewModel)this.DataContext;
+			return (ViewModels.RepositoryViewModel)this.DataContext;
 		}
 
 		public void SelectAllUnstagedFilesListBox()

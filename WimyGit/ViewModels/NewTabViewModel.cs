@@ -21,7 +21,7 @@ namespace WimyGit.UserControls
 
 			RepositoryList = new ObservableCollection<string>();
 
-			foreach (string directory_name in Service.GetInstance().ConfigModel.RecentRepositoryPaths)
+			foreach (string directory_name in GlobalSetting.GetInstance().ConfigModel.RecentRepositoryPaths)
 			{
 				RepositoryList.Add(directory_name);
 			}
@@ -49,7 +49,7 @@ namespace WimyGit.UserControls
 		{
             if (Util.IsValidGitDirectory(Directory) == false)
             {
-                Service.GetInstance().ShowMsg("Invalid git repository");
+                GlobalSetting.GetInstance().ShowMsg("Invalid git repository");
                 return;
             }
 			new_tab_result_(Directory);

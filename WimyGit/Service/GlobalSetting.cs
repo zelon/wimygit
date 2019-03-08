@@ -2,23 +2,23 @@
 
 namespace WimyGit
 {
-	class Service
+	class GlobalSetting
 	{
 		public Config.Model ConfigModel { get; }
-		private static Service instance_ = null;
+		private static GlobalSetting instance_ = null;
 		private MainWindow window_ = null;
         static private string signature_;
 
-        public static Service GetInstance()
+        public static GlobalSetting GetInstance()
 		{
 			if (instance_ == null)
 			{
-				instance_ = new Service();
+				instance_ = new GlobalSetting();
 			}
 			return instance_;
 		}
 
-		private Service()
+		private GlobalSetting()
 		{
 			ConfigModel = Config.ConfigFileController.Load();
 		}

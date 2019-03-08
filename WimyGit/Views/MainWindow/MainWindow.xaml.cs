@@ -29,7 +29,7 @@ namespace WimyGit
 
         private void RestoreTabs()
         {
-            var tab_infos = Service.GetInstance().ConfigModel.LastTabInfos;
+            var tab_infos = GlobalSetting.GetInstance().ConfigModel.LastTabInfos;
             if (tab_infos.Count == 0)
             {
                 AddNewTab();
@@ -50,7 +50,7 @@ namespace WimyGit
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            Service.GetInstance().SetWindow(this);
+            GlobalSetting.GetInstance().SetWindow(this);
             SetTitleToGitVersion();
             RestoreTabs();
         }
@@ -65,15 +65,15 @@ namespace WimyGit
             }
             catch (System.IO.FileNotFoundException ex)
             {
-                Service.GetInstance().ShowMsg(ex.Message);
+                GlobalSetting.GetInstance().ShowMsg(ex.Message);
                 System.Environment.Exit(1);
             }
         }
 
         private void Window_Closed(object sender, System.EventArgs e)
         {
-            Service.GetInstance().ConfigModel.CollectTabInfo(tab_control_.Items);
-            Config.ConfigFileController.Save(Service.GetInstance().ConfigModel);
+            GlobalSetting.GetInstance().ConfigModel.CollectTabInfo(tab_control_.Items);
+            Config.ConfigFileController.Save(GlobalSetting.GetInstance().ConfigModel);
         }
 
         private void AddNewTab()
@@ -92,13 +92,13 @@ namespace WimyGit
 
             if (paths.Length != 1)
             {
-                Service.GetInstance().ShowMsg("Please drop one directory only");
+                GlobalSetting.GetInstance().ShowMsg("Please drop one directory only");
                 return;
             }
             string repository_path = paths[0];
             if (Util.IsValidGitDirectory(repository_path) == false)
             {
-                Service.GetInstance().ShowMsg(string.Format("Invalid git root directory:{0}", repository_path));
+                GlobalSetting.GetInstance().ShowMsg(string.Format("Invalid git root directory:{0}", repository_path));
                 return;
             }
             new NewRepositoryController(tab_control_).OpenRepository(repository_path);

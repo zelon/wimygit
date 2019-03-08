@@ -1,15 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Windows.Input;
 
-namespace WimyGit
+namespace WimyGit.ViewModels
 {
-	partial class ViewModel
-	{
+	partial class RepositoryViewModel
+    {
 		public DelegateCommand StageSelectedCommand { get; private set; }
 		public DelegateCommand StageSelectedPartialCommand { get; private set; }
 		public ICommand CommitCommand { get; private set; }
@@ -129,7 +128,7 @@ namespace WimyGit
 				if (file_status.Status == "Untracked")
 				{
 					string filename = System.IO.Path.Combine(Directory, filepath);
-					Service.GetInstance().ViewFile(filename);
+					GlobalSetting.GetInstance().ViewFile(filename);
 					continue;
 				}
 				AddLog(String.Format("Diff {0}", filepath));
@@ -138,7 +137,7 @@ namespace WimyGit
 
 			foreach (string error_msg in error_msg_list)
 			{
-				Service.GetInstance().ShowMsg(error_msg);
+				GlobalSetting.GetInstance().ShowMsg(error_msg);
 			}
 		}
 
@@ -205,7 +204,7 @@ namespace WimyGit
 			{
 				return;
 			}
-			if (Service.GetInstance().ConfirmMsg(msg, "Revert") == System.Windows.MessageBoxResult.Cancel)
+			if (GlobalSetting.GetInstance().ConfirmMsg(msg, "Revert") == System.Windows.MessageBoxResult.Cancel)
 			{
 				return;
 			}

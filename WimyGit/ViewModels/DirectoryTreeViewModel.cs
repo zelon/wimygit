@@ -14,12 +14,12 @@ namespace WimyGit.ViewModels
             }
         }
 
-        private ViewModel viewModel_;
+        private RepositoryViewModel repositoryViewModel_;
         private string RootPath { get; set; }
 
-        public DirectoryTreeViewModel(ViewModel viewModel)
+        public DirectoryTreeViewModel(RepositoryViewModel repositoryViewModel)
         {
-            viewModel_ = viewModel;
+            repositoryViewModel_ = repositoryViewModel;
         }
 
         public void SetTreeViewRootPath(string directory)
@@ -153,8 +153,8 @@ namespace WimyGit.ViewModels
 
         public void OnSelectedPathChanged(string path)
         {
-            viewModel_.SelectedPath = path;
-            viewModel_.HistoryTabMember.RefreshHistory(path);
+            repositoryViewModel_.SelectedPath = path;
+            repositoryViewModel_.HistoryTabMember.RefreshHistory(path);
         }
 
         public class TreeData : NotifyBase

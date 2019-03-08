@@ -4,18 +4,18 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using WimyGit.ViewModels;
 
-namespace WimyGit
+namespace WimyGit.ViewModels
 {
-    public partial class ViewModel : NotifyBase, ILogger
+    public partial class RepositoryViewModel : NotifyBase, ILogger
 	{
 		private RepositoryTab repository_tab_;
 		public GitWrapper git_;
         public DirectoryTreeViewModel DirectoryTree { get; private set; }
         public HistoryTabViewModel HistoryTabMember { get; private set; }
 
-        public ViewModel(string git_repository_path, RepositoryTab repository_tab)
+        public RepositoryViewModel(string git_repository_path, RepositoryTab repository_tab)
 		{
-            DisplayAuthor = Service.GetInstance().GetSignature();
+            DisplayAuthor = GlobalSetting.GetInstance().GetSignature();
             Directory = git_repository_path;
 
 			git_ = new GitWrapper(Directory, this);
@@ -42,7 +42,7 @@ namespace WimyGit
 		{
 			if (string.IsNullOrEmpty(SelectedPath))
 			{
-				Service.GetInstance().ShowMsg("Select a file first");
+				GlobalSetting.GetInstance().ShowMsg("Select a file first");
 				return;
 			}
 			git_.ViewTimeLapse(SelectedPath);
@@ -57,7 +57,7 @@ namespace WimyGit
 		{
 			// http://stackoverflow.com/questions/2796470/wpf-create-a-dialog-prompt
 			var console_progress_window = new ConsoleProgressWindow(Directory, cmd);
-			console_progress_window.Owner = Service.GetInstance().GetWindow();
+			console_progress_window.Owner = GlobalSetting.GetInstance().GetWindow();
 			console_progress_window.ShowDialog();
 			await Refresh();
 		}
