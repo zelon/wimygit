@@ -42,6 +42,11 @@ namespace WimyGit
 			logger_ = logger;
 		}
 
+        public string GetPath()
+        {
+            return path_;
+        }
+
 		public bool IsValidGitDirectory()
 		{
 			string cmd = string.Format("status --porcelain");

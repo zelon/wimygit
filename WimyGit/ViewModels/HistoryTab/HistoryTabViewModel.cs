@@ -8,6 +8,7 @@ namespace WimyGit.ViewModels
     {
         public GitWrapper GitWrapper { get; private set; }
         private string HistorySelectedPath { get; set; }
+        public string SelectedRepositoryPath { get; set; }
         public string CurrentBranchName { get; set; }
 
         public HistoryTabViewModel(GitWrapper gitWrapper)
@@ -122,6 +123,12 @@ namespace WimyGit.ViewModels
             HistoryList.Clear();
 
             HistorySelectedPath = selectedPath;
+            SelectedRepositoryPath = selectedPath.Replace(GitWrapper.GetPath(), "").Replace(@"\", "/");
+            if (string.IsNullOrEmpty(SelectedRepositoryPath))
+            {
+                SelectedRepositoryPath = "/";
+            }
+            NotifyPropertyChanged("SelectedRepositoryPath");
 
             AddHistoryFrom(HistorySelectedPath, skip_count:0);
         }

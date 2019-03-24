@@ -17,7 +17,9 @@
             <RowDefinition Height="50*" MinHeight="100" />
         </Grid.RowDefinitions>
         <Grid Grid.Row="0">
-            <ListView Name="historyList" Margin="0,0,0,0" ItemsSource="{Binding HistoryList}" ScrollViewer.ScrollChanged="HistoryList_ScrollChanged" FontFamily="Consolas">
+            <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="Path:" VerticalAlignment="Top" Height="25" Margin="0,5,0,0" />
+            <TextBox Text="{Binding SelectedRepositoryPath}" Height="23" Margin="32,2,0,0" TextWrapping="Wrap" VerticalAlignment="Top"/>
+            <ListView Name="historyList" Margin="0,30,0,0" ItemsSource="{Binding HistoryList}" ScrollViewer.ScrollChanged="HistoryList_ScrollChanged" FontFamily="Consolas" TabIndex="0">
                 <ListView.InputBindings>
                     <KeyBinding Modifiers="Ctrl" Key="D" Command="{Binding DiffHistorySelectedFile}" />
                 </ListView.InputBindings>
