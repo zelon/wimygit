@@ -1,3 +1,6 @@
+packages/
+UnitTest/bin/
+UnitTest/obj/
 WimyGit/bin
 WimyGit/obj
 .vs/

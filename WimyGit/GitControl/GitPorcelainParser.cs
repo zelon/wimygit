@@ -40,7 +40,7 @@ namespace WimyGit
 	}
 
 	// https://git-scm.com/docs/git-status
-	class GitPorcelainParser
+	public class GitPorcelainParser
 	{
 		public static GitFileStatus ParseFileStatus(string line)
 		{
