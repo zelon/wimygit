@@ -22,7 +22,7 @@
             <RowDefinition Height="100" />
         </Grid.RowDefinitions>
         <Grid Grid.Row="0">
-            <ToolBar HorizontalAlignment="Left" VerticalAlignment="Top" Height="65" Background="{x:Null}">
+            <ToolBar x:Name="toolBar" HorizontalAlignment="Left" VerticalAlignment="Top" Height="65" Background="{x:Null}">
                 <Button Width="75" Command="{Binding RefreshCommand}">
                     <StackPanel Orientation="Vertical">
                         <Image Source="..\Images\Refresh.png" Height="30"/>

@@ -1,4 +1,5 @@
 ﻿using System.Windows;
+using System.Windows.Media.Imaging;
 using System.Windows.Input;
 using System.Windows.Controls;
 
@@ -14,10 +15,57 @@ namespace WimyGit
 
 			InitializeComponent();
 
+            ConstructPluginToolbarButtons();
+
 			DataContext = new ViewModels.RepositoryViewModel(git_repository_path, this);
 		}
 
-		private void OnIsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
+        private void ConstructPluginToolbarButtons()
+        {
+            foreach (var pluginData in Service.PluginController.GetPlugins())
+            {
+                AddToolbarButton(pluginData);
+            }
+        }
+
+        private void AddToolbarButton(Service.PluginData pluginData)
+        {
+            Button button = new Button();
+            button.Width = 100;
+            StackPanel stackPanel = new StackPanel();
+            stackPanel.Orientation = Orientation.Vertical;
+
+            BitmapImage bitmapImage = new BitmapImage(new System.Uri(pluginData.IconPath));
+            Image image = new Image();
+            image.Source = bitmapImage;
+            image.Height = 30;
+
+            TextBlock textBlock = new TextBlock();
+            textBlock.HorizontalAlignment = HorizontalAlignment.Center;
+            textBlock.Text = pluginData.Title;
+
+            stackPanel.Children.Add(image);
+            stackPanel.Children.Add(textBlock);
+
+            button.Content = stackPanel;
+
+            button.Command = new DelegateCommand((object parameter) =>
+            {
+                var git = GetViewModel().git_;
+                if (git == null)
+                {
+                    GlobalSetting.GetInstance().ShowMsg("Git is null");
+                    return;
+                }
+                string workingDirectory = git.GetPath();
+                RunExternal runner = new RunExternal(pluginData.Command, workingDirectory);
+                runner.Run(pluginData.Argument);
+            });
+
+            toolBar.Items.Add(button);
+        }
+
+        private void OnIsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
 		{
 			bool previousVisibled = (bool)e.OldValue;
 			bool newVisibled = (bool)e.NewValue;

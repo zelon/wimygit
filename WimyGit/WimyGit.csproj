@@ -79,6 +79,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Service\PluginController.cs" />
     <Compile Include="ViewModels\HistoryTab\CommitIdToFileListConverter.cs" />
     <Compile Include="Config\ConfigFileController.cs" />
     <Compile Include="Config\Model.cs" />

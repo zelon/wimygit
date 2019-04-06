@@ -38,7 +38,14 @@ namespace WimyGit.Config
 			}
 			root.AppendChild(lastTabs);
 
-			document.Save(GetSaveFilePath());
+            string saveFilePath = GetSaveFilePath();
+            if (File.Exists(saveFilePath) == false)
+            {
+                string directoryName = Path.GetDirectoryName(saveFilePath);
+                Directory.CreateDirectory(directoryName);
+            }
+
+            document.Save(saveFilePath);
 		}
 
 		public static Model Load()
@@ -69,7 +76,7 @@ namespace WimyGit.Config
 
 		private static string GetSaveFilePath()
 		{
-			return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "wimygit_config.xml");
+			return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), @"WimyGit\config.xml");
 		}
 	}
 }
