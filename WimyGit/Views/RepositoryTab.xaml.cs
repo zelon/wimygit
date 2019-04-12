@@ -64,7 +64,14 @@ namespace WimyGit
                 {
                     case Service.ExecutionType.kWithoutShellAndNoWaiting:
                         RunExternal runner = new RunExternal(pluginData.Command, workingDirectory);
-                        runner.RunWithoutWaiting(pluginData.Argument);
+                        try
+                        {
+                            runner.RunWithoutWaiting(pluginData.Argument);
+                        }
+                        catch (System.Exception exception)
+                        {
+                            GlobalSetting.GetInstance().ShowMsg("Cannot execute. " + exception.Message);
+                        }
                         return;
                     case Service.ExecutionType.kWimyGitInnerShellAndRefreshRepositoryStatus:
                         GetViewModel().DoWithProgressWindow(pluginData.Command, pluginData.Argument);
