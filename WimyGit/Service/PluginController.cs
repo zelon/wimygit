@@ -33,11 +33,11 @@ namespace WimyGit.Service
             // temp data3
             {
                 PluginData data = new PluginData();
-                data.Title = "git status";
+                data.Title = "Run VS Code";
                 data.IconPath = @"..\Images\Extension.png";
-                data.Command = "git.exe";
-                data.Argument = "status";
-                data.ExecutionType = ExecutionType.kWimyGitInnerShellAndRefreshRepositoryStatus;
+                data.Command = "cmd.exe";
+                data.Argument = " /c code .";
+                data.ExecutionType = ExecutionType.kWithoutShellAndNoWaiting;
 
                 output.Add(data);
             }
