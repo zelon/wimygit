@@ -9,12 +9,14 @@ namespace WimyGit
 	{
 		private Process process_;
 		private string repository_path_;
+        private string filename_;
 		private string command_;
 		private bool canceled_ = false;
 
-		public ConsoleProgressWindow(string repository_path, string command)
+		public ConsoleProgressWindow(string repository_path, string filename, string command)
 		{
 			repository_path_ = repository_path;
+            filename_ = filename;
 			command_ = command;
 
 			InitializeComponent();
@@ -53,7 +55,7 @@ namespace WimyGit
 		private void InitializeProcess()
 		{
 			process_ = new Process();
-			process_.StartInfo.FileName = ProgramPathFinder.GetGitBin();
+            process_.StartInfo.FileName = filename_;
 			process_.StartInfo.Arguments = command_;
 			process_.StartInfo.UseShellExecute = false;
 			process_.StartInfo.RedirectStandardInput = true;

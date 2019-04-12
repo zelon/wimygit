@@ -58,8 +58,17 @@ namespace WimyGit
                     return;
                 }
                 string workingDirectory = git.GetPath();
-                RunExternal runner = new RunExternal(pluginData.Command, workingDirectory);
-                runner.Run(pluginData.Argument);
+
+                switch (pluginData.ExecutionType)
+                {
+                    case Service.ExecutionType.kWithoutShellAndNoWaiting:
+                        RunExternal runner = new RunExternal(pluginData.Command, workingDirectory);
+                        runner.RunWithoutWaiting(pluginData.Argument);
+                        return;
+                    case Service.ExecutionType.kWimyGitInnerShellAndRefreshRepositoryStatus:
+                        GetViewModel().DoWithProgressWindow(pluginData.Command, pluginData.Argument);
+                        return;
+                }
             });
 
             toolBar.Items.Add(button);

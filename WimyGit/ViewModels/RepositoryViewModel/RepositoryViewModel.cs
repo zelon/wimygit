@@ -50,26 +50,31 @@ namespace WimyGit.ViewModels
 
 		public void FetchAll()
 		{
-			DoWithProgressWindow("fetch --all");
+            DoGitWithProgressWindow("fetch --all");
 		}
 
-		public async void DoWithProgressWindow(string cmd)
+		public Task DoWithProgressWindow(string filename, string cmd)
 		{
 			// http://stackoverflow.com/questions/2796470/wpf-create-a-dialog-prompt
-			var console_progress_window = new ConsoleProgressWindow(Directory, cmd);
+			var console_progress_window = new ConsoleProgressWindow(Directory, filename, cmd);
 			console_progress_window.Owner = GlobalSetting.GetInstance().GetWindow();
 			console_progress_window.ShowDialog();
-			await Refresh();
+			return Refresh();
 		}
+
+        public async void DoGitWithProgressWindow(string cmd)
+        {
+            await DoWithProgressWindow(ProgramPathFinder.GetGitBin(), cmd);
+        }
 
 		public void Pull(object not_used)
 		{
-			DoWithProgressWindow("pull");
+            DoGitWithProgressWindow("pull");
 		}
 
 		public void Push()
 		{
-			DoWithProgressWindow("push");
+            DoGitWithProgressWindow("push");
 		}
 
 		public async Task<bool> Refresh()

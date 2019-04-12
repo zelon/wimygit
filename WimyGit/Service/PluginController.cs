@@ -15,28 +15,48 @@ namespace WimyGit.Service
                 data.IconPath = @"C:\git\WimyGit\WimyGit\Images\Pull.png";
                 data.Command = "gvim.exe";
                 data.Argument = ".gitignore";
-                data.ExecutionType = ExecutionType.kWithoutShell;
+                data.ExecutionType = ExecutionType.kWithoutShellAndNoWaiting;
 
                 output.Add(data);
             }
+            // temp data2
+            {
+                PluginData data = new PluginData();
+                data.Title = "git status";
+                data.IconPath = @"C:\git\WimyGit\WimyGit\Images\Pull.png";
+                data.Command = "git.exe";
+                data.Argument = "status";
+                data.ExecutionType = ExecutionType.kWimyGitInnerShellAndRefreshRepositoryStatus;
 
+                output.Add(data);
+            }
+            // temp data3
+            {
+                PluginData data = new PluginData();
+                data.Title = "git status";
+                data.IconPath = @"C:\git\WimyGit\WimyGit\Images\Pull.png";
+                data.Command = "git.exe";
+                data.Argument = "status";
+                data.ExecutionType = ExecutionType.kWimyGitInnerShellAndRefreshRepositoryStatus;
+
+                output.Add(data);
+            }
             return output;
         }
     }
 
     public enum ExecutionType
     {
-        kWithoutShell,
+        kWithoutShellAndNoWaiting,
+        kKeepShellAndNoWaiting,
         kWimyGitInnerShellAndRefreshRepositoryStatus,
-        kWithShellAndWaitAnyKey,
-        kKeepShell,
     }
 
     public class PluginData
     {
         public PluginData()
         {
-            ExecutionType = ExecutionType.kWithoutShell;
+            ExecutionType = ExecutionType.kWithoutShellAndNoWaiting;
         }
 
         public string Title { get; set; }
