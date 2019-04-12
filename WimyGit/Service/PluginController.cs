@@ -12,7 +12,7 @@ namespace WimyGit.Service
             {
                 PluginData data = new PluginData();
                 data.Title = "Edit gitignore";
-                data.IconPath = @"C:\git\WimyGit\WimyGit\Images\Pull.png";
+                data.IconPath = @"..\Images\Extension.png";
                 data.Command = "gvim.exe";
                 data.Argument = ".gitignore";
                 data.ExecutionType = ExecutionType.kWithoutShellAndNoWaiting;
@@ -23,7 +23,7 @@ namespace WimyGit.Service
             {
                 PluginData data = new PluginData();
                 data.Title = "git status";
-                data.IconPath = @"C:\git\WimyGit\WimyGit\Images\Pull.png";
+                data.IconPath = @"..\Images\Extension.png";
                 data.Command = "git.exe";
                 data.Argument = "status";
                 data.ExecutionType = ExecutionType.kWimyGitInnerShellAndRefreshRepositoryStatus;
@@ -34,7 +34,7 @@ namespace WimyGit.Service
             {
                 PluginData data = new PluginData();
                 data.Title = "git status";
-                data.IconPath = @"C:\git\WimyGit\WimyGit\Images\Pull.png";
+                data.IconPath = @"..\Images\Extension.png";
                 data.Command = "git.exe";
                 data.Argument = "status";
                 data.ExecutionType = ExecutionType.kWimyGitInnerShellAndRefreshRepositoryStatus;

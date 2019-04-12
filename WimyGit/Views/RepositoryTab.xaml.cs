@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using System;
+using System.Windows;
 using System.Windows.Media.Imaging;
 using System.Windows.Input;
 using System.Windows.Controls;
@@ -35,7 +36,7 @@ namespace WimyGit
             StackPanel stackPanel = new StackPanel();
             stackPanel.Orientation = Orientation.Vertical;
 
-            BitmapImage bitmapImage = new BitmapImage(new System.Uri(pluginData.IconPath));
+            BitmapImage bitmapImage = new BitmapImage(new System.Uri(pluginData.IconPath, UriKind.RelativeOrAbsolute));
             Image image = new Image();
             image.Source = bitmapImage;
             image.Height = 30;
