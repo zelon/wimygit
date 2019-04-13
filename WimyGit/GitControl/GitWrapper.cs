@@ -29,6 +29,7 @@ namespace WimyGit
     {
         public string CurrentBranchName { get; set; }
         public string BranchTrackingRemoteStatus { get; set; }
+        public bool NoCommitsYet { get; set; }
     }
 
     public class GitWrapper
@@ -154,7 +155,7 @@ namespace WimyGit
 			CreateGitRunner().RunGitCmdInConsoleAndContinue(cmd);
 		}
 
-		public void Unstage(IEnumerable<string> filelist)
+		public void Unstage(IEnumerable<string> filelist, bool isNoCommitsYet)
 		{
 			if (filelist.Count() == 0)
 			{
@@ -163,8 +164,16 @@ namespace WimyGit
 			var runner = CreateGitRunner();
 			foreach (var file in filelist)
 			{
-				string cmd = "reset HEAD " + Util.WrapFilePath(file);
-				logger_.AddLog(cmd);
+                string cmd;
+                if (isNoCommitsYet)
+                {
+                    cmd = "rm --cached " + Util.WrapFilePath(file);
+                }
+                else
+                {
+                    cmd = "reset HEAD " + Util.WrapFilePath(file);
+                }
+                logger_.AddLog(cmd);
 				runner.Run(cmd);
 			}
 		}
@@ -277,6 +286,16 @@ namespace WimyGit
                 if (match.Success)
                 {
                     branchInfo.CurrentBranchName = match.Groups[1].ToString();
+                }
+            }
+            var noCommitsYetRegex = new Regex("No commits yet");
+            branchInfo.NoCommitsYet = false;
+            foreach (string line in results)
+            {
+                match = noCommitsYetRegex.Match(line);
+                if (match.Success)
+                {
+                    branchInfo.NoCommitsYet = true;
                 }
             }
 

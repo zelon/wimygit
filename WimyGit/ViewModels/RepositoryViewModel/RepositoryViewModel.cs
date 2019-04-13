@@ -12,7 +12,7 @@ namespace WimyGit.ViewModels
 		public GitWrapper git_;
         public DirectoryTreeViewModel DirectoryTree { get; private set; }
         public HistoryTabViewModel HistoryTabMember { get; private set; }
-
+        private bool noCommitsYet_ = false;
         public RepositoryViewModel(string git_repository_path, RepositoryTab repository_tab)
 		{
             DisplayAuthor = GlobalSetting.GetInstance().GetSignature();
@@ -112,6 +112,7 @@ namespace WimyGit.ViewModels
             {
                 return false;
             }
+            noCommitsYet_ = branchInfo.NoCommitsYet;
             string currentBranchName = branchInfo.CurrentBranchName;
             HistoryTabMember.CurrentBranchName = currentBranchName;
             string output = currentBranchName;

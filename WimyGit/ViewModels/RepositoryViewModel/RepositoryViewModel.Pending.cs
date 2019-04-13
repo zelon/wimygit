@@ -155,7 +155,7 @@ namespace WimyGit.ViewModels
 			{
 				AddLog("Unstage: " + filepath);
 			}
-			git_.Unstage(SelectedStagedFilePathList);
+			git_.Unstage(SelectedStagedFilePathList, noCommitsYet_);
 			await Refresh();
 		}
 
