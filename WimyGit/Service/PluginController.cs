@@ -25,7 +25,7 @@ namespace WimyGit.Service
                 data.Title = "git status";
                 data.IconPath = @"..\Images\Extension.png";
                 data.Command = "git.exe";
-                data.Argument = "status";
+                data.Argument = "status --untracked-files=all";
                 data.ExecutionType = ExecutionType.kWimyGitInnerShellAndRefreshRepositoryStatus;
 
                 output.Add(data);
