@@ -39,7 +39,8 @@ namespace WimyGit
             BitmapImage bitmapImage = new BitmapImage(new System.Uri(pluginData.IconPath, UriKind.RelativeOrAbsolute));
             Image image = new Image();
             image.Source = bitmapImage;
-            image.Height = 30;
+            image.Width = 32;
+            image.Height = 32;
 
             TextBlock textBlock = new TextBlock();
             textBlock.HorizontalAlignment = HorizontalAlignment.Center;
