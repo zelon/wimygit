@@ -103,7 +103,7 @@
                             <GridSplitter Grid.Row="1" Height="10" HorizontalAlignment="Stretch" VerticalAlignment="Center" />
                             <Grid Grid.Row="2">
                                 <Label Content="Staged files" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top"/>
-                                <ListBox Margin="10,41,10,10" ItemsSource="{Binding StagedList}" >
+                                <ListBox Margin="10,41,10,10" ItemsSource="{Binding StagedList}" SelectionMode="Extended" VirtualizingStackPanel.IsVirtualizing="False">
                                     <ListBox.InputBindings>
                                         <KeyBinding Modifiers="Ctrl" Key="D" Command="{Binding StagedDiffCommand}" />
                                         <KeyBinding Modifiers="Ctrl" Key="R" Command="{Binding UnstageCommand}" />
