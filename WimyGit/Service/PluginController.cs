@@ -12,7 +12,7 @@ namespace WimyGit.Service
             {
                 PluginData data = new PluginData();
                 data.Title = "Edit gitignore";
-                data.IconPath = @"..\Images\Extension.png";
+                data.IconPath = @"..\Images\Vim.png";
                 data.Command = "gvim.exe";
                 data.Argument = ".gitignore";
                 data.ExecutionType = ExecutionType.kWithoutShellAndNoWaiting;
@@ -34,7 +34,7 @@ namespace WimyGit.Service
             {
                 PluginData data = new PluginData();
                 data.Title = "Run VS Code";
-                data.IconPath = @"..\Images\Extension.png";
+                data.IconPath = @"..\Images\VsCode.png";
                 data.Command = "cmd.exe";
                 data.Argument = " /c code .";
                 data.ExecutionType = ExecutionType.kWithoutShellAndNoWaiting;
