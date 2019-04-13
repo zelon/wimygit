@@ -93,7 +93,6 @@ namespace WimyGit.ViewModels
             List<string> git_porcelain_result = await git_.GetGitStatusPorcelainAllAsync();
             RefreshPending(git_porcelain_result);
             DirectoryTree.ReloadTreeView();
-            AddLog(git_porcelain_result);
 			AddLog("Refreshed");
 
 			repository_tab_.LeaveLoadingScreen();
