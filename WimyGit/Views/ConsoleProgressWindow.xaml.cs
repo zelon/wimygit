@@ -114,7 +114,6 @@ namespace WimyGit
 
 		private void Process_Exited()
 		{
-			textBox.IsEnabled = false;
 			processStatus.Content = "Process exited";
 
 			button.Content = "Close";

@@ -12,7 +12,7 @@
 			<RowDefinition Height="46" />
 		</Grid.RowDefinitions>
 		<Grid Grid.Row="0">
-			<TextBox x:Name="textBox" TextWrapping="Wrap" Text="" FontFamily="Consolas" FontSize="15" Background="{DynamicResource {x:Static SystemColors.ActiveCaptionBrushKey}}"/>
+			<TextBox x:Name="textBox" TextWrapping="Wrap" Text="" FontFamily="Consolas" FontSize="15" Background="{DynamicResource {x:Static SystemColors.ActiveCaptionBrushKey}}" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto" IsReadOnly="True" />
 		</Grid>
 		<Grid Grid.Row="1">
 			<Button x:Name="button" FontSize="15" Content="Cancel" HorizontalAlignment="Right" VerticalAlignment="Bottom" Width="114" Height="46" Click="OnButton_Click"/>
