@@ -98,7 +98,7 @@ namespace WimyGit
 
 		private void StartProcess()
 		{
-			AddOutputText(string.Format("git {0}", command_));
+			AddOutputText(string.Format("{0} {1}", filename_, command_));
 
 			process_.Start();
 			process_.BeginOutputReadLine();
