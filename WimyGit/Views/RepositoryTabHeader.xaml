@@ -16,7 +16,8 @@
             <Label Content="TabItem" x:Name="Title" Width="130" HorizontalAlignment="Left" VerticalAlignment="Center" />
         </Grid>
         <Grid Grid.Column="1">
-            <Button Content="X" Click="CloseButton_Click" x:Name="CloseButton" Width="25" Height="25" HorizontalAlignment="Right" VerticalAlignment="Center">
+            <Button Click="CloseButton_Click" x:Name="CloseButton" Width="25" Height="25" HorizontalAlignment="Right" VerticalAlignment="Center">
+                <Image Source="..\Images\Close.png" Width="13" Height="13" />
                 <Button.Background>
                     <SolidColorBrush Opacity="0"/>
                 </Button.Background>
