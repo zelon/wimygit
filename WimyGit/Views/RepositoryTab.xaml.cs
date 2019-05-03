@@ -23,13 +23,13 @@ namespace WimyGit
 
         private void ConstructPluginToolbarButtons()
         {
-            foreach (var pluginData in Service.PluginController.GetPlugins())
+            foreach (var pluginData in Plugin.PluginController.GetPlugins())
             {
                 AddToolbarButton(pluginData);
             }
         }
 
-        private void AddToolbarButton(Service.PluginData pluginData)
+        private void AddToolbarButton(Plugin.PluginData pluginData)
         {
             Button button = new Button();
             button.Width = 100;
@@ -63,7 +63,7 @@ namespace WimyGit
 
                 switch (pluginData.ExecutionType)
                 {
-                    case Service.ExecutionType.kWithoutShellAndNoWaiting:
+                    case Plugin.ExecutionType.WithoutShellAndNoWaiting:
                         RunExternal runner = new RunExternal(pluginData.Command, workingDirectory);
                         try
                         {
@@ -74,7 +74,7 @@ namespace WimyGit
                             GlobalSetting.GetInstance().ShowMsg("Cannot execute. " + exception.Message);
                         }
                         return;
-                    case Service.ExecutionType.kWimyGitInnerShellAndRefreshRepositoryStatus:
+                    case Plugin.ExecutionType.WimyGitInnerShellAndRefreshRepositoryStatus:
                         GetViewModel().DoWithProgressWindow(pluginData.Command, pluginData.Argument);
                         return;
                 }

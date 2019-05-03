@@ -79,7 +79,8 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="Service\PluginController.cs" />
+    <Compile Include="Plugin\PluginController.cs" />
+    <Compile Include="Plugin\PluginData.cs" />
     <Compile Include="ViewModels\HistoryTab\CommitIdToFileListConverter.cs" />
     <Compile Include="Config\ConfigFileController.cs" />
     <Compile Include="Config\Model.cs" />
@@ -174,6 +175,9 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <None Include="Plugin\Plugin.xsd">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -233,6 +237,9 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\Close.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Plugin\Sample\Plugin.xml" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

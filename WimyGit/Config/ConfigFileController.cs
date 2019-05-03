@@ -74,9 +74,14 @@ namespace WimyGit.Config
 			return model;
 		}
 
+        public static string GetConfigDirectoryPath()
+        {
+            return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "WimyGit");
+        }
+
 		private static string GetSaveFilePath()
 		{
-			return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), @"WimyGit\config.xml");
+			return Path.Combine(GetConfigDirectoryPath(), "config.xml");
 		}
 	}
 }

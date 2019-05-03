@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+<xs:element name="wimygit_plugin">
+  <xs:complexType>
+    <xs:sequence>
+      <xs:element name="version" type="xs:int"/>
+      <xs:element name="name" type="xs:string"/>
+      <xs:element name="description" type="xs:string"/>
+      <xs:element name="title" type="xs:string"/>
+      <xs:element name="icon">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="type" type="xs:string"/>
+            <xs:element name="path" type="xs:string"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="command" type="xs:string" />
+      <xs:element name="arguments">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="argument" minOccurs="0" maxOccurs="unbounded">
+              <xs:complexType>
+                <xs:sequence>
+                  <xs:element name="type">
+                    <xs:simpleType>
+                      <xs:restriction base="xs:string">
+                        <xs:enumeration value="string"/>
+                        <xs:enumeration value="inputbox"/>
+                      </xs:restriction>
+                    </xs:simpleType>
+                  </xs:element>
+                  <xs:element name="value" type="xs:string"/>
+                </xs:sequence>
+              </xs:complexType>
+            </xs:element>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="execution_type">
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:enumeration value="WimyGitInnerShellAndRefreshRepositoryStatus" />
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+</xs:element>
+  
+</xs:schema>
