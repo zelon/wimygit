@@ -17,7 +17,6 @@ namespace WimyGit.ViewModels
             GitWrapper = gitWrapper;
 
             HistoryList = new System.Collections.ObjectModel.ObservableCollection<HistoryStatus>();
-            HistoryFileList = new System.Collections.ObjectModel.ObservableCollection<HistoryFile>();
 
             HistorySelectedCommand = new DelegateCommand(OnHistorySelectedCommand);
             MoreHistoryCommand = new DelegateCommand(OnMoreHistoryCommand);
@@ -58,17 +57,6 @@ namespace WimyGit.ViewModels
 
         public System.Collections.ObjectModel.ObservableCollection<HistoryStatus> HistoryList { get; set; }
 
-        public class HistoryFile
-        {
-            public string Status { get; set; }
-            public string Display { get; set; }
-            public string FileName { get; set; }
-            public string FileName2 { get; set; }
-            public string Directory { get; set; }
-            public bool IsSelected { get; set; }
-        }
-        public System.Collections.ObjectModel.ObservableCollection<HistoryFile> HistoryFileList { get; set; }
-
         public ICommand DiffHistorySelectedFile { get; private set; }
 
         private void OnDiffHistroySelectedFile()
@@ -108,17 +96,6 @@ namespace WimyGit.ViewModels
         {
             HistoryStatus status = (HistoryStatus)parameter;
             HistoryDetailCommitId = status.CommitId;
-        }
-
-        private string history_detail_;
-        public string HistoryDetail {
-            get {
-                return history_detail_;
-            }
-            set {
-                history_detail_ = value;
-                NotifyPropertyChanged("HistoryDetail");
-            }
         }
 
         public string HistoryDetailCommitId { get; set; }

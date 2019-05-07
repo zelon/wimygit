@@ -32,11 +32,10 @@ namespace WimyGit
             {
                 return null;
             }
-            List<HistoryTabViewModel.HistoryFile> output = new List<HistoryTabViewModel.HistoryFile>();
+            List<HistoryFile> output = new List<HistoryFile>();
             foreach (var file_info in historyTabViewModel.GitWrapper.GetFilelistOfCommit(commitId))
             {
-                HistoryTabViewModel.HistoryFile file = new HistoryTabViewModel.HistoryFile();
-                file.Directory = file_info.FileName;
+                HistoryFile file = new HistoryFile();
                 file.Status = file_info.Status;
                 file.FileName = file_info.FileName;
                 file.FileName2 = file_info.FileName2;
@@ -45,7 +44,6 @@ namespace WimyGit
                 {
                     file.Display += kFilenameSeperator + file.FileName2;
                 }
-                file.IsSelected = false;
                 output.Add(file);
             }
             return output;
@@ -55,5 +53,13 @@ namespace WimyGit
         {
             throw new NotImplementedException();
         }
+    }
+
+    public class HistoryFile
+    {
+        public string Status { get; set; }
+        public string Display { get; set; }
+        public string FileName { get; set; }
+        public string FileName2 { get; set; }
     }
 }
