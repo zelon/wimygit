@@ -8,8 +8,6 @@ namespace WimyGit
 {
     public class CommitIdToFileListConverter : IMultiValueConverter
     {
-        public static string kFilenameSeperator = " -> ";
-        
         public CommitIdToFileListConverter()
         {
         }
@@ -36,13 +34,14 @@ namespace WimyGit
             foreach (var file_info in historyTabViewModel.GitWrapper.GetFilelistOfCommit(commitId))
             {
                 HistoryFile file = new HistoryFile();
+                file.CommitId = commitId;
                 file.Status = file_info.Status;
                 file.FileName = file_info.FileName;
                 file.FileName2 = file_info.FileName2;
                 file.Display = file.FileName;
                 if (string.IsNullOrEmpty(file.FileName2) == false)
                 {
-                    file.Display += kFilenameSeperator + file.FileName2;
+                    file.Display += " -> " + file.FileName2;
                 }
                 output.Add(file);
             }
@@ -57,6 +56,7 @@ namespace WimyGit
 
     public class HistoryFile
     {
+        public string CommitId { get; set; }
         public string Status { get; set; }
         public string Display { get; set; }
         public string FileName { get; set; }
