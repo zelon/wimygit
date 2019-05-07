@@ -13,9 +13,13 @@ namespace WimyGit.Plugin
             {
                 return _pluginDatas;
             }
+            string pluginRootDirectoryPath = GetPluginRootDirectoryPath();
+            if (Directory.Exists(pluginRootDirectoryPath) == false)
+            {
+                Directory.CreateDirectory(pluginRootDirectoryPath);
+            }
+            string[] directory_names = Directory.GetDirectories(pluginRootDirectoryPath);
             _pluginDatas = new List<PluginData>();
-
-            string[] directory_names = Directory.GetDirectories(GetPluginRootDirectoryPath());
             foreach (string directory_name in directory_names)
             {
                 try
