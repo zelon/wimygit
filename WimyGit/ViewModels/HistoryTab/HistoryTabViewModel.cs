@@ -10,6 +10,7 @@ namespace WimyGit.ViewModels
         private string HistorySelectedPath { get; set; }
         public string SelectedRepositoryPath { get; set; }
         public string CurrentBranchName { get; set; }
+        public string SelectedDisplayOnHistoryFiles { get; set; }
 
         public HistoryTabViewModel(GitWrapper gitWrapper)
         {
@@ -72,19 +73,23 @@ namespace WimyGit.ViewModels
 
         private void OnDiffHistroySelectedFile()
         {
-            foreach (var filelist in HistoryFileList)
+            string filenameDisplay = SelectedDisplayOnHistoryFiles;
+            if (string.IsNullOrEmpty(filenameDisplay))
             {
-                if (filelist.IsSelected)
-                {
-                    if (string.IsNullOrEmpty(filelist.FileName2))
-                    {
-                        GitWrapper.DiffHistorySelected(HistoryDetailCommitId, filelist.FileName);
-                    }
-                    else
-                    {
-                        GitWrapper.DiffHistorySelectedWithRenameTracking(HistoryDetailCommitId, filelist.FileName, filelist.FileName2);
-                    }
-                }
+                return;
+            }
+            string[] filenames = filenameDisplay.Split(new string[] { CommitIdToFileListConverter.kFilenameSeperator }, StringSplitOptions.None);
+            if (filenames.Length == 1)
+            {
+                string filename = filenames[0];
+                GitWrapper.DiffHistorySelected(HistoryDetailCommitId, filename);
+            }
+            else
+            {
+                System.Diagnostics.Debug.Assert(filenames.Length == 2);
+                string filename1 = filenames[0];
+                string filename2 = filenames[1];
+                GitWrapper.DiffHistorySelectedWithRenameTracking(HistoryDetailCommitId, filename1, filename2);
             }
         }
 

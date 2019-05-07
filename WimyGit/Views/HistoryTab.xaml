@@ -63,7 +63,7 @@
                     <TextBox Height="Auto" Grid.RowSpan="1" Grid.ColumnSpan="1" DataContext="{Binding Path=SelectedItem,ElementName=historyList}" Text="{Binding Path=Detail}" Margin="0,0,0,0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"/>
                 </TabItem>
                 <TabItem Header="Files">
-                    <ListBox Margin="0,0,0,0" SelectedItem="">
+                    <ListBox Margin="0,0,0,0" SelectedValue="{Binding Path=SelectedDisplayOnHistoryFiles}" SelectedValuePath="Display">
                         <ListBox.ItemsSource>
                             <MultiBinding Converter="{StaticResource commitIdToFileListConverter}">
                                 <Binding Path="."/>

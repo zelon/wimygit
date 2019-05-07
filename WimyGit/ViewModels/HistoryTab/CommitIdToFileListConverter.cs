@@ -8,6 +8,8 @@ namespace WimyGit
 {
     public class CommitIdToFileListConverter : IMultiValueConverter
     {
+        public static string kFilenameSeperator = " -> ";
+        
         public CommitIdToFileListConverter()
         {
         }
@@ -41,7 +43,7 @@ namespace WimyGit
                 file.Display = file.FileName;
                 if (string.IsNullOrEmpty(file.FileName2) == false)
                 {
-                    file.Display += " -> " + file.FileName2;
+                    file.Display += kFilenameSeperator + file.FileName2;
                 }
                 file.IsSelected = false;
                 output.Add(file);
