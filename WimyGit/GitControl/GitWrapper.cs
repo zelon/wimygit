@@ -64,7 +64,7 @@ namespace WimyGit
 
 		public async Task<List<string>> GetGitStatusPorcelainAllAsync()
 		{
-			string cmd = string.Format("status --porcelain --untracked-files=all");
+			string cmd = string.Format("-c core.quotepath=false status --porcelain --untracked-files=all");
 			return await CreateGitRunner().RunAsync(cmd);
 		}
 
@@ -95,13 +95,13 @@ namespace WimyGit
             string cmd;
             List<string> raw_outputs;
             
-            cmd = string.Format("diff --name-status {0}^ {0}", sha);
+            cmd = string.Format("-c core.quotepath=false diff --name-status {0}^ {0}", sha);
             logger_.AddLog(cmd);
             raw_outputs = CreateGitRunner().Run(cmd);
             if (raw_outputs.Count == 0 || raw_outputs[0].StartsWith("fatal"))
             {
                 // if the sha indicate the first commit, cannot get diff from the previous
-                cmd = string.Format("diff --name-status {0}", sha);
+                cmd = string.Format("-c core.quotepath=false diff --name-status {0}", sha);
                 logger_.AddLog(cmd);
                 raw_outputs = CreateGitRunner().Run(cmd);
             }
