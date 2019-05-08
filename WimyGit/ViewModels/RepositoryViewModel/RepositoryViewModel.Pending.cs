@@ -80,12 +80,12 @@ namespace WimyGit.ViewModels
 		{
 			if (String.IsNullOrEmpty(CommitMessage))
 			{
-				AddLog("Empty commit message. Please fill commit message");
+                GlobalSetting.GetInstance().ShowMsg("Empty commit message");
 				return;
 			}
 			if (StagedList.Count == 0)
 			{
-				AddLog("No staged file");
+                GlobalSetting.GetInstance().ShowMsg("No staged file");
 				return;
 			}
 			git_.Commit(CommitMessage);
