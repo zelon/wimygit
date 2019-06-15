@@ -137,14 +137,28 @@ namespace WimyGit
 				return;
 			}
 
-			string cmd = "add ";
+            List<string> filelists = new List<string>();
+            string filelist = "";
 			foreach (string filename in selectedModifiedFilePathList)
 			{
-				cmd += string.Format(" {0}", Util.WrapFilePath(filename));
+				filelist += string.Format(" {0}", Util.WrapFilePath(filename));
+                if (filelist.Length > 2048)
+                {
+                    filelists.Add(filelist);
+                    filelist = "";
+                }
 			}
-			logger_.AddLog(cmd);
-			logger_.AddLog(CreateGitRunner().Run(cmd));
-		}
+            if (string.IsNullOrEmpty(filelist) == false)
+            {
+                filelists.Add(filelist);
+            }
+            foreach (string result_filelist in filelists)
+            {
+                string cmd = "add " + result_filelist;
+                logger_.AddLog(cmd);
+                logger_.AddLog(CreateGitRunner().Run(cmd));
+            }
+        }
 
 		public void StagePartial(string filepath)
 		{
