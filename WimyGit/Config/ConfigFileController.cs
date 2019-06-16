@@ -63,14 +63,27 @@ namespace WimyGit.Config
 				model.RecentRepositoryPaths.AddLast(node.InnerText);
 			}
 
+            bool existsFocused = false;
 			foreach (XmlNode node in document.GetElementsByTagName("last_tab"))
 			{
 				TabInfo tabInfo = new TabInfo() {
 					Directory = node.SelectSingleNode("directory").InnerText,
 					IsFocused = bool.Parse(node.SelectSingleNode("is_focused").InnerText)
 				};
+                if (Directory.Exists(tabInfo.Directory) == false)
+                {
+                    continue;
+                }
 				model.LastTabInfos.AddLast(tabInfo);
+                if (tabInfo.IsFocused)
+                {
+                    existsFocused = true;
+                }
 			}
+            if (existsFocused == false && model.LastTabInfos.Count > 0)
+            {
+                model.LastTabInfos.Last.Value.IsFocused = true;
+            }
 			return model;
 		}
 
