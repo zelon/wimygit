@@ -48,7 +48,7 @@ namespace WimyGit
 
 			GitFileStatus status = new GitFileStatus();
 			string mark = line.Substring(0, 2);
-			string filename = line.Substring(3);
+            string filename = line.Substring(3).Replace("\"", "");
 			var splitted_renamed_filename = filename.Split(new string[] { " -> " }, StringSplitOptions.None);
 
 			if (mark == "??")
