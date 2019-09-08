@@ -23,10 +23,24 @@ namespace WimyGit
 
         private void ConstructPluginToolbarButtons()
         {
-            foreach (var pluginData in Plugin.PluginController.GetPlugins())
+            // Default Plugins
+            {
+                AddToolbarButton(CreateGitRemoteShowPlugin());
+            }
+            foreach (Plugin.PluginData pluginData in Plugin.PluginController.GetPlugins())
             {
                 AddToolbarButton(pluginData);
             }
+        }
+
+        private Plugin.PluginData CreateGitRemoteShowPlugin()
+        {
+            return new Plugin.PluginData(
+                title: "RemoteInfo",
+                iconPath: @"..\Images\Extension.png",
+                command: "git",
+                argument: "remote -v show",
+                executionType: Plugin.ExecutionType.WimyGitInnerShellAndRefreshRepositoryStatus);
         }
 
         private void AddToolbarButton(Plugin.PluginData pluginData)

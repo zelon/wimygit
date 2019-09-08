@@ -25,7 +25,7 @@ namespace WimyGit.Plugin
                 try
                 {
                     string xml_filename = Path.Combine(directory_name, "Plugin.xml");
-                    _pluginDatas.Add(new PluginData(xml_filename));
+                    _pluginDatas.Add(PluginData.CreateFromXmlFile(xml_filename));
                 }
                 catch (System.Exception exception)
                 {

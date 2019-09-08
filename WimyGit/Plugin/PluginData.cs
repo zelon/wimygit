@@ -11,16 +11,27 @@ namespace WimyGit.Plugin
 
     public class PluginData
     {
-        public PluginData(string xml_filename)
+        public static PluginData CreateFromXmlFile(string xml_filename)
         {
             XmlDocument document = new XmlDocument();
             document.Load(xml_filename);
 
-            Title = document["wimygit_plugin"]["title"].InnerText;
-            IconPath = document["wimygit_plugin"]["icon"]["path"].InnerText;
-            Command = document["wimygit_plugin"]["command"].InnerText;
-            Argument = document["wimygit_plugin"]["arguments"]["argument"]["value"].InnerText;
-            ExecutionType = (ExecutionType)System.Enum.Parse(typeof(ExecutionType), document["wimygit_plugin"]["execution_type"].InnerText);
+            string title = document["wimygit_plugin"]["title"].InnerText;
+            string iconPath = document["wimygit_plugin"]["icon"]["path"].InnerText;
+            string command = document["wimygit_plugin"]["command"].InnerText;
+            string argument = document["wimygit_plugin"]["arguments"]["argument"]["value"].InnerText;
+            ExecutionType executionType = (ExecutionType)System.Enum.Parse(typeof(ExecutionType), document["wimygit_plugin"]["execution_type"].InnerText);
+
+            return new PluginData(title, iconPath, command, argument, executionType);
+        }
+
+        public PluginData(string title, string iconPath, string command, string argument, ExecutionType executionType)
+        {
+            Title = title;
+            IconPath = iconPath;
+            Command = command;
+            Argument = argument;
+            ExecutionType = executionType;
         }
 
         public string Title { get; private set; }
