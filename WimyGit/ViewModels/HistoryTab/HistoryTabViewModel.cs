@@ -44,6 +44,11 @@ namespace WimyGit.ViewModels
 
         private void OnDiffHistroySelectedFile()
         {
+            if (SelectedHistoryFile == null)
+            {
+                GlobalSetting.GetInstance().ShowMsg("Select file first in files tab");
+                return;
+            }
             if (string.IsNullOrEmpty(SelectedHistoryFile.FileName2))
             {
                 GitWrapper.DiffHistorySelected(SelectedHistoryFile.CommitId, SelectedHistoryFile.FileName);
