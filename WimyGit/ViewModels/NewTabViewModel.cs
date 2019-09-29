@@ -33,15 +33,15 @@ namespace WimyGit.UserControls
 		public DelegateCommand BrowseCommand { get; private set; }
 		void OnBrowseCommand(object sender)
 		{
-			using (var dialog = new System.Windows.Forms.FolderBrowserDialog())
-			{
-				var result = dialog.ShowDialog();
-				if (result == System.Windows.Forms.DialogResult.OK)
-				{
-					new_tab_result_(dialog.SelectedPath);
-					return;
-				}
-			}
+			//using (var dialog = new System.Windows.Forms.FolderBrowserDialog())
+			//{
+			//	var result = dialog.ShowDialog();
+			//	if (result == System.Windows.Forms.DialogResult.OK)
+			//	{
+			//		new_tab_result_(dialog.SelectedPath);
+			//		return;
+			//	}
+			//}
 		}
 
 		public DelegateCommand OkayCommand { get; private set; }
