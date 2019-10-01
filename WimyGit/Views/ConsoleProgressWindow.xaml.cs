@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
-//using System.Management;
+using System.Management;
 using System.Windows;
 
 namespace WimyGit
@@ -138,26 +138,26 @@ namespace WimyGit
 			{
 				return;
 			}
-			//ManagementObjectSearcher searcher = new ManagementObjectSearcher
-			//		("Select * From Win32_Process Where ParentProcessID=" + pid);
-			//ManagementObjectCollection moc = searcher.Get();
-			//foreach (ManagementObject mo in moc)
-			//{
-			//	KillProcessAndChildren(Convert.ToInt32(mo["ProcessID"]));
-			//}
-			//try
-			//{
-			//	Process proc = Process.GetProcessById(pid);
-			//	if (proc != null)
-			//	{
-			//		proc.Kill();
-			//	}
-			//}
-			//catch (Exception)
-			//{
-			//	// Process already exited.
-			//}
-		}
+            ManagementObjectSearcher searcher = new ManagementObjectSearcher
+                    ("Select * From Win32_Process Where ParentProcessID=" + pid);
+            ManagementObjectCollection moc = searcher.Get();
+            foreach (ManagementObject mo in moc)
+            {
+                KillProcessAndChildren(Convert.ToInt32(mo["ProcessID"]));
+            }
+            try
+            {
+                Process proc = Process.GetProcessById(pid);
+                if (proc != null)
+                {
+                    proc.Kill();
+                }
+            }
+            catch (Exception)
+            {
+                // Process already exited.
+            }
+        }
 
 		private void OnButton_Click(Object sender, RoutedEventArgs e)
 		{
@@ -177,6 +177,5 @@ namespace WimyGit
 		{
 			textBox.ScrollToEnd();
 		}
-
 	}
 }

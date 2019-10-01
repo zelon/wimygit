@@ -12,5 +12,8 @@
  <ItemGroup>
      <Resource Include="**\*.ico" />
  </ItemGroup>
+ <ItemGroup>
+   <PackageReference Include="System.Management" Version="4.6.0" />
+ </ItemGroup>
 </Project>
 

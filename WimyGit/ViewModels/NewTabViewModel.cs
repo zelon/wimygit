@@ -33,16 +33,11 @@ namespace WimyGit.UserControls
 		public DelegateCommand BrowseCommand { get; private set; }
 		void OnBrowseCommand(object sender)
 		{
-			//using (var dialog = new System.Windows.Forms.FolderBrowserDialog())
-			//{
-			//	var result = dialog.ShowDialog();
-			//	if (result == System.Windows.Forms.DialogResult.OK)
-			//	{
-			//		new_tab_result_(dialog.SelectedPath);
-			//		return;
-			//	}
-			//}
-		}
+            GlobalSetting.GetInstance().ShowMsg("Drag folder from explorer");
+
+            RunExternal runner = new RunExternal("explorer.exe", ".");
+            runner.RunWithoutWaiting(Directory);
+        }
 
 		public DelegateCommand OkayCommand { get; private set; }
 		void OnOkayCommand(object sender)
