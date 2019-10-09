@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Windows;
 using System.Windows.Input;
+using WimyGit.Service;
 
 namespace WimyGit.ViewModels
 {
@@ -10,7 +11,10 @@ namespace WimyGit.ViewModels
         private string HistorySelectedPath { get; set; }
         public string SelectedRepositoryPath { get; set; }
         public string CurrentBranchName { get; set; }
+        public HistoryStatus SelectedHistoryStatus { get; set; }
         public HistoryFile SelectedHistoryFile { get; set; }
+
+        public ICommand CreateTagCommand { get; private set; }
 
         public HistoryTabViewModel(GitWrapper gitWrapper)
         {
@@ -18,6 +22,7 @@ namespace WimyGit.ViewModels
 
             HistoryList = new System.Collections.ObjectModel.ObservableCollection<HistoryStatus>();
 
+            CreateTagCommand = new DelegateCommand(OnCreateTagCommand);
             MoreHistoryCommand = new DelegateCommand(OnMoreHistoryCommand);
             DiffHistorySelectedFile = new DelegateCommand((object parameter) => OnDiffHistroySelectedFile());
         }
@@ -39,6 +44,20 @@ namespace WimyGit.ViewModels
         }
 
         public System.Collections.ObjectModel.ObservableCollection<HistoryStatus> HistoryList { get; set; }
+
+        public void OnCreateTagCommand(object parameter)
+        {
+            if (SelectedHistoryStatus == null)
+            {
+                return;
+            }
+            string tagName = UIService.GetInstance().AskAndGetString("Enter tag name", "");
+            if (tagName == null)
+            {
+                return;
+            }
+            GitWrapper.CreateTag(SelectedHistoryStatus.CommitId, tagName);
+        }
 
         public ICommand DiffHistorySelectedFile { get; private set; }
 

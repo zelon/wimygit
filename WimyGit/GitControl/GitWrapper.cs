@@ -89,7 +89,13 @@ namespace WimyGit
 			CreateGitRunner().RunWithoutWaiting(cmd);
 		}
 
-		public List<FileListInfoOfCommit> GetFilelistOfCommit(string sha)
+        public void CreateTag(string commitId, string tagName)
+        {
+            string cmd = $"tag {tagName} {commitId}";
+            CreateGitRunner().Run(cmd);
+        }
+
+        public List<FileListInfoOfCommit> GetFilelistOfCommit(string sha)
 		{
             // https://answers.atlassian.com/questions/303235/how-to-get-the-list-of-files-from-a-merge-commit-id
             string cmd;

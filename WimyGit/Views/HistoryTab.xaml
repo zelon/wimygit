@@ -19,10 +19,15 @@
         <Grid Grid.Row="0">
             <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="Path:" VerticalAlignment="Top" Height="25" Margin="0,5,0,0" />
             <TextBox Text="{Binding SelectedRepositoryPath}" Height="23" Margin="32,2,0,0" TextWrapping="Wrap" VerticalAlignment="Top"/>
-            <ListView Name="historyList" Margin="0,30,0,0" ItemsSource="{Binding HistoryList}" ScrollViewer.ScrollChanged="HistoryList_ScrollChanged" FontFamily="Consolas" TabIndex="0">
+            <ListView Name="historyList" Margin="0,30,0,0" ItemsSource="{Binding HistoryList}" ScrollViewer.ScrollChanged="HistoryList_ScrollChanged" SelectedValue="{Binding Path=SelectedHistoryStatus}" SelectedValuePath="." FontFamily="Consolas" TabIndex="0">
                 <ListView.InputBindings>
                     <KeyBinding Modifiers="Ctrl" Key="D" Command="{Binding DiffHistorySelectedFile}" />
                 </ListView.InputBindings>
+                <ListView.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="Create Tag" Command="{Binding CreateTagCommand}" />
+                    </ContextMenu>
+                </ListView.ContextMenu>
                 <ListView.ItemContainerStyle>
                     <Style TargetType="{x:Type ListBoxItem}">
                         <Setter Property="FontWeight" Value="{Binding FontWeight, Mode=TwoWay}" />
