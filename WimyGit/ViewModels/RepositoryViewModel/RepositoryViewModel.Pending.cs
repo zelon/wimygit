@@ -18,6 +18,7 @@ namespace WimyGit.ViewModels
 		public ICommand RevertCommand { get; private set; }
 		public ICommand OpenExplorerSelectedFileCommand { get; private set; }
 		public ICommand OpenSelectedFileCommand { get; private set; }
+		public ICommand MergeToolCommand { get; private set; }
 		public ICommand SelectAllCommand { get; private set; }
 		private string commit_message_;
 
@@ -36,6 +37,7 @@ namespace WimyGit.ViewModels
 			RevertCommand = new DelegateCommand(OnRevertCommand);
 			OpenExplorerSelectedFileCommand = new DelegateCommand(OnOpenExplorerSelectedFileCommand);
 			OpenSelectedFileCommand = new DelegateCommand(OnOpenSelectedFileCommand);
+			MergeToolCommand = new DelegateCommand(OnMergeTool);
 
 			ModifiedList = new ObservableCollection<FileStatus>();
 			StagedList = new ObservableCollection<FileStatus>();
@@ -236,7 +238,15 @@ namespace WimyGit.ViewModels
 			}
 		}
 
-		async void OnStageSelected(object parameter)
+		public void OnMergeTool(object parameter)
+		{
+			foreach (var item in SelectedModifiedFilePathList)
+			{
+                git_.MergeTool(item);
+			}
+		}
+
+        async void OnStageSelected(object parameter)
 		{
 			if (SelectedModifiedFilePathList.Count() == 0)
 			{

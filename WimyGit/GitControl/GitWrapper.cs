@@ -274,7 +274,14 @@ namespace WimyGit
 			return output;
 		}
 
-		public async Task<List<CommitInfo>> GetHistory(string selected_path, Int32 skip_count, Int32 max_count)
+        public void MergeTool(string filepath)
+        {
+            string cmd = "mergetool --no-prompt -- " + Util.WrapFilePath(path_ + "\\" + filepath);
+            logger_.AddLog(cmd);
+            CreateGitRunner().RunWithoutWaiting(cmd);
+        }
+
+        public async Task<List<CommitInfo>> GetHistory(string selected_path, Int32 skip_count, Int32 max_count)
 		{
 			string cmd = string.Format("log --all --encoding=UTF-8 --skip={0} --max-count={1} --graph --format=\"`%ai`%H`%an`%d`%s\" -- {2}", skip_count, max_count, selected_path);
 			logger_.AddLog(cmd);

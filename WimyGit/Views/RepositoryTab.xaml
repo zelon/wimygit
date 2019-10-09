@@ -160,6 +160,7 @@
                                             <MenuItem Header="Refresh" InputGestureText="F5" Command="{Binding RefreshCommand}" />
                                             <MenuItem Header="Open Explorer" InputGestureText="Ctrl+Shift+S" Command="{Binding OpenExplorerSelectedFileCommand}" />
                                             <MenuItem Header="Open" InputGestureText="Return" Command="{Binding OpenSelectedFileCommand}" />
+                                            <MenuItem Header="MergeTool" Command="{Binding MergeToolCommand}" />
                                         </ContextMenu>
                                     </ListBox.ContextMenu>
                                     <ListBox.ItemContainerStyle>
