@@ -48,7 +48,13 @@ namespace WimyGit
             return path_;
         }
 
-		public bool IsValidGitDirectory()
+        public void Init()
+        {
+            string cmd = string.Format("init");
+            CreateGitRunner().Run(cmd);
+        }
+
+        public bool IsValidGitDirectory()
 		{
 			string cmd = string.Format("status --porcelain");
 			List<string> results = CreateGitRunner().Run(cmd);
@@ -136,7 +142,7 @@ namespace WimyGit
 			return output;
 		}
 
-		public void Stage(IEnumerable<string> selectedModifiedFilePathList)
+        public void Stage(IEnumerable<string> selectedModifiedFilePathList)
 		{
 			if (selectedModifiedFilePathList.Count() == 0)
 			{

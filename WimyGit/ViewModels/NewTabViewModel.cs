@@ -44,8 +44,10 @@ namespace WimyGit.UserControls
 		{
             if (Util.IsValidGitDirectory(Directory) == false)
             {
-                MessageBox.ShowMessage($"Invalid git repository:{Directory}");
-                return;
+                if (Service.UIService.GetInstance().AskAndGitInit(Directory) == false)
+                {
+                    return;
+                }
             }
 			new_tab_result_(Directory);
 		}

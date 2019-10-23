@@ -98,8 +98,10 @@ namespace WimyGit
             string repository_path = paths[0];
             if (Util.IsValidGitDirectory(repository_path) == false)
             {
-                MessageBox.ShowMessage($"Invalid git root directory:{repository_path}");
-                return;
+                if (Service.UIService.GetInstance().AskAndGitInit(repository_path) == false)
+                {
+                    return;
+                }
             }
             new NewRepositoryController(tab_control_).OpenRepository(repository_path);
         }
