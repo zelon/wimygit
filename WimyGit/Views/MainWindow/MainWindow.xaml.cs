@@ -65,7 +65,7 @@ namespace WimyGit
             }
             catch (System.IO.FileNotFoundException ex)
             {
-                GlobalSetting.GetInstance().ShowMsg(ex.Message);
+                MessageBox.ShowMessage(ex.Message);
                 System.Environment.Exit(1);
             }
         }
@@ -92,13 +92,13 @@ namespace WimyGit
 
             if (paths.Length != 1)
             {
-                GlobalSetting.GetInstance().ShowMsg("Please drop one directory only");
+                MessageBox.ShowMessage("Please drop one directory only");
                 return;
             }
             string repository_path = paths[0];
             if (Util.IsValidGitDirectory(repository_path) == false)
             {
-                GlobalSetting.GetInstance().ShowMsg(string.Format("Invalid git root directory:{0}", repository_path));
+                MessageBox.ShowMessage($"Invalid git root directory:{repository_path}");
                 return;
             }
             new NewRepositoryController(tab_control_).OpenRepository(repository_path);

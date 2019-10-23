@@ -65,7 +65,7 @@ namespace WimyGit.ViewModels
         {
             if (SelectedHistoryFile == null)
             {
-                GlobalSetting.GetInstance().ShowMsg("Select file first in files tab");
+                MessageBox.ShowMessage("Select file first in files tab");
                 return;
             }
             if (string.IsNullOrEmpty(SelectedHistoryFile.FileName2))

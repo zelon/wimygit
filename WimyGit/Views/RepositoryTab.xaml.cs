@@ -70,7 +70,7 @@ namespace WimyGit
                 var git = GetViewModel().git_;
                 if (git == null)
                 {
-                    GlobalSetting.GetInstance().ShowMsg("Git is null");
+                    MessageBox.ShowMessage("Git is null");
                     return;
                 }
                 string workingDirectory = git.GetPath();
@@ -85,7 +85,7 @@ namespace WimyGit
                         }
                         catch (System.Exception exception)
                         {
-                            GlobalSetting.GetInstance().ShowMsg("Cannot execute. " + exception.Message);
+                            MessageBox.ShowMessage("Cannot execute. " + exception.Message);
                         }
                         return;
                     case Plugin.ExecutionType.WimyGitInnerShellAndRefreshRepositoryStatus:

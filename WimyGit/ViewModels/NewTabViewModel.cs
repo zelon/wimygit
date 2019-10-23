@@ -33,7 +33,7 @@ namespace WimyGit.UserControls
 		public DelegateCommand BrowseCommand { get; private set; }
 		void OnBrowseCommand(object sender)
 		{
-            GlobalSetting.GetInstance().ShowMsg("Drag folder from explorer");
+            MessageBox.ShowMessage("Drag folder from explorer");
 
             RunExternal runner = new RunExternal("explorer.exe", ".");
             runner.RunWithoutWaiting(Directory);
@@ -44,7 +44,7 @@ namespace WimyGit.UserControls
 		{
             if (Util.IsValidGitDirectory(Directory) == false)
             {
-                GlobalSetting.GetInstance().ShowMsg("Invalid git repository");
+                MessageBox.ShowMessage($"Invalid git repository:{Directory}");
                 return;
             }
 			new_tab_result_(Directory);

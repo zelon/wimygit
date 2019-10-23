@@ -28,11 +28,6 @@ namespace WimyGit
 			window_ = window;
 		}
 
-		public void ShowMsg(string msg)
-		{
-			System.Windows.MessageBox.Show(window_, msg, "WimyGit");
-		}
-
 		public MainWindow GetWindow()
 		{
 			return window_;

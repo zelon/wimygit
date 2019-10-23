@@ -42,7 +42,7 @@ namespace WimyGit.ViewModels
 		{
 			if (string.IsNullOrEmpty(SelectedPath))
 			{
-				GlobalSetting.GetInstance().ShowMsg("Select a file first");
+				MessageBox.ShowMessage("Select a file first");
 				return;
 			}
 			git_.ViewTimeLapse(SelectedPath);

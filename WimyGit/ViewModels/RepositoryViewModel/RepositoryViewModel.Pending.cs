@@ -82,12 +82,12 @@ namespace WimyGit.ViewModels
 		{
 			if (String.IsNullOrEmpty(CommitMessage))
 			{
-                GlobalSetting.GetInstance().ShowMsg("Empty commit message");
+                MessageBox.ShowMessage("Empty commit message");
 				return;
 			}
 			if (StagedList.Count == 0)
 			{
-                GlobalSetting.GetInstance().ShowMsg("No staged file");
+                MessageBox.ShowMessage("No staged file");
 				return;
 			}
 			git_.Commit(CommitMessage);
@@ -139,7 +139,7 @@ namespace WimyGit.ViewModels
 
 			foreach (string error_msg in error_msg_list)
 			{
-				GlobalSetting.GetInstance().ShowMsg(error_msg);
+				MessageBox.ShowMessage(error_msg);
 			}
 		}
 
