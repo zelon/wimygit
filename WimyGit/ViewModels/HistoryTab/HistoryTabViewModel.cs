@@ -14,6 +14,7 @@ namespace WimyGit.ViewModels
         public HistoryStatus SelectedHistoryStatus { get; set; }
         public HistoryFile SelectedHistoryFile { get; set; }
 
+        public ICommand CreateBranchCommand { get; private set; }
         public ICommand CreateTagCommand { get; private set; }
 
         public HistoryTabViewModel(GitWrapper gitWrapper)
@@ -22,6 +23,7 @@ namespace WimyGit.ViewModels
 
             HistoryList = new System.Collections.ObjectModel.ObservableCollection<HistoryStatus>();
 
+            CreateBranchCommand = new DelegateCommand(OnCreateBranchCommand);
             CreateTagCommand = new DelegateCommand(OnCreateTagCommand);
             MoreHistoryCommand = new DelegateCommand(OnMoreHistoryCommand);
             DiffHistorySelectedFile = new DelegateCommand((object parameter) => OnDiffHistroySelectedFile());
@@ -44,6 +46,20 @@ namespace WimyGit.ViewModels
         }
 
         public System.Collections.ObjectModel.ObservableCollection<HistoryStatus> HistoryList { get; set; }
+
+        public void OnCreateBranchCommand(object parameter)
+        {
+            if (SelectedHistoryStatus == null)
+            {
+                return;
+            }
+            string branchName = UIService.GetInstance().AskAndGetString("Enter branch name", "");
+            if (branchName == null)
+            {
+                return;
+            }
+            GitWrapper.CreateBranch(SelectedHistoryStatus.CommitId, branchName);
+        }
 
         public void OnCreateTagCommand(object parameter)
         {

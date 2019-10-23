@@ -25,6 +25,7 @@
                 </ListView.InputBindings>
                 <ListView.ContextMenu>
                     <ContextMenu>
+                        <MenuItem Header="Create Branch" Command="{Binding CreateBranchCommand}" />
                         <MenuItem Header="Create Tag" Command="{Binding CreateTagCommand}" />
                     </ContextMenu>
                 </ListView.ContextMenu>

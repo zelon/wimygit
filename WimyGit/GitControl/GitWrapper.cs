@@ -95,6 +95,12 @@ namespace WimyGit
 			CreateGitRunner().RunWithoutWaiting(cmd);
 		}
 
+        public void CreateBranch(string commitId, string branchName)
+        {
+            string cmd = $"branch {branchName} {commitId}";
+            CreateGitRunner().Run(cmd);
+        }
+
         public void CreateTag(string commitId, string tagName)
         {
             string cmd = $"tag {tagName} {commitId}";
