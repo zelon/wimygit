@@ -101,6 +101,12 @@ namespace WimyGit
             CreateGitRunner().Run(cmd);
         }
 
+        public void Rebase(string commitId)
+        {
+            string cmd = $"rebase {commitId}";
+            CreateGitRunner().Run(cmd);
+        }
+
         public void CreateTag(string commitId, string tagName)
         {
             string cmd = $"tag {tagName} {commitId}";

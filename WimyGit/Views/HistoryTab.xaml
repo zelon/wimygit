@@ -27,6 +27,7 @@
                     <ContextMenu>
                         <MenuItem Header="Create Branch" Command="{Binding CreateBranchCommand}" />
                         <MenuItem Header="Create Tag" Command="{Binding CreateTagCommand}" />
+                        <MenuItem Header="Rebase" Command="{Binding RebaseCommand}" />
                     </ContextMenu>
                 </ListView.ContextMenu>
                 <ListView.ItemContainerStyle>
