@@ -7,9 +7,15 @@
     <Compile Update="UI\QuestionWindow\QuestionWindow.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Update="Views\Stash\StashTab.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Page Update="UI\QuestionWindow\QuestionWindow.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Views\Stash\StashTab.xaml">
       <SubType>Designer</SubType>
     </Page>
   </ItemGroup>

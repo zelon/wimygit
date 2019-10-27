@@ -2,16 +2,16 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Windows.Input;
-using WimyGit.ViewModels;
 
 namespace WimyGit.ViewModels
 {
-    public partial class RepositoryViewModel : NotifyBase, ILogger
+    public partial class RepositoryViewModel : NotifyBase, ILogger, WimyGit.IGitRepository
 	{
 		private RepositoryTab repository_tab_;
 		public GitWrapper git_;
         public DirectoryTreeViewModel DirectoryTree { get; private set; }
         public HistoryTabViewModel HistoryTabMember { get; private set; }
+        public UserControls.StashTabViewModel StashTabViewModel { get; private set; }
         private bool noCommitsYet_ = false;
         public RepositoryViewModel(string git_repository_path, RepositoryTab repository_tab)
 		{
@@ -22,6 +22,7 @@ namespace WimyGit.ViewModels
 
             DirectoryTree = new DirectoryTreeViewModel(this);
             HistoryTabMember = new HistoryTabViewModel(git_);
+            StashTabViewModel = new UserControls.StashTabViewModel(this);
 
 			repository_tab_ = repository_tab;
 
@@ -35,6 +36,21 @@ namespace WimyGit.ViewModels
 			FetchAllCommand = new DelegateCommand((object parameter) => FetchAll());
 			PullCommand = new DelegateCommand(Pull);
 		}
+
+        public string GetRepositoryPath()
+        {
+            return Directory;
+        }
+
+        public GitWrapper GetGitWrapper()
+        {
+            return git_;
+        }
+
+        Task<bool> IGitRepository.Refresh()
+        {
+            return Refresh();
+        }
 
         public string SelectedPath { get; set; }
 
@@ -145,7 +161,7 @@ namespace WimyGit.ViewModels
 			repository_tab_.ScrollToEndLogTextBox();
 		}
 
-		public ICommand RefreshCommand { get; private set; }
+        public ICommand RefreshCommand { get; private set; }
 		public ICommand ViewTimelapseCommand { get; private set; }
 		public ICommand FetchAllCommand { get; private set; }
 		public ICommand PullCommand { get; private set; }

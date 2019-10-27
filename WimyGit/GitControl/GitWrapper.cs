@@ -74,7 +74,7 @@ namespace WimyGit
 			return await CreateGitRunner().RunAsync(cmd);
 		}
 
-		public void DiffHistorySelected(string commit_id, string fileName)
+        public void DiffHistorySelected(string commit_id, string fileName)
 		{
 			string cmd = String.Format("difftool --no-prompt {0}^! -- {1}", commit_id, Util.WrapFilePath(fileName));
 			logger_.AddLog(cmd);
@@ -383,5 +383,25 @@ namespace WimyGit
 			RunExternal runner = new RunExternal(ProgramPathFinder.GetGitBin(), path_);
 			return runner;
 		}
-	}
+
+        public List<string> StashList()
+        {
+            string cmd = GitCommandCreator.StashList();
+            return CreateGitRunner().Run(cmd);
+        }
+
+        public void StashPushAll(string message)
+        {
+            string cmd = GitCommandCreator.StashPushAll(message);
+            CreateGitRunner().Run(cmd);
+        }
+
+        public  void StashPopLast()
+        {
+            string cmd = GitCommandCreator.StashPopLast();
+            CreateGitRunner().Run(cmd);
+        }
+
+
+    }
 }
