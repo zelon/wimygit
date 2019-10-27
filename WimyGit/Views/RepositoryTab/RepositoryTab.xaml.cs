@@ -37,7 +37,7 @@ namespace WimyGit
         {
             return new Plugin.PluginData(
                 title: "RemoteInfo",
-                iconPath: @"..\Images\Extension.png",
+                iconPath: @"..\..\Images\Extension.png",
                 command: "git",
                 argument: "remote -v show",
                 executionType: Plugin.ExecutionType.WimyGitInnerShellAndRefreshRepositoryStatus);

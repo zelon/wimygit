@@ -4,18 +4,18 @@
     <_LastSelectedProfileId>C:\git\wimygit\WimyGit\Properties\PublishProfiles\DebugPublishProfile.pubxml</_LastSelectedProfileId>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Update="UI\QuestionWindow\QuestionWindow.xaml.cs">
+    <Compile Update="Views\QuestionWindow\QuestionWindow.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Update="Views\Stash\StashTab.xaml.cs">
+    <Compile Update="Views\StashTab\StashTab.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Page Update="UI\QuestionWindow\QuestionWindow.xaml">
+    <Page Update="Views\QuestionWindow\QuestionWindow.xaml">
       <SubType>Designer</SubType>
     </Page>
-    <Page Update="Views\Stash\StashTab.xaml">
+    <Page Update="Views\StashTab\StashTab.xaml">
       <SubType>Designer</SubType>
     </Page>
   </ItemGroup>
