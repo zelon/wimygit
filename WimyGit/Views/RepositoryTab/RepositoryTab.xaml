@@ -188,7 +188,7 @@
                     <TabItem Header="History">
                         <user_control:HistoryTab DataContext="{Binding HistoryTabMember}" />
                     </TabItem>
-                    <TabItem Header="Stash">
+                    <TabItem Header="{Binding StashTabTitle}">
                         <user_control:StashTab DataContext="{Binding StashTabViewModel}" />
                     </TabItem>
                 </TabControl>

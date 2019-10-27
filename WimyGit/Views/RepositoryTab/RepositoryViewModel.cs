@@ -11,6 +11,7 @@ namespace WimyGit.ViewModels
 		public GitWrapper git_;
         public DirectoryTreeViewModel DirectoryTree { get; private set; }
         public HistoryTabViewModel HistoryTabMember { get; private set; }
+        public string StashTabTitle { get; set; }
         public UserControls.StashTabViewModel StashTabViewModel { get; private set; }
         private bool noCommitsYet_ = false;
         public RepositoryViewModel(string git_repository_path, RepositoryTab repository_tab)
@@ -22,6 +23,7 @@ namespace WimyGit.ViewModels
 
             DirectoryTree = new DirectoryTreeViewModel(this);
             HistoryTabMember = new HistoryTabViewModel(git_);
+            StashTabTitle = "Stash";
             StashTabViewModel = new UserControls.StashTabViewModel(this);
 
 			repository_tab_ = repository_tab;
@@ -105,6 +107,18 @@ namespace WimyGit.ViewModels
                 git_ = null;
                 return false;
             }
+
+            List<string> stashListResult = git_.StashList();
+            StashTabViewModel.SetOutput(stashListResult);
+            if (stashListResult.Count > 0)
+            {
+                StashTabTitle = $"Stash [{stashListResult.Count}]";
+            }
+            else
+            {
+                StashTabTitle = "Stash";
+            }
+            NotifyPropertyChanged("StashTabTitle");
 
             List<string> git_porcelain_result = await git_.GetGitStatusPorcelainAllAsync();
             RefreshPending(git_porcelain_result);
