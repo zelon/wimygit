@@ -12,7 +12,7 @@ namespace WimyGit
 
         public static string StashPushAll(string message)
         {
-            string command = "stash push --all";
+            string command = "stash push --include-untracked";
             if (string.IsNullOrEmpty(message) == false)
             {
                 command += $" --message {message}";
