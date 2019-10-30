@@ -11,9 +11,12 @@ namespace WimyGit.ViewModels
 		public GitWrapper git_;
         public DirectoryTreeViewModel DirectoryTree { get; private set; }
         public HistoryTabViewModel HistoryTabMember { get; private set; }
-        public string StashTabTitle { get; set; }
         public UserControls.StashTabViewModel StashTabViewModel { get; private set; }
+        public Views.CustomTabHeader PendingTabHeader { get; set; }
+        public Views.CustomTabHeader HistoryTabHeader { get; set; }
+        public Views.CustomTabHeader StashTabHeader { get; set; }
         private bool noCommitsYet_ = false;
+
         public RepositoryViewModel(string git_repository_path, RepositoryTab repository_tab)
 		{
             DisplayAuthor = GlobalSetting.GetInstance().GetSignature();
@@ -23,8 +26,11 @@ namespace WimyGit.ViewModels
 
             DirectoryTree = new DirectoryTreeViewModel(this);
             HistoryTabMember = new HistoryTabViewModel(git_);
-            StashTabTitle = "Stash";
             StashTabViewModel = new UserControls.StashTabViewModel(this);
+
+            PendingTabHeader = new Views.CustomTabHeader("Pending");
+            HistoryTabHeader = new Views.CustomTabHeader("History");
+            StashTabHeader = new Views.CustomTabHeader("Stash");
 
 			repository_tab_ = repository_tab;
 
@@ -112,11 +118,11 @@ namespace WimyGit.ViewModels
             StashTabViewModel.SetOutput(stashListResult);
             if (stashListResult.Count > 0)
             {
-                StashTabTitle = $"Stash [{stashListResult.Count}]";
+                StashTabHeader.SetTitle($"Stash [{stashListResult.Count}]");
             }
             else
             {
-                StashTabTitle = "Stash";
+                StashTabHeader.SetTitle("Stash");
             }
             NotifyPropertyChanged("StashTabTitle");
 
