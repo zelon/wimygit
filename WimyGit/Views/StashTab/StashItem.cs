@@ -1,0 +1,11 @@
+﻿
+namespace WimyGit.UserControls
+{
+    public class StashItem
+    {
+        public string Name { get; set; }
+        public string Description { get; set; }
+        public string Base { get; set; }
+    }
+
+}

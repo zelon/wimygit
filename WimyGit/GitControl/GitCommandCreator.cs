@@ -24,5 +24,25 @@ namespace WimyGit
         {
             return "stash pop";
         }
+
+        public static string StashFileList(string stashName)
+        {
+            return $"diff --name-status {stashName}";
+        }
+
+        public static string StashDiff(string stashName)
+        {
+            return $"diff {stashName}";
+        }
+
+        public static string StashDiff(string stashName, string filename)
+        {
+            return $"diff {stashName} -- {filename}";
+        }
+
+        public static string StashDiffTool(string stashName, string filename)
+        {
+            return $"difftool {stashName} -- {filename}";
+        }
     }
 }

@@ -68,7 +68,43 @@ namespace WimyGit
 			return true;
 		}
 
-		public async Task<List<string>> GetGitStatusPorcelainAllAsync()
+        public async Task<List<StashedFileInfo>> GetStashedFileInfosAsync(string stashName)
+        {
+            string cmd = GitCommandCreator.StashFileList(stashName);
+            List<string> lines = await CreateGitRunner().RunAsync(cmd);
+            List<StashedFileInfo> outputs = new List<StashedFileInfo>();
+            foreach (string line in lines)
+            {
+                var splitted = line.Split(" ");
+                Debug.Assert(splitted.Length >= 2);
+                StashedFileInfo stashedFileInfo = new StashedFileInfo();
+                stashedFileInfo.Status = splitted[0];
+                stashedFileInfo.Filename = splitted[1];
+
+                outputs.Add(stashedFileInfo);
+            }
+            return outputs;
+        }
+
+        public List<StashedFileInfo> GetStashedFileInfos(string stashName)
+        {
+            string cmd = GitCommandCreator.StashFileList(stashName);
+            List<string> lines = CreateGitRunner().Run(cmd);
+            List<StashedFileInfo> outputs = new List<StashedFileInfo>();
+            foreach (string line in lines)
+            {
+                var splitted = line.Split("\t");
+                Debug.Assert(splitted.Length >= 2);
+                StashedFileInfo stashedFileInfo = new StashedFileInfo();
+                stashedFileInfo.Status = splitted[0];
+                stashedFileInfo.Filename = splitted[1];
+
+                outputs.Add(stashedFileInfo);
+            }
+            return outputs;
+        }
+
+        public async Task<List<string>> GetGitStatusPorcelainAllAsync()
 		{
 			string cmd = string.Format("-c core.quotepath=false status --porcelain --untracked-files=all");
 			return await CreateGitRunner().RunAsync(cmd);

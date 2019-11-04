@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Windows.Input;
 
 
@@ -12,11 +13,16 @@ namespace WimyGit.UserControls
         public ICommand PopLastCommand { get; private set; }
         public string Output { get; set; }
 
+        public ObservableCollection<StashItem> StashItems { get; set; }
+        public StashItem SelectedStashItem { get; set; }
+
         public StashTabViewModel(IGitRepository gitRepository)
         {
             _gitRepository = new WeakReference<IGitRepository>(gitRepository);
             PushAllCommand = new DelegateCommand(OnSaveCommand);
             PopLastCommand = new DelegateCommand(OnPopLastCommand);
+
+            StashItems = new ObservableCollection<StashItem>();
         }
 
         public void OnSaveCommand(object sender)
@@ -54,6 +60,23 @@ namespace WimyGit.UserControls
                 Output += $"{output}\n";
             }
             NotifyPropertyChanged("Output");
+
+            StashItems.Clear();
+            foreach (string line in outputs)
+            {
+                if (string.IsNullOrEmpty(line.Trim()))
+                {
+                    continue;
+                }
+                var parsedResult = GitStashListParser.Parse(line);
+                StashItem stashItem = new StashItem();
+                stashItem.Name = parsedResult.Name;
+                stashItem.Base = parsedResult.Marker;
+                stashItem.Description = parsedResult.Description;
+
+                StashItems.Add(stashItem);
+            }
+            NotifyPropertyChanged("StashItems");
         }
     }
 }
