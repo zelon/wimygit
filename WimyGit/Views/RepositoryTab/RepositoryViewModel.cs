@@ -142,20 +142,24 @@ namespace WimyGit.ViewModels
             {
                 return false;
             }
-            BranchInfo branchInfo = git_.GetCurrentBranchInfo();
-            if (branchInfo == null)
+            GitRepositoryStatus gitRepositoryStatus = git_.GetRepositoryStatus();
+            if (gitRepositoryStatus.branchInfo == null)
             {
                 return false;
             }
-            noCommitsYet_ = branchInfo.NoCommitsYet;
-            string currentBranchName = branchInfo.CurrentBranchName;
+            noCommitsYet_ = gitRepositoryStatus.branchInfo.NoCommitsYet;
+            string currentBranchName = gitRepositoryStatus.branchInfo.CurrentBranchName;
             HistoryTabMember.CurrentBranchName = currentBranchName;
             string output = currentBranchName;
-            string ahead_or_behind = branchInfo.BranchTrackingRemoteStatus;
+            string ahead_or_behind = gitRepositoryStatus.branchInfo.BranchTrackingRemoteStatus;
 			if (string.IsNullOrEmpty(ahead_or_behind) == false)
 			{
 				output = string.Format("{0} - ({1})", currentBranchName, ahead_or_behind);
 			}
+            if (gitRepositoryStatus.IsOnBisecting)
+            {
+                output += " [BISECTING...]";
+            }
 			Branch = output;
 
 			NotifyPropertyChanged("Branch");

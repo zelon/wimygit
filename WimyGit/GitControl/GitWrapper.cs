@@ -25,6 +25,12 @@ namespace WimyGit
 		public string FileName2 { get; set; }
 	}
 
+    public class GitRepositoryStatus
+    {
+        public BranchInfo branchInfo { get; set; }
+        public bool IsOnBisecting { get; set; }
+    }
+
     public class BranchInfo
     {
         public string CurrentBranchName { get; set; }
@@ -349,62 +355,20 @@ namespace WimyGit
 			return Parse(result);
 		}
 
+		public GitRepositoryStatus GetRepositoryStatus()
+		{
+			string cmd = "status";
+			List<string> results = CreateGitRunner().Run(cmd);
+            GitRepositoryStatus gitRepositoryStatus = GitStatusParser.Parse(results);
+            return gitRepositoryStatus;
+		}
+
 		public BranchInfo GetCurrentBranchInfo()
 		{
 			string cmd = "status";
 			List<string> results = CreateGitRunner().Run(cmd);
-            if (results.Count <= 0 ||
-                results[0].StartsWith("fatal"))
-            {
-                return null;
-            }
-            BranchInfo branchInfo = new BranchInfo();
-            var branchNameRegex = new Regex("On branch (.*)");
-            Match match = null;
-            foreach (string line in results)
-            {
-                match = branchNameRegex.Match(line);
-                if (match.Success)
-                {
-                    branchInfo.CurrentBranchName = match.Groups[1].ToString();
-                }
-            }
-            var noCommitsYetRegex = new Regex("No commits yet");
-            branchInfo.NoCommitsYet = false;
-            foreach (string line in results)
-            {
-                match = noCommitsYetRegex.Match(line);
-                if (match.Success)
-                {
-                    branchInfo.NoCommitsYet = true;
-                }
-            }
-
-            var up_to_date_regex = new Regex("Your branch is up to date");
-			var ahead_regex = new Regex("Your branch is ahead.*by (.*) commit");
-			var behind_regex = new Regex("Your branch is behind.*by (.*) commit");
-			foreach (string line in results)
-			{
-				match = up_to_date_regex.Match(line);
-				if (match.Success)
-				{
-					branchInfo.BranchTrackingRemoteStatus = "up to date";
-                    break;
-				}
-				match = ahead_regex.Match(line);
-				if (match.Success)
-				{
-                    branchInfo.BranchTrackingRemoteStatus = string.Format("{0} commit ahead", match.Groups[1]);
-                    break;
-				}
-				match = behind_regex.Match(line);
-				if (match.Success)
-				{
-                    branchInfo.BranchTrackingRemoteStatus = string.Format("{0} commit behind", match.Groups[1]);
-                    break;
-				}
-			}
-			return branchInfo;
+            GitRepositoryStatus gitRepositoryStatus = GitStatusParser.Parse(results);
+            return gitRepositoryStatus.branchInfo;
 		}
 
 		public void P4Revert(string filename)
