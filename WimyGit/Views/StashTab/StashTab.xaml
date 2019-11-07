@@ -23,7 +23,7 @@
             </ListView.View>
         </ListView>
         <Label Content="Detail" HorizontalAlignment="Left" Margin="10,228,0,0" VerticalAlignment="Top"/>
-        <ListBox Margin="10,259,10,134" SelectedValue="{Binding Path=SelectedHistoryFile}" SelectedValuePath=".">
+        <ListBox Margin="10,259,10,134" SelectedValue="{Binding Path=SelectedStashedFileInfo}" SelectedValuePath=".">
             <ListBox.ItemsSource>
                 <MultiBinding Converter="{StaticResource stashNameToFileListConverter}">
                     <Binding Path="."/>
@@ -31,11 +31,11 @@
                 </MultiBinding>
             </ListBox.ItemsSource>
             <ListBox.InputBindings>
-                <KeyBinding Modifiers="Ctrl" Key="D" Command="{Binding DiffStashedFile}" />
+                <KeyBinding Modifiers="Ctrl" Key="D" Command="{Binding DiffStashedFileAgainstHeadCommand}" />
             </ListBox.InputBindings>
             <ListBox.ContextMenu>
                 <ContextMenu>
-                    <MenuItem Header="Diff" InputGestureText="Ctrl+D" Command="{Binding DiffStashedFile}" />
+                    <MenuItem Header="Diff against HEAD" InputGestureText="Ctrl+D" Command="{Binding DiffStashedFileAgainstHeadCommand}" />
                 </ContextMenu>
             </ListBox.ContextMenu>
             <ListBox.ItemTemplate>

@@ -1,7 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Diagnostics;
 using WimyGit.UI.QuestionWindow;
-using System.Text;
 
 namespace WimyGit.Service
 {
@@ -20,7 +19,6 @@ namespace WimyGit.Service
 
         private UIService()
         {
-
         }
 
         public string AskAndGetString(string questionMessage, string defaultAnswer)
@@ -52,6 +50,25 @@ namespace WimyGit.Service
             gitWrapper.Init();
 
             return true;
+        }
+
+        public void StartConsoleProgressWindow(string repositoryPath, string gitCommand)
+        {
+            var console_progress_window = new ConsoleProgressWindow(repositoryPath, ProgramPathFinder.GetGitBin(), gitCommand);
+            console_progress_window.Owner = GlobalSetting.GetInstance().GetWindow();
+            console_progress_window.ShowDialog();
+        }
+
+        public void StartConsoleProgressWindow(WeakReference<IGitRepository> gitRepositoryWeakReference, string gitCommand)
+        {
+            if (gitRepositoryWeakReference.TryGetTarget(out IGitRepository gitRepository) == false)
+            {
+                Debug.Assert(false);
+                return;
+            }
+            var console_progress_window = new ConsoleProgressWindow(gitRepository.GetRepositoryPath(), ProgramPathFinder.GetGitBin(), gitCommand);
+            console_progress_window.Owner = GlobalSetting.GetInstance().GetWindow();
+            console_progress_window.ShowDialog();
         }
     }
 }

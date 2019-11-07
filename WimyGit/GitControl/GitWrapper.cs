@@ -390,18 +390,17 @@ namespace WimyGit
             return CreateGitRunner().Run(cmd);
         }
 
-        public void StashPushAll(string message)
-        {
-            string cmd = GitCommandCreator.StashPushAll(message);
-            CreateGitRunner().Run(cmd);
-        }
-
-        public  void StashPopLast()
+        public void StashPopLast()
         {
             string cmd = GitCommandCreator.StashPopLast();
             CreateGitRunner().Run(cmd);
         }
 
-
+        public void StashDiffToolAgainstHEAD(string stashName, string fileName)
+        {
+            string cmd = GitCommandCreator.StashDiffToolAgainstHEAD(stashName, fileName);
+            logger_.AddLog(cmd);
+            CreateGitRunner().RunWithoutWaiting(cmd);
+        }
     }
 }

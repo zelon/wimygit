@@ -40,9 +40,9 @@ namespace WimyGit
             return $"diff {stashName} -- {filename}";
         }
 
-        public static string StashDiffTool(string stashName, string filename)
+        public static string StashDiffToolAgainstHEAD(string stashName, string filename)
         {
-            return $"difftool {stashName} -- {filename}";
+            return $"difftool HEAD {stashName} -- {filename}";
         }
     }
 }

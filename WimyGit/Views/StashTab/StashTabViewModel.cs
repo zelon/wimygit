@@ -11,16 +11,18 @@ namespace WimyGit.UserControls
         readonly public WeakReference<IGitRepository> _gitRepository;
         public ICommand PushAllCommand { get; private set; }
         public ICommand PopLastCommand { get; private set; }
+        public ICommand DiffStashedFileAgainstHeadCommand { get; private set; }
         public string Output { get; set; }
 
         public ObservableCollection<StashItem> StashItems { get; set; }
         public StashItem SelectedStashItem { get; set; }
-
+        public StashedFileInfo SelectedStashedFileInfo { get; set; }
         public StashTabViewModel(IGitRepository gitRepository)
         {
             _gitRepository = new WeakReference<IGitRepository>(gitRepository);
             PushAllCommand = new DelegateCommand(OnSaveCommand);
             PopLastCommand = new DelegateCommand(OnPopLastCommand);
+            DiffStashedFileAgainstHeadCommand = new DelegateCommand(OnDiffStashedFileAgainstHeadCommand);
 
             StashItems = new ObservableCollection<StashItem>();
         }
@@ -36,8 +38,8 @@ namespace WimyGit.UserControls
             {
                 return;
             }
-            gitRepository.GetGitWrapper().StashPushAll(stashMessage);
-
+            string cmd = GitCommandCreator.StashPushAll(stashMessage);
+            Service.UIService.GetInstance().StartConsoleProgressWindow(_gitRepository, cmd);
             gitRepository.Refresh();
         }
 
@@ -50,6 +52,23 @@ namespace WimyGit.UserControls
             gitRepository.GetGitWrapper().StashPopLast();
 
             gitRepository.Refresh();
+        }
+
+        public void OnDiffStashedFileAgainstHeadCommand(object sender)
+        {
+            if (_gitRepository.TryGetTarget(out IGitRepository gitRepository) == false)
+            {
+                return;
+            }
+            if (SelectedStashItem == null)
+            {
+                return;
+            }
+            if (SelectedStashedFileInfo == null)
+            {
+                return;
+            }
+            gitRepository.GetGitWrapper().StashDiffToolAgainstHEAD(SelectedStashItem.Name, SelectedStashedFileInfo.Filename);
         }
 
         public void SetOutput(List<string> outputs)
