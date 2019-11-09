@@ -35,9 +35,9 @@ namespace WimyGit
             return $"diff {stashName}";
         }
 
-        public static string StashDiff(string stashName, string filename)
+        public static string StashDiffToolAgainstParent(string stashName, string filename)
         {
-            return $"diff {stashName} -- {filename}";
+            return $"difftool {stashName}^ {stashName} -- {filename}";
         }
 
         public static string StashDiffToolAgainstHEAD(string stashName, string filename)

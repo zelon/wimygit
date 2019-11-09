@@ -11,6 +11,7 @@ namespace WimyGit.UserControls
         readonly public WeakReference<IGitRepository> _gitRepository;
         public ICommand PushAllCommand { get; private set; }
         public ICommand PopLastCommand { get; private set; }
+        public ICommand DiffStashedFileAgainstParentCommand { get; private set; }
         public ICommand DiffStashedFileAgainstHeadCommand { get; private set; }
         public string Output { get; set; }
 
@@ -22,6 +23,7 @@ namespace WimyGit.UserControls
             _gitRepository = new WeakReference<IGitRepository>(gitRepository);
             PushAllCommand = new DelegateCommand(OnSaveCommand);
             PopLastCommand = new DelegateCommand(OnPopLastCommand);
+            DiffStashedFileAgainstParentCommand = new DelegateCommand(OnDiffStashedFileAgainstParentCommand);
             DiffStashedFileAgainstHeadCommand = new DelegateCommand(OnDiffStashedFileAgainstHeadCommand);
 
             StashItems = new ObservableCollection<StashItem>();
@@ -52,6 +54,23 @@ namespace WimyGit.UserControls
             gitRepository.GetGitWrapper().StashPopLast();
 
             gitRepository.Refresh();
+        }
+
+        public void OnDiffStashedFileAgainstParentCommand(object sender)
+        {
+            if (_gitRepository.TryGetTarget(out IGitRepository gitRepository) == false)
+            {
+                return;
+            }
+            if (SelectedStashItem == null)
+            {
+                return;
+            }
+            if (SelectedStashedFileInfo == null)
+            {
+                return;
+            }
+            gitRepository.GetGitWrapper().StashDiffToolAgainstParent(SelectedStashItem.Name, SelectedStashedFileInfo.Filename);
         }
 
         public void OnDiffStashedFileAgainstHeadCommand(object sender)

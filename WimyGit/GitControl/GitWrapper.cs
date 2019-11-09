@@ -396,6 +396,13 @@ namespace WimyGit
             CreateGitRunner().Run(cmd);
         }
 
+        public void StashDiffToolAgainstParent(string stashName, string fileName)
+        {
+            string cmd = GitCommandCreator.StashDiffToolAgainstParent(stashName, fileName);
+            logger_.AddLog(cmd);
+            CreateGitRunner().RunWithoutWaiting(cmd);
+        }
+
         public void StashDiffToolAgainstHEAD(string stashName, string fileName)
         {
             string cmd = GitCommandCreator.StashDiffToolAgainstHEAD(stashName, fileName);
