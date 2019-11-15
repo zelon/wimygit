@@ -349,7 +349,12 @@ namespace WimyGit
 
         public async Task<List<CommitInfo>> GetHistory(string selected_path, Int32 skip_count, Int32 max_count)
 		{
-			string cmd = string.Format("log --all --encoding=UTF-8 --skip={0} --max-count={1} --graph --format=\"`%ai`%H`%an`%d`%s\" -- {2}", skip_count, max_count, selected_path);
+            string checkPath = selected_path;
+            if (checkPath == path_) // if checkPath == git repository root, empty path will show more detailed graphed history
+            {
+                checkPath = "";
+            }
+			string cmd = string.Format("log --all --encoding=UTF-8 --skip={0} --max-count={1} --graph --format=\"`%ai`%H`%an`%d`%s\" -- {2}", skip_count, max_count, checkPath);
 			logger_.AddLog(cmd);
 			List<string> result = await CreateGitRunner().RunAsync(cmd);
 			return Parse(result);
