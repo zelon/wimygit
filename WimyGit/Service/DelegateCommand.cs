@@ -1,14 +1,15 @@
-﻿using System;
+﻿#nullable enable
+using System;
 
 namespace WimyGit
 {
 	public class DelegateCommand : System.Windows.Input.ICommand
 	{
 		private readonly Action<object> execute_;
-		private readonly Predicate<object> can_execute_;
-		public event EventHandler CanExecuteChanged;
+		private readonly Predicate<object>? can_execute_;
+		public event EventHandler? CanExecuteChanged;
 
-		public DelegateCommand(Action<object> executeMethod, Predicate<object> canExecuteMethod = null)
+		public DelegateCommand(Action<object> executeMethod, Predicate<object>? canExecuteMethod = null)
 		{
 			execute_ = executeMethod;
 			can_execute_ = canExecuteMethod;
