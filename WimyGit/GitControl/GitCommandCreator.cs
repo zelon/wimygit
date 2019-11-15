@@ -15,7 +15,7 @@ namespace WimyGit
             string command = "stash push --include-untracked";
             if (string.IsNullOrEmpty(message) == false)
             {
-                command += $" --message {message}";
+                command += $" --message \"{message}\"";
             }
             return command;
         }
