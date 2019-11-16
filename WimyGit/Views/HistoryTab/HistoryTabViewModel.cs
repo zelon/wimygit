@@ -115,7 +115,16 @@ namespace WimyGit.ViewModels
             {
                 return;
             }
-            AddHistoryFrom(HistorySelectedPath, HistoryList.Count);
+            int historyCount = 0;
+            foreach (var history in HistoryList)
+            {
+                if (string.IsNullOrEmpty(history.CommitId)) // if history has only graph data, commit id is invalid
+                {
+                    continue;
+                }
+                ++historyCount;
+            }
+            AddHistoryFrom(HistorySelectedPath, historyCount);
         }
 
         public void RefreshHistory(string selectedPath)
