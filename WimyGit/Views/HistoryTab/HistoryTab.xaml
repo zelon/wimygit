@@ -37,10 +37,10 @@
                 </ListView.ItemContainerStyle>
                 <ListView.View>
                     <GridView>
-                        <GridViewColumn Header="DateTime" DisplayMemberBinding="{Binding LocalDateTime}" Width="180"/>
-                        <GridViewColumn Header="CommitId" DisplayMemberBinding="{Binding CommitId}" Width="70" />
-                        <GridViewColumn Header="Graph" DisplayMemberBinding="{Binding Graph}" Width="auto"/>
-                        <GridViewColumn Header="Author" DisplayMemberBinding="{Binding Author}" Width="auto"/>
+                        <GridViewColumn Header="DateTime" DisplayMemberBinding="{Binding LocalDateTime}"/>
+                        <GridViewColumn Header="CommitId" DisplayMemberBinding="{Binding CommitId}" />
+                        <GridViewColumn Header="Graph" DisplayMemberBinding="{Binding Graph}" />
+                        <GridViewColumn Header="Author" DisplayMemberBinding="{Binding Author}" />
                         <GridViewColumn Header="Message" >
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
