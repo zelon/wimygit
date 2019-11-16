@@ -76,38 +76,46 @@ namespace WimyGit
 
         public async Task<List<StashedFileInfo>> GetStashedFileInfosAsync(string stashName)
         {
-            string cmd = GitCommandCreator.StashFileList(stashName);
-            List<string> lines = await CreateGitRunner().RunAsync(cmd);
             List<StashedFileInfo> outputs = new List<StashedFileInfo>();
-            foreach (string line in lines)
             {
-                var splitted = line.Split(" ");
-                Debug.Assert(splitted.Length >= 2);
-                StashedFileInfo stashedFileInfo = new StashedFileInfo();
-                stashedFileInfo.Status = splitted[0];
-                stashedFileInfo.Filename = splitted[1];
+                string cmd = GitCommandCreator.StashModifiedFileList(stashName);
+                List<string> lines = await CreateGitRunner().RunAsync(cmd);
+                foreach (string line in lines)
+                {
+                    var splitted = line.Split("\t");
+                    Debug.Assert(splitted.Length >= 2);
+                    StashedFileInfo stashedFileInfo = new StashedFileInfo();
+                    stashedFileInfo.FileType = StashedFileInfo.StashedFileType.kModified;
+                    stashedFileInfo.Status = splitted[0];
+                    stashedFileInfo.Filename = splitted[1];
 
-                outputs.Add(stashedFileInfo);
+                    outputs.Add(stashedFileInfo);
+                }
+            }
+            {
+                string cmd = GitCommandCreator.StashUntrackedFileListWithCommitId(stashName);
+                List<string> lines = await CreateGitRunner().RunAsync(cmd);
+                lines.RemoveAt(0); // skip commit id
+                foreach (string line in lines)
+                {
+                    var splitted = line.Split("\t");
+                    Debug.Assert(splitted.Length >= 2);
+                    StashedFileInfo stashedFileInfo = new StashedFileInfo();
+                    stashedFileInfo.FileType = StashedFileInfo.StashedFileType.kUntracked;
+                    stashedFileInfo.Status = splitted[0];
+                    stashedFileInfo.Filename = splitted[1];
+
+                    outputs.Add(stashedFileInfo);
+                }
             }
             return outputs;
         }
 
         public List<StashedFileInfo> GetStashedFileInfos(string stashName)
         {
-            string cmd = GitCommandCreator.StashFileList(stashName);
-            List<string> lines = CreateGitRunner().Run(cmd);
-            List<StashedFileInfo> outputs = new List<StashedFileInfo>();
-            foreach (string line in lines)
-            {
-                var splitted = line.Split("\t");
-                Debug.Assert(splitted.Length >= 2);
-                StashedFileInfo stashedFileInfo = new StashedFileInfo();
-                stashedFileInfo.Status = splitted[0];
-                stashedFileInfo.Filename = splitted[1];
-
-                outputs.Add(stashedFileInfo);
-            }
-            return outputs;
+            var task = Task.Run(async () => await GetStashedFileInfosAsync(stashName));
+            task.Wait();
+            return task.Result;
         }
 
         public async Task<List<string>> GetGitStatusPorcelainAllAsync()
@@ -402,9 +410,16 @@ namespace WimyGit
             CreateGitRunner().Run(cmd);
         }
 
-        public void StashDiffToolAgainstParent(string stashName, string fileName)
+        public void StashDiffToolAgainstParentModified(string stashName, string fileName)
         {
-            string cmd = GitCommandCreator.StashDiffToolAgainstParent(stashName, fileName);
+            string cmd = GitCommandCreator.StashDiffToolAgainstParentModified(stashName, fileName);
+            logger_.AddLog(cmd);
+            CreateGitRunner().RunWithoutWaiting(cmd);
+        }
+
+        public void StashDiffToolAgainstParentUntracked(string stashName, string fileName)
+        {
+            string cmd = GitCommandCreator.StashDiffToolAgainstParentUntracked(stashName, fileName);
             logger_.AddLog(cmd);
             CreateGitRunner().RunWithoutWaiting(cmd);
         }

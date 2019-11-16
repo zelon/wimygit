@@ -70,7 +70,21 @@ namespace WimyGit.UserControls
             {
                 return;
             }
-            gitRepository.GetGitWrapper().StashDiffToolAgainstParent(SelectedStashItem.Name, SelectedStashedFileInfo.Filename);
+            switch (SelectedStashedFileInfo.FileType)
+            {
+                case StashedFileInfo.StashedFileType.kModified:
+                {
+                    gitRepository.GetGitWrapper().StashDiffToolAgainstParentModified(SelectedStashItem.Name, SelectedStashedFileInfo.Filename);
+                    return;
+                }
+                case StashedFileInfo.StashedFileType.kUntracked:
+                {
+                    gitRepository.GetGitWrapper().StashDiffToolAgainstParentUntracked(SelectedStashItem.Name, SelectedStashedFileInfo.Filename);
+                    return;
+                }
+
+            }
+            System.Diagnostics.Debug.Assert(false, "Not implemented");
         }
 
         public void OnDiffStashedFileAgainstHeadCommand(object sender)
