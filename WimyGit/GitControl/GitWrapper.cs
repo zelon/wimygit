@@ -167,9 +167,10 @@ namespace WimyGit
             if (raw_outputs.Count == 0 || raw_outputs[0].StartsWith("fatal"))
             {
                 // if the sha indicate the first commit, cannot get diff from the previous
-                cmd = string.Format("-c core.quotepath=false diff --name-status {0}", sha);
+                cmd = string.Format("-c core.quotepath=false show --name-status --pretty=oneline {0}", sha);
                 logger_.AddLog(cmd);
                 raw_outputs = CreateGitRunner().Run(cmd);
+                raw_outputs.RemoveAt(0); // skip commit id
             }
             var output = new List<FileListInfoOfCommit>();
 			foreach (string line in raw_outputs)
