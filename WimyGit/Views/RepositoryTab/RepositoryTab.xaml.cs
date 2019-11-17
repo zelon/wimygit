@@ -133,15 +133,11 @@ namespace WimyGit
 			Mouse.OverrideCursor = Cursors.Wait;
 
 			LoadingScreen.Visibility = System.Windows.Visibility.Visible;
-			LoadingScreen.Width = 6000;
-			LoadingScreen.Height = 6000;
 		}
 
 		public void LeaveLoadingScreen()
 		{
 			LoadingScreen.Visibility = System.Windows.Visibility.Hidden;
-			LoadingScreen.Width = 1;
-			LoadingScreen.Height = 1;
 
 			Mouse.OverrideCursor = null;
 		}
@@ -149,8 +145,6 @@ namespace WimyGit
         public void EnterFailedScreen()
         {
             LoadingScreen.Visibility = System.Windows.Visibility.Visible;
-            LoadingScreen.Width = 6000;
-            LoadingScreen.Height = 6000;
 
             var newColor = System.Windows.Media.Brushes.Red.Clone();
             newColor.Opacity = 0.5;

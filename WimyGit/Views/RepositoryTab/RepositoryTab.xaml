@@ -196,11 +196,10 @@
         </Grid>
         <GridSplitter Grid.Row="3" Height="15" HorizontalAlignment="Stretch"/>
         <Grid Grid.Row="4" Margin="0,0,0,0">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition/>
-            </Grid.ColumnDefinitions>
             <TextBox x:Name="logTextBox" Height="Auto" TextWrapping="Wrap" Text="{Binding Log}" VerticalAlignment="Stretch" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="1" VerticalScrollBarVisibility="Auto" IsReadOnlyCaretVisible="True" AllowDrop="False" Margin="0,0,0,0" Panel.ZIndex="100"/>
-            <Rectangle x:Name="LoadingScreen" HorizontalAlignment="Left" Height="1" Margin="0,-5000,0,0" Stroke="Black" VerticalAlignment="Top" Width="1" Panel.ZIndex="10">
+        </Grid>
+        <Grid Grid.Row="0" Grid.RowSpan="3" VerticalAlignment="Stretch">
+            <Rectangle x:Name="LoadingScreen" Stroke="Black"  Visibility="Hidden">
                 <Rectangle.Fill>
                     <SolidColorBrush Color="White" Opacity="0.7" />
                 </Rectangle.Fill>
