@@ -92,7 +92,7 @@
             <GridSplitter Grid.Column="1" Width="15" HorizontalAlignment="Stretch"/>
             <Grid Grid.Column="2">
                 <TabControl x:Name="tabControl" HorizontalContentAlignment="Left" VerticalContentAlignment="Stretch">
-                    <TabItem Header="{Binding PendingTabHeader}" Width="100" Height="30">
+                    <TabItem Header="{Binding PendingTabHeader}">
                         <Grid Background="#FFF9F9F9">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="2*" MinHeight="100" />
@@ -185,10 +185,10 @@
                             </Grid>
                         </Grid>
                     </TabItem>
-                    <TabItem Header="{Binding HistoryTabHeader}" Width="100" Height="30">
+                    <TabItem Header="{Binding HistoryTabHeader}">
                         <user_control:HistoryTab DataContext="{Binding HistoryTabMember}" />
                     </TabItem>
-                    <TabItem Header="{Binding StashTabHeader}" Width="100" Height="30">
+                    <TabItem Header="{Binding StashTabHeader}">
                         <user_control:StashTab DataContext="{Binding StashTabViewModel}" />
                     </TabItem>
                 </TabControl>
