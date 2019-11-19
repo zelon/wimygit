@@ -7,13 +7,33 @@
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="500" MinHeight="400">
     <UserControl.Resources>
         <WimyGit:StashNameToFileListConverter x:Key="stashNameToFileListConverter"/>
+        <Style x:Key="StashButtons" TargetType="Button">
+            <Setter Property="Margin" Value="5" />
+            <Setter Property="Padding" Value="10,15,10,15" />
+        </Style>
     </UserControl.Resources>
     <Grid>
-        <Button Command="{Binding PushAllCommand}" Content="Save current changes" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Height="56" Width="152"/>
-        <Button Command="{Binding PopLastCommand}" Content="Pop last saved changes" HorizontalAlignment="Left" Margin="185,10,0,0" VerticalAlignment="Top" Height="56" Width="152"/>
-        <Button Command="" Content="Delete" HorizontalAlignment="Left" Margin="342,10,0,0" VerticalAlignment="Top" Height="56" Width="152"/>
-        <Button Command="" Content="Apply" HorizontalAlignment="Left" Margin="499,10,0,0" VerticalAlignment="Top" Height="56" Width="152"/>
-        <ListView Name="stashList" ItemsSource="{Binding StashItems}" SelectedValue="{Binding SelectedStashItem}" Margin="10,71,10,0" Height="152" VerticalAlignment="Top">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Grid Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Button Grid.Column="0" Style="{StaticResource StashButtons}" Command="{Binding PushAllCommand}" Content="Save current changes" />
+            <Button Grid.Column="1" Style="{StaticResource StashButtons}" Command="{Binding PopLastCommand}" Content="Pop last saved changes" />
+            <Button Grid.Column="2" Style="{StaticResource StashButtons}" Command="" Content="Delete" />
+            <Button Grid.Column="3" Style="{StaticResource StashButtons}" Command="" Content="Apply" />
+        </Grid>
+        <ListView Grid.Row="1" Name="stashList" ItemsSource="{Binding StashItems}" SelectedValue="{Binding SelectedStashItem}">
             <ListView.View>
                 <GridView>
                     <GridViewColumn Header="Name" DisplayMemberBinding="{Binding Name}" Width="100" />
@@ -22,8 +42,8 @@
                 </GridView>
             </ListView.View>
         </ListView>
-        <Label Content="Detail" HorizontalAlignment="Left" Margin="10,228,0,0" VerticalAlignment="Top"/>
-        <ListBox Margin="10,259,10,134" SelectedValue="{Binding Path=SelectedStashedFileInfo}" SelectedValuePath=".">
+        <Label Grid.Row="2" Content="Files" HorizontalAlignment="Left" VerticalAlignment="Bottom"/>
+        <ListBox Grid.Row="3" SelectedValue="{Binding Path=SelectedStashedFileInfo}" SelectedValuePath=".">
             <ListBox.ItemsSource>
                 <MultiBinding Converter="{StaticResource stashNameToFileListConverter}">
                     <Binding Path="."/>
@@ -53,7 +73,7 @@
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>
-        <Label Content="Output" HorizontalAlignment="Left" Margin="10,0,0,103" VerticalAlignment="Bottom" RenderTransformOrigin="-0.907,-0.462"/>
-        <TextBox Margin="10,0,10,6" Text="{Binding Output}" TextWrapping="Wrap" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" Height="92" VerticalAlignment="Bottom"/>
+        <Label Grid.Row="4" Content="Output" HorizontalAlignment="Left" VerticalAlignment="Bottom"/>
+        <TextBox Grid.Row="5" Text="{Binding Output}" TextWrapping="Wrap" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" />
     </Grid>
 </UserControl>
