@@ -36,9 +36,9 @@
         <ListView Grid.Row="1" Name="stashList" ItemsSource="{Binding StashItems}" SelectedValue="{Binding SelectedStashItem}">
             <ListView.View>
                 <GridView>
-                    <GridViewColumn Header="Name" DisplayMemberBinding="{Binding Name}" Width="100" />
-                    <GridViewColumn Header="Description" DisplayMemberBinding="{Binding Description}" Width="100" />
-                    <GridViewColumn Header="Base" DisplayMemberBinding="{Binding Base}" Width="100" />
+                    <GridViewColumn Header="Name" DisplayMemberBinding="{Binding Name}" />
+                    <GridViewColumn Header="Description" DisplayMemberBinding="{Binding Description}" />
+                    <GridViewColumn Header="Base" DisplayMemberBinding="{Binding Base}" />
                 </GridView>
             </ListView.View>
         </ListView>
