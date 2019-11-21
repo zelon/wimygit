@@ -6,9 +6,9 @@ using WimyGit.UserControls;
 
 namespace WimyGit
 {
-    public class StashNameToFileListConverter : IMultiValueConverter
+    public class StashFileListConverter : IMultiValueConverter
     {
-        public StashNameToFileListConverter()
+        public StashFileListConverter()
         {
         }
 
