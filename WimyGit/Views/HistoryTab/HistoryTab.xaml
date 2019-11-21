@@ -22,12 +22,14 @@
             <ListView Name="historyList" Margin="0,30,0,0" ItemsSource="{Binding HistoryList}" ScrollViewer.ScrollChanged="HistoryList_ScrollChanged" SelectedValue="{Binding Path=SelectedHistoryStatus}" SelectedValuePath="." FontFamily="Consolas" TabIndex="0">
                 <ListView.InputBindings>
                     <KeyBinding Modifiers="Ctrl" Key="D" Command="{Binding DiffHistorySelectedFile}" />
+                    <KeyBinding Modifiers="Ctrl" Key="C" Command="{Binding CopyCommitIdCommand}" />
                 </ListView.InputBindings>
                 <ListView.ContextMenu>
                     <ContextMenu>
                         <MenuItem Header="Create Branch" Command="{Binding CreateBranchCommand}" />
                         <MenuItem Header="Create Tag" Command="{Binding CreateTagCommand}" />
                         <MenuItem Header="Rebase" Command="{Binding RebaseCommand}" />
+                        <MenuItem Header="_Copy Commit Id" Command="{Binding CopyCommitIdCommand}" />
                     </ContextMenu>
                 </ListView.ContextMenu>
                 <ListView.ItemContainerStyle>

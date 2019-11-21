@@ -17,6 +17,7 @@ namespace WimyGit.ViewModels
         public ICommand CreateBranchCommand { get; private set; }
         public ICommand CreateTagCommand { get; private set; }
         public ICommand RebaseCommand { get; private set; }
+        public ICommand CopyCommitIdCommand { get; private set; }
 
         public HistoryTabViewModel(GitWrapper gitWrapper)
         {
@@ -27,6 +28,7 @@ namespace WimyGit.ViewModels
             CreateBranchCommand = new DelegateCommand(OnCreateBranchCommand);
             CreateTagCommand = new DelegateCommand(OnCreateTagCommand);
             RebaseCommand = new DelegateCommand(OnRebaseCommand);
+            CopyCommitIdCommand = new DelegateCommand(OnCopyCommitIdCommand);
             MoreHistoryCommand = new DelegateCommand(OnMoreHistoryCommand);
             DiffHistorySelectedFile = new DelegateCommand((object parameter) => OnDiffHistroySelectedFile());
         }
@@ -87,6 +89,15 @@ namespace WimyGit.ViewModels
             var console_progress_window = new ConsoleProgressWindow(GitWrapper.GetPath(), ProgramPathFinder.GetGitBin(), gitCommand);
             console_progress_window.Owner = GlobalSetting.GetInstance().GetWindow();
             console_progress_window.ShowDialog();
+        }
+
+        public void OnCopyCommitIdCommand(object parameter)
+        {
+            if (SelectedHistoryStatus == null)
+            {
+                return;
+            }
+            Clipboard.SetText(SelectedHistoryStatus.CommitId);
         }
 
         public ICommand DiffHistorySelectedFile { get; private set; }
