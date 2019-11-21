@@ -18,5 +18,12 @@ namespace WimyGit
             return System.Windows.MessageBox.Show(window, message, kCaption,
                 MessageBoxButton.YesNo, MessageBoxImage.Question);
         }
+
+        public static System.Windows.MessageBoxResult ShowMessageWithOKCancel(string message)
+        {
+            var window = GlobalSetting.GetInstance().GetWindow();
+            return System.Windows.MessageBox.Show(window, message, kCaption,
+                MessageBoxButton.OKCancel, MessageBoxImage.Question);
+        }
     }
 }

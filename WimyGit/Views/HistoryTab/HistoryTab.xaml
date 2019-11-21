@@ -29,6 +29,8 @@
                         <MenuItem Header="Create Branch" Command="{Binding CreateBranchCommand}" />
                         <MenuItem Header="Create Tag" Command="{Binding CreateTagCommand}" />
                         <MenuItem Header="Rebase" Command="{Binding RebaseCommand}" />
+                        <MenuItem Header="Reset soft" Command="{Binding ResetSoftCommand}" />
+                        <MenuItem Header="Reset hard" Command="{Binding ResetHardCommand}" />
                         <MenuItem Header="_Copy Commit Id" Command="{Binding CopyCommitIdCommand}" />
                     </ContextMenu>
                 </ListView.ContextMenu>

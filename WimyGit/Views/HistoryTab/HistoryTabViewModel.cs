@@ -17,6 +17,8 @@ namespace WimyGit.ViewModels
         public ICommand CreateBranchCommand { get; private set; }
         public ICommand CreateTagCommand { get; private set; }
         public ICommand RebaseCommand { get; private set; }
+        public ICommand ResetSoftCommand { get; private set; }
+        public ICommand ResetHardCommand { get; private set; }
         public ICommand CopyCommitIdCommand { get; private set; }
 
         public HistoryTabViewModel(GitWrapper gitWrapper)
@@ -28,6 +30,8 @@ namespace WimyGit.ViewModels
             CreateBranchCommand = new DelegateCommand(OnCreateBranchCommand);
             CreateTagCommand = new DelegateCommand(OnCreateTagCommand);
             RebaseCommand = new DelegateCommand(OnRebaseCommand);
+            ResetSoftCommand = new DelegateCommand(OnResetSoftCommand);
+            ResetHardCommand = new DelegateCommand(OnResetHardCommand);
             CopyCommitIdCommand = new DelegateCommand(OnCopyCommitIdCommand);
             MoreHistoryCommand = new DelegateCommand(OnMoreHistoryCommand);
             DiffHistorySelectedFile = new DelegateCommand((object parameter) => OnDiffHistroySelectedFile());
@@ -86,6 +90,35 @@ namespace WimyGit.ViewModels
                 return;
             }
             string gitCommand = $"rebase {SelectedHistoryStatus.CommitId}";
+            var console_progress_window = new ConsoleProgressWindow(GitWrapper.GetPath(), ProgramPathFinder.GetGitBin(), gitCommand);
+            console_progress_window.Owner = GlobalSetting.GetInstance().GetWindow();
+            console_progress_window.ShowDialog();
+        }
+
+        public void OnResetSoftCommand(object parameter)
+        {
+            if (SelectedHistoryStatus == null)
+            {
+                return;
+            }
+            string gitCommand = GitCommandCreator.ResetSoft(SelectedHistoryStatus.CommitId);
+            var console_progress_window = new ConsoleProgressWindow(GitWrapper.GetPath(), ProgramPathFinder.GetGitBin(), gitCommand);
+            console_progress_window.Owner = GlobalSetting.GetInstance().GetWindow();
+            console_progress_window.ShowDialog();
+        }
+
+        public void OnResetHardCommand(object parameter)
+        {
+            if (SelectedHistoryStatus == null)
+            {
+                return;
+            }
+            var result = MessageBox.ShowMessageWithOKCancel("Reset hard can affect on working directory. Continue?");
+            if (result != MessageBoxResult.OK)
+            {
+                return;
+            }
+            string gitCommand = GitCommandCreator.ResetHard(SelectedHistoryStatus.CommitId);
             var console_progress_window = new ConsoleProgressWindow(GitWrapper.GetPath(), ProgramPathFinder.GetGitBin(), gitCommand);
             console_progress_window.Owner = GlobalSetting.GetInstance().GetWindow();
             console_progress_window.ShowDialog();
