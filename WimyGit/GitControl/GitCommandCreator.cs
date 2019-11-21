@@ -62,6 +62,11 @@ namespace WimyGit
             return $"difftool HEAD {stashName} -- {filename}";
         }
 
+        public static string Checkout(string commitId)
+        {
+            return $"checkout {commitId}";
+        }
+
         public static string ResetSoft(string commitId)
         {
             return $"reset --soft {commitId}";

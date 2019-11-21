@@ -25,7 +25,7 @@ namespace WimyGit.ViewModels
 			git_ = new GitWrapper(Directory, this);
 
             DirectoryTree = new DirectoryTreeViewModel(this);
-            HistoryTabMember = new HistoryTabViewModel(git_);
+            HistoryTabMember = new HistoryTabViewModel(git_, this);
             StashTabViewModel = new UserControls.StashTabViewModel(this);
 
             PendingTabHeader = new Views.CustomTabHeader("Pending");

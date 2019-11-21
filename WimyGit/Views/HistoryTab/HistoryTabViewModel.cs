@@ -7,7 +7,8 @@ namespace WimyGit.ViewModels
 {
     public class HistoryTabViewModel : NotifyBase
     {
-        public GitWrapper GitWrapper { get; private set; }
+        readonly public WeakReference<IGitRepository> _gitRepository;
+        public GitWrapper GitWrapper { get; private set; } // deprecatred
         private string HistorySelectedPath { get; set; }
         public string SelectedRepositoryPath { get; set; }
         public string CurrentBranchName { get; set; }
@@ -17,19 +18,22 @@ namespace WimyGit.ViewModels
         public ICommand CreateBranchCommand { get; private set; }
         public ICommand CreateTagCommand { get; private set; }
         public ICommand RebaseCommand { get; private set; }
+        public ICommand CheckoutCommand { get; private set; }
         public ICommand ResetSoftCommand { get; private set; }
         public ICommand ResetHardCommand { get; private set; }
         public ICommand CopyCommitIdCommand { get; private set; }
 
-        public HistoryTabViewModel(GitWrapper gitWrapper)
+        public HistoryTabViewModel(GitWrapper gitWrapper, IGitRepository gitRepository)
         {
             GitWrapper = gitWrapper;
+            _gitRepository = new WeakReference<IGitRepository>(gitRepository);
 
             HistoryList = new System.Collections.ObjectModel.ObservableCollection<HistoryStatus>();
 
             CreateBranchCommand = new DelegateCommand(OnCreateBranchCommand);
             CreateTagCommand = new DelegateCommand(OnCreateTagCommand);
             RebaseCommand = new DelegateCommand(OnRebaseCommand);
+            CheckoutCommand = new DelegateCommand(OnCheckoutCommand);
             ResetSoftCommand = new DelegateCommand(OnResetSoftCommand);
             ResetHardCommand = new DelegateCommand(OnResetHardCommand);
             CopyCommitIdCommand = new DelegateCommand(OnCopyCommitIdCommand);
@@ -93,6 +97,24 @@ namespace WimyGit.ViewModels
             var console_progress_window = new ConsoleProgressWindow(GitWrapper.GetPath(), ProgramPathFinder.GetGitBin(), gitCommand);
             console_progress_window.Owner = GlobalSetting.GetInstance().GetWindow();
             console_progress_window.ShowDialog();
+        }
+
+        public void OnCheckoutCommand(object parameter)
+        {
+            if (_gitRepository.TryGetTarget(out IGitRepository gitRepository) == false)
+            {
+                return;
+            }
+            if (SelectedHistoryStatus == null)
+            {
+                return;
+            }
+            string gitCommand = GitCommandCreator.Checkout(SelectedHistoryStatus.CommitId);
+            var console_progress_window = new ConsoleProgressWindow(GitWrapper.GetPath(), ProgramPathFinder.GetGitBin(), gitCommand);
+            console_progress_window.Owner = GlobalSetting.GetInstance().GetWindow();
+            console_progress_window.ShowDialog();
+
+            gitRepository.Refresh();
         }
 
         public void OnResetSoftCommand(object parameter)
@@ -239,6 +261,5 @@ namespace WimyGit.ViewModels
             builder.Append("\n");
             return builder.ToString();
         }
-
     }
 }
