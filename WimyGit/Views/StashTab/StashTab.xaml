@@ -36,7 +36,13 @@
         <ListView Grid.Row="1" Name="stashList" ItemsSource="{Binding StashItems}" SelectedValue="{Binding SelectedStashItem}">
             <ListView.View>
                 <GridView>
-                    <GridViewColumn Header="Name" DisplayMemberBinding="{Binding Name}" />
+                    <GridViewColumn Header="Name" DisplayMemberBinding="{Binding Name}">
+                        <GridViewColumn.HeaderContainerStyle>
+                            <Style TargetType="{x:Type GridViewColumnHeader}">
+                                <Setter Property="Padding" Value="5" />
+                            </Style>
+                        </GridViewColumn.HeaderContainerStyle>
+                    </GridViewColumn>
                     <GridViewColumn Header="Description" DisplayMemberBinding="{Binding Description}" />
                     <GridViewColumn Header="Base" DisplayMemberBinding="{Binding Base}" />
                 </GridView>
