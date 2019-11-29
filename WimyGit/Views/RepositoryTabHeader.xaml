@@ -8,12 +8,12 @@
              d:DesignHeight="40" d:DesignWidth="150">
     <Grid MouseUp="Grid_MouseUp">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="130" />
-            <ColumnDefinition Width="50" />
+            <ColumnDefinition MinWidth="100" />
+            <ColumnDefinition />
         </Grid.ColumnDefinitions>
         <Grid Grid.Column="0">
             <Label x:Name="Path" Width="0" HorizontalAlignment="Left" VerticalAlignment="Center" />
-            <Label Content="TabItem" x:Name="Title" Width="130" HorizontalAlignment="Left" VerticalAlignment="Center" />
+            <Label Content="TabItem" x:Name="Title" HorizontalAlignment="Left" VerticalAlignment="Center" />
         </Grid>
         <Grid Grid.Column="1">
             <Button Click="CloseButton_Click" x:Name="CloseButton" Width="25" Height="25" HorizontalAlignment="Right" VerticalAlignment="Center">
