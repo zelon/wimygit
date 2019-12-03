@@ -51,7 +51,7 @@
                         <GridViewColumn Header="CommitId" DisplayMemberBinding="{Binding CommitId}" />
                         <GridViewColumn Header="Graph" DisplayMemberBinding="{Binding Graph}" />
                         <GridViewColumn Header="Author" DisplayMemberBinding="{Binding Author}" />
-                        <GridViewColumn Header="Message" >
+                        <GridViewColumn Header="Message" Width="Auto">
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
                                     <StackPanel Orientation="Horizontal">
