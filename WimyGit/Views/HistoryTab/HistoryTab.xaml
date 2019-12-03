@@ -30,9 +30,11 @@
                         <MenuItem Header="Create Tag" Command="{Binding CreateTagCommand}" />
                         <MenuItem Header="Rebase" Command="{Binding RebaseCommand}" />
                         <Separator/>
+                        <MenuItem Header="Reset">
+                            <MenuItem Header="Reset soft" Command="{Binding ResetSoftCommand}" />
+                            <MenuItem Header="Reset hard" Command="{Binding ResetHardCommand}" />
+                        </MenuItem>
                         <MenuItem Header="Checkout" Command="{Binding CheckoutCommand}" />
-                        <MenuItem Header="Reset soft" Command="{Binding ResetSoftCommand}" />
-                        <MenuItem Header="Reset hard" Command="{Binding ResetHardCommand}" />
                         <Separator/>
                         <MenuItem Header="_Copy Commit Id" Command="{Binding CopyCommitIdCommand}" />
                     </ContextMenu>
