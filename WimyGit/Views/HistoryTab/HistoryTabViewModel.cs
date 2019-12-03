@@ -20,6 +20,7 @@ namespace WimyGit.ViewModels
         public ICommand RebaseCommand { get; private set; }
         public ICommand CheckoutCommand { get; private set; }
         public ICommand ResetSoftCommand { get; private set; }
+        public ICommand ResetMixedCommand { get; private set; }
         public ICommand ResetHardCommand { get; private set; }
         public ICommand CopyCommitIdCommand { get; private set; }
 
@@ -34,8 +35,11 @@ namespace WimyGit.ViewModels
             CreateTagCommand = new DelegateCommand(OnCreateTagCommand);
             RebaseCommand = new DelegateCommand(OnRebaseCommand);
             CheckoutCommand = new DelegateCommand(OnCheckoutCommand);
+
             ResetSoftCommand = new DelegateCommand(OnResetSoftCommand);
+            ResetMixedCommand = new DelegateCommand(OnResetMixedCommand);
             ResetHardCommand = new DelegateCommand(OnResetHardCommand);
+
             CopyCommitIdCommand = new DelegateCommand(OnCopyCommitIdCommand);
             MoreHistoryCommand = new DelegateCommand(OnMoreHistoryCommand);
             DiffHistorySelectedFile = new DelegateCommand((object parameter) => OnDiffHistroySelectedFile());
@@ -127,6 +131,24 @@ namespace WimyGit.ViewModels
             var console_progress_window = new ConsoleProgressWindow(GitWrapper.GetPath(), ProgramPathFinder.GetGitBin(), gitCommand);
             console_progress_window.Owner = GlobalSetting.GetInstance().GetWindow();
             console_progress_window.ShowDialog();
+        }
+
+        public void OnResetMixedCommand(object parameter)
+        {
+            if (_gitRepository.TryGetTarget(out IGitRepository gitRepository) == false)
+            {
+                return;
+            }
+            if (SelectedHistoryStatus == null)
+            {
+                return;
+            }
+            string gitCommand = GitCommandCreator.ResetMixed(SelectedHistoryStatus.CommitId);
+            var console_progress_window = new ConsoleProgressWindow(GitWrapper.GetPath(), ProgramPathFinder.GetGitBin(), gitCommand);
+            console_progress_window.Owner = GlobalSetting.GetInstance().GetWindow();
+            console_progress_window.ShowDialog();
+
+            gitRepository.Refresh();
         }
 
         public void OnResetHardCommand(object parameter)

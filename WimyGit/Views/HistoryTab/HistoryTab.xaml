@@ -32,6 +32,7 @@
                         <Separator/>
                         <MenuItem Header="Reset">
                             <MenuItem Header="Reset soft" Command="{Binding ResetSoftCommand}" />
+                            <MenuItem Header="Reset mixed" Command="{Binding ResetMixedCommand}" />
                             <MenuItem Header="Reset hard" Command="{Binding ResetHardCommand}" />
                         </MenuItem>
                         <MenuItem Header="Checkout" Command="{Binding CheckoutCommand}" />

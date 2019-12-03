@@ -72,6 +72,11 @@ namespace WimyGit
             return $"reset --soft {commitId}";
         }
 
+        public static string ResetMixed(string commitId)
+        {
+            return $"reset --mixed {commitId}";
+        }
+
         public static string ResetHard(string commitId)
         {
             return $"reset --hard {commitId}";
