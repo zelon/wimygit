@@ -65,6 +65,10 @@ namespace WimyGit.ViewModels
 
         public void OnCreateBranchCommand(object parameter)
         {
+            if (_gitRepository.TryGetTarget(out IGitRepository gitRepository) == false)
+            {
+                return;
+            }
             if (SelectedHistoryStatus == null)
             {
                 return;
@@ -75,10 +79,16 @@ namespace WimyGit.ViewModels
                 return;
             }
             GitWrapper.CreateBranch(SelectedHistoryStatus.CommitId, branchName);
+
+            gitRepository.Refresh();
         }
 
         public void OnCreateTagCommand(object parameter)
         {
+            if (_gitRepository.TryGetTarget(out IGitRepository gitRepository) == false)
+            {
+                return;
+            }
             if (SelectedHistoryStatus == null)
             {
                 return;
@@ -89,10 +99,16 @@ namespace WimyGit.ViewModels
                 return;
             }
             GitWrapper.CreateTag(SelectedHistoryStatus.CommitId, tagName);
+
+            gitRepository.Refresh();
         }
 
         public void OnRebaseCommand(object parameter)
         {
+            if (_gitRepository.TryGetTarget(out IGitRepository gitRepository) == false)
+            {
+                return;
+            }
             if (SelectedHistoryStatus == null)
             {
                 return;
@@ -101,6 +117,8 @@ namespace WimyGit.ViewModels
             var console_progress_window = new ConsoleProgressWindow(GitWrapper.GetPath(), ProgramPathFinder.GetGitBin(), gitCommand);
             console_progress_window.Owner = GlobalSetting.GetInstance().GetWindow();
             console_progress_window.ShowDialog();
+
+            gitRepository.Refresh();
         }
 
         public void OnCheckoutCommand(object parameter)
@@ -123,6 +141,10 @@ namespace WimyGit.ViewModels
 
         public void OnResetSoftCommand(object parameter)
         {
+            if (_gitRepository.TryGetTarget(out IGitRepository gitRepository) == false)
+            {
+                return;
+            }
             if (SelectedHistoryStatus == null)
             {
                 return;
@@ -131,6 +153,8 @@ namespace WimyGit.ViewModels
             var console_progress_window = new ConsoleProgressWindow(GitWrapper.GetPath(), ProgramPathFinder.GetGitBin(), gitCommand);
             console_progress_window.Owner = GlobalSetting.GetInstance().GetWindow();
             console_progress_window.ShowDialog();
+
+            gitRepository.Refresh();
         }
 
         public void OnResetMixedCommand(object parameter)
@@ -153,6 +177,10 @@ namespace WimyGit.ViewModels
 
         public void OnResetHardCommand(object parameter)
         {
+            if (_gitRepository.TryGetTarget(out IGitRepository gitRepository) == false)
+            {
+                return;
+            }
             if (SelectedHistoryStatus == null)
             {
                 return;
@@ -166,6 +194,8 @@ namespace WimyGit.ViewModels
             var console_progress_window = new ConsoleProgressWindow(GitWrapper.GetPath(), ProgramPathFinder.GetGitBin(), gitCommand);
             console_progress_window.Owner = GlobalSetting.GetInstance().GetWindow();
             console_progress_window.ShowDialog();
+
+            gitRepository.Refresh();
         }
 
         public void OnCopyCommitIdCommand(object parameter)
