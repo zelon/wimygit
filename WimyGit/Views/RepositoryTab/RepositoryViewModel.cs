@@ -18,7 +18,9 @@ namespace WimyGit.ViewModels
         public Views.CustomTabHeader StashTabHeader { get; set; }
         private bool noCommitsYet_ = false;
 
-        public RepositoryViewModel(string git_repository_path, RepositoryTab repository_tab, UserControls.BranchAndTagTabViewModel branchAndTagTabViewModel)
+        public RepositoryViewModel(string git_repository_path, RepositoryTab repository_tab,
+            UserControls.StashTabViewModel stashTabViewModel,
+            UserControls.BranchAndTagTabViewModel branchAndTagTabViewModel)
 		{
             DisplayAuthor = GlobalSetting.GetInstance().GetSignature();
             Directory = git_repository_path;
@@ -27,7 +29,7 @@ namespace WimyGit.ViewModels
 
             DirectoryTree = new DirectoryTreeViewModel(this);
             HistoryTabMember = new HistoryTabViewModel(git_, this);
-            StashTabViewModel = new UserControls.StashTabViewModel(this);
+            StashTabViewModel = stashTabViewModel;
             BranchAndTagTabViewModel_ = branchAndTagTabViewModel;
 
             PendingTabHeader = new Views.CustomTabHeader("Pending");

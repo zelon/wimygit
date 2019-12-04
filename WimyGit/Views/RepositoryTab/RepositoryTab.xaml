@@ -212,7 +212,7 @@
                         <user_control:HistoryTab DataContext="{Binding HistoryTabMember}" />
                     </TabItem>
                     <TabItem Header="{Binding StashTabHeader}">
-                        <user_control:StashTab DataContext="{Binding StashTabViewModel}" />
+                        <user_control:StashTab x:Name="StashTab"/>
                     </TabItem>
                     <TabItem>
                         <TabItem.Header>

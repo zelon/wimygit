@@ -8,7 +8,7 @@ namespace WimyGit.UserControls
 {
     public class StashTabViewModel : NotifyBase
     {
-        readonly public WeakReference<IGitRepository> _gitRepository;
+        public WeakReference<IGitRepository> _gitRepository;
         public ICommand PushAllCommand { get; private set; }
         public ICommand PopLastCommand { get; private set; }
         public ICommand DiffStashedFileAgainstParentCommand { get; private set; }
@@ -18,15 +18,20 @@ namespace WimyGit.UserControls
         public ObservableCollection<StashItem> StashItems { get; set; }
         public StashItem SelectedStashItem { get; set; }
         public StashedFileInfo SelectedStashedFileInfo { get; set; }
-        public StashTabViewModel(IGitRepository gitRepository)
+
+        public StashTabViewModel()
         {
-            _gitRepository = new WeakReference<IGitRepository>(gitRepository);
             PushAllCommand = new DelegateCommand(OnSaveCommand);
             PopLastCommand = new DelegateCommand(OnPopLastCommand);
             DiffStashedFileAgainstParentCommand = new DelegateCommand(OnDiffStashedFileAgainstParentCommand);
             DiffStashedFileAgainstHeadCommand = new DelegateCommand(OnDiffStashedFileAgainstHeadCommand);
 
             StashItems = new ObservableCollection<StashItem>();
+        }
+
+        public void SetGitRepository(IGitRepository gitRepository)
+        {
+            _gitRepository = new WeakReference<IGitRepository>(gitRepository);
         }
 
         public void OnSaveCommand(object sender)
