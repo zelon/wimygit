@@ -97,15 +97,19 @@
                             <Setter Property="Template">
                                 <Setter.Value>
                                     <ControlTemplate TargetType="TabItem">
-                                        <Border Name="Border" BorderThickness="1,1,1,0" BorderBrush="DarkGray" Margin="0,0,5,0" Padding="10">
+                                        <Border Name="Border" BorderThickness="1,1,1,0" BorderBrush="DarkGray" Padding="10">
                                             <ContentPresenter x:Name="ContentSite" VerticalAlignment="Center" HorizontalAlignment="Center" ContentSource="Header" Margin="10,2" />
                                         </Border>
                                         <ControlTemplate.Triggers>
                                             <Trigger Property="IsSelected" Value="True">
                                                 <Setter TargetName="Border" Property="Background" Value="White" />
+                                                <Setter TargetName="Border" Property="Margin" Value="0,0,0,0" />
+                                                <Setter TargetName="Border" Property="CornerRadius" Value="5,5,0,0" />
                                             </Trigger>
                                             <Trigger Property="IsSelected" Value="False">
                                                 <Setter TargetName="Border" Property="Background" Value="GhostWhite" />
+                                                <Setter TargetName="Border" Property="Margin" Value="0,5,0,0" />
+                                                <Setter TargetName="Border" Property="CornerRadius" Value="0,0,0,0" />
                                             </Trigger>
                                         </ControlTemplate.Triggers>
                                     </ControlTemplate>
