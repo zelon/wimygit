@@ -214,6 +214,12 @@
                     <TabItem Header="{Binding StashTabHeader}">
                         <user_control:StashTab DataContext="{Binding StashTabViewModel}" />
                     </TabItem>
+                    <TabItem>
+                        <TabItem.Header>
+                            <TextBlock Text="Branch &amp; Tag" VerticalAlignment="Center" HorizontalAlignment="Center" Padding="10"/>
+                        </TabItem.Header>
+                        <user_control:BranchAndTagTab x:Name="BranchAndTagTab" />
+                    </TabItem>
                 </TabControl>
             </Grid>
         </Grid>

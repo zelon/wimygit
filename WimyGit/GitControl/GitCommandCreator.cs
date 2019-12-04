@@ -1,11 +1,29 @@
 ﻿
-using System;
-
 namespace WimyGit
 {
     public static class GitCommandCreator
     {
         static private readonly string kEmptyTreeCommitId = "4b825dc642cb6eb9a060e54bf8d69288fbee4904";
+
+        public static string ListBranch()
+        {
+            return "branch --list --verbose";
+        }
+
+        public static string DeleteBranch(string branchName)
+        {
+            return $"branch --delete \"{branchName}\"";
+        }
+
+        public static string ListTag()
+        {
+            return "tag --list --format=%(objectname:short=7)@%(refname:lstrip=2)";
+        }
+
+        public static string DeleteTag(string tagName)
+        {
+            return $"tag --delete \"{tagName}\"";
+        }
 
         public static string StashList()
         {

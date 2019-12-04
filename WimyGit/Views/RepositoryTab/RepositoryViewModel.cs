@@ -5,13 +5,14 @@ using System.Windows.Input;
 
 namespace WimyGit.ViewModels
 {
-    public partial class RepositoryViewModel : NotifyBase, ILogger, WimyGit.IGitRepository
+    public partial class RepositoryViewModel : NotifyBase, ILogger, IGitRepository
 	{
 		private RepositoryTab repository_tab_;
 		public GitWrapper git_;
         public DirectoryTreeViewModel DirectoryTree { get; private set; }
         public HistoryTabViewModel HistoryTabMember { get; private set; }
         public UserControls.StashTabViewModel StashTabViewModel { get; private set; }
+        public UserControls.BranchAndTagTabViewModel BranchAndTagTabViewModel_ { get; private set; }
         public Views.CustomTabHeader PendingTabHeader { get; set; }
         public Views.CustomTabHeader HistoryTabHeader { get; set; }
         public Views.CustomTabHeader StashTabHeader { get; set; }
@@ -58,6 +59,11 @@ namespace WimyGit.ViewModels
         Task<bool> IGitRepository.Refresh()
         {
             return Refresh();
+        }
+
+        public RunExternal CreateGitRunner()
+        {
+            return new RunExternal(ProgramPathFinder.GetGitBin(), Directory);
         }
 
         public string SelectedPath { get; set; }

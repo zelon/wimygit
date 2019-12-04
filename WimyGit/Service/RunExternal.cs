@@ -22,7 +22,7 @@ namespace WimyGit
 		}
 	}
 
-	class RunExternal
+	public class RunExternal
 	{
 		private readonly string execute_filename_;
 		private readonly string working_directory_;
@@ -120,5 +120,12 @@ namespace WimyGit
 
 			process.Start();
 		}
-	}
+
+        public void RunShowDialog(string arguments)
+        {
+            var console_progress_window = new ConsoleProgressWindow(working_directory_, execute_filename_, arguments);
+            console_progress_window.Owner = GlobalSetting.GetInstance().GetWindow();
+            console_progress_window.ShowDialog();
+        }
+    }
 }
