@@ -10,19 +10,12 @@
         <local:BranchAndTagTabViewModel/>
     </UserControl.DataContext>
     <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition/>
-        </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="50*"/>
             <ColumnDefinition Width="15" />
             <ColumnDefinition Width="50*"/>
         </Grid.ColumnDefinitions>
-        <Grid Grid.Row="0" Grid.ColumnSpan="3">
-            <Button Content="Refresh" Padding="10" Command="{Binding RefreshCommand}" />
-        </Grid>
-        <DockPanel Grid.Row="1" Grid.Column="0">
+        <DockPanel Grid.Column="0">
             <Label DockPanel.Dock="Top" Content="Branches:"/>
             <ListView Width="Auto" ItemsSource="{Binding BranchInfos}" SelectedValue="{Binding SelectedBranch}">
                 <ListView.View>
@@ -39,8 +32,8 @@
                 </ListView.ContextMenu>
             </ListView>
         </DockPanel>
-        <GridSplitter Grid.Row="1" Grid.Column="1" Width="15" VerticalAlignment="Stretch" />
-        <DockPanel Grid.Row="1" Grid.Column="2">
+        <GridSplitter Grid.Column="1" Width="15" VerticalAlignment="Stretch" />
+        <DockPanel Grid.Column="2">
             <Label DockPanel.Dock="Top" Content="Tags:"/>
             <ListView Width="Auto" ItemsSource="{Binding TagInfos}" SelectedValue="{Binding SelectedTag}">
                 <ListView.View>

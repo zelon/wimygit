@@ -18,9 +18,10 @@ namespace WimyGit
 
             ConstructPluginToolbarButtons();
 
-            var viewModel = new ViewModels.RepositoryViewModel(git_repository_path, this);
-            DataContext = viewModel;
             UserControls.BranchAndTagTabViewModel branchAndTagTabViewModel = (UserControls.BranchAndTagTabViewModel)BranchAndTagTab.DataContext;
+
+            var viewModel = new ViewModels.RepositoryViewModel(git_repository_path, this, branchAndTagTabViewModel);
+            DataContext = viewModel;
             branchAndTagTabViewModel.SetGitRepository(viewModel);
 		}
 
