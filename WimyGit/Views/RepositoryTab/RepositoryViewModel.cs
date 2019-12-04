@@ -13,9 +13,7 @@ namespace WimyGit.ViewModels
         public HistoryTabViewModel HistoryTabMember { get; private set; }
         public UserControls.StashTabViewModel StashTabViewModel { get; private set; }
         public UserControls.BranchAndTagTabViewModel BranchAndTagTabViewModel_ { get; private set; }
-        public Views.CustomTabHeader PendingTabHeader { get; set; }
-        public Views.CustomTabHeader HistoryTabHeader { get; set; }
-        public Views.CustomTabHeader StashTabHeader { get; set; }
+        public string StashTabHeader { get; set; }
         private bool noCommitsYet_ = false;
 
         public RepositoryViewModel(string git_repository_path, RepositoryTab repository_tab,
@@ -32,9 +30,7 @@ namespace WimyGit.ViewModels
             StashTabViewModel = stashTabViewModel;
             BranchAndTagTabViewModel_ = branchAndTagTabViewModel;
 
-            PendingTabHeader = new Views.CustomTabHeader("Pending");
-            HistoryTabHeader = new Views.CustomTabHeader("History");
-            StashTabHeader = new Views.CustomTabHeader("Stash");
+            StashTabHeader = "Stash";
 
 			repository_tab_ = repository_tab;
 
@@ -122,13 +118,13 @@ namespace WimyGit.ViewModels
             StashTabViewModel.SetOutput(stashListResult);
             if (stashListResult.Count > 0)
             {
-                StashTabHeader.SetTitle($"Stash [{stashListResult.Count}]");
+                StashTabHeader = $"Stash [{stashListResult.Count}]";
             }
             else
             {
-                StashTabHeader.SetTitle("Stash");
+                StashTabHeader = "Stash";
             }
-            NotifyPropertyChanged("StashTabTitle");
+            NotifyPropertyChanged("StashTabHeader");
 
             List<string> git_porcelain_result = await git_.GetGitStatusPorcelainAllAsync();
             RefreshPending(git_porcelain_result);

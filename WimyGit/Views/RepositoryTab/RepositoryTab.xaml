@@ -92,7 +92,28 @@
             <GridSplitter Grid.Column="1" Width="15" HorizontalAlignment="Stretch"/>
             <Grid Grid.Column="2">
                 <TabControl x:Name="tabControl" HorizontalContentAlignment="Left" VerticalContentAlignment="Stretch">
-                    <TabItem Header="{Binding PendingTabHeader}">
+                    <TabControl.Resources>
+                        <Style TargetType="TabItem">
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="TabItem">
+                                        <Border Name="Border" BorderThickness="1,1,1,0" BorderBrush="DarkGray" Margin="0,0,5,0" Padding="10">
+                                            <ContentPresenter x:Name="ContentSite" VerticalAlignment="Center" HorizontalAlignment="Center" ContentSource="Header" Margin="10,2" />
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsSelected" Value="True">
+                                                <Setter TargetName="Border" Property="Background" Value="White" />
+                                            </Trigger>
+                                            <Trigger Property="IsSelected" Value="False">
+                                                <Setter TargetName="Border" Property="Background" Value="GhostWhite" />
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </TabControl.Resources>
+                    <TabItem Header="Pending">
                         <Grid Background="#FFF9F9F9">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="2*" MinHeight="100" />
@@ -115,7 +136,7 @@
                                     <Label Content="{Binding DisplayAuthor}"/>
                                 </DockPanel>
                                 <TextBox Grid.Row="1" Grid.Column="0" x:Name="textBox" AcceptsReturn="True" Text="{Binding CommitMessage}" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"/>
-                                <Button Grid.Row="1" Grid.Column="1" Content="Commit" Command="{Binding CommitCommand}" Padding="40" />
+                                <Button Grid.Row="1" Grid.Column="1" Content="_Commit" Command="{Binding CommitCommand}" Padding="40" />
                             </Grid>
                             <GridSplitter Grid.Row="1" Height="10" HorizontalAlignment="Stretch" VerticalAlignment="Center" />
                             <Grid Grid.Row="2">
@@ -208,16 +229,13 @@
                             </Grid>
                         </Grid>
                     </TabItem>
-                    <TabItem Header="{Binding HistoryTabHeader}">
+                    <TabItem Header="History">
                         <user_control:HistoryTab DataContext="{Binding HistoryTabMember}" />
                     </TabItem>
                     <TabItem Header="{Binding StashTabHeader}">
                         <user_control:StashTab x:Name="StashTab"/>
                     </TabItem>
-                    <TabItem>
-                        <TabItem.Header>
-                            <TextBlock Text="Branch &amp; Tag" VerticalAlignment="Center" HorizontalAlignment="Center" Padding="10"/>
-                        </TabItem.Header>
+                    <TabItem Header="Branch &amp; Tag">
                         <user_control:BranchAndTagTab x:Name="BranchAndTagTab" />
                     </TabItem>
                 </TabControl>
