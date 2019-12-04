@@ -46,7 +46,8 @@ namespace WimyGit.UserControls
                 return;
             }
             string cmd = GitCommandCreator.StashPushAll(stashMessage);
-            Service.UIService.GetInstance().StartConsoleProgressWindow(_gitRepository, cmd);
+
+            gitRepository.CreateGitRunner().RunShowDialog(cmd);
             gitRepository.Refresh();
         }
 
@@ -56,7 +57,8 @@ namespace WimyGit.UserControls
             {
                 return;
             }
-            gitRepository.GetGitWrapper().StashPopLast();
+            string cmd = GitCommandCreator.StashPopLast();
+            gitRepository.CreateGitRunner().RunShowDialog(cmd);
 
             gitRepository.Refresh();
         }

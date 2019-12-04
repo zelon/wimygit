@@ -49,11 +49,6 @@ namespace WimyGit.ViewModels
 			PullCommand = new DelegateCommand(Pull);
 		}
 
-        public string GetRepositoryPath()
-        {
-            return Directory;
-        }
-
         public GitWrapper GetGitWrapper()
         {
             return git_;

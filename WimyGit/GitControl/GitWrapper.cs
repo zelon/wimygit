@@ -408,12 +408,6 @@ namespace WimyGit
             return CreateGitRunner().Run(cmd);
         }
 
-        public void StashPopLast()
-        {
-            string cmd = GitCommandCreator.StashPopLast();
-            CreateGitRunner().Run(cmd);
-        }
-
         public void StashDiffToolAgainstParentModified(string stashName, string fileName)
         {
             string cmd = GitCommandCreator.StashDiffToolAgainstParentModified(stashName, fileName);
