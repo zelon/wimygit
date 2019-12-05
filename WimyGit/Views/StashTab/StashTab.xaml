@@ -28,8 +28,8 @@
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
-            <Button Grid.Column="0" Style="{StaticResource StashButtons}" Command="{Binding PushAllCommand}" Content="Save current changes" />
-            <Button Grid.Column="1" Style="{StaticResource StashButtons}" Command="{Binding PopLastCommand}" Content="Pop last saved changes" />
+            <Button Grid.Column="0" Style="{StaticResource StashButtons}" Command="{Binding PushAllCommand}" Content="Push All Changes" />
+            <Button Grid.Column="1" Style="{StaticResource StashButtons}" Command="{Binding PopLastCommand}" Content="Pop Last Saved Changes" />
         </Grid>
         <ListView Grid.Row="1" Name="stashList" ItemsSource="{Binding StashItems}" SelectedValue="{Binding SelectedStashItem}">
             <ListView.View>
