@@ -47,7 +47,7 @@ namespace WimyGit
 
         public static string StashModifiedFileList(string stashName)
         {
-            return $"diff --name-status {stashName}";
+            return $"diff --name-status {stashName} {stashName}^1";
         }
 
         public static string StashUntrackedFileListWithCommitId(string stashName)
