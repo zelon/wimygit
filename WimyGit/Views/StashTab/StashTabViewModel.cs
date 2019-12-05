@@ -13,6 +13,7 @@ namespace WimyGit.UserControls
         public ICommand PushAllCommand { get; private set; }
         public ICommand PopLastCommand { get; private set; }
         public ICommand DiffStashedFileAgainstParentCommand { get; private set; }
+        public ICommand DiffStashedFileAgainstWorkingFileCommand { get; private set; }
         public ICommand DiffStashedFileAgainstHeadCommand { get; private set; }
         public ICommand ApplyStashCommand { get; private set; }
         public ICommand DeleteStashCommand { get; private set; }
@@ -26,6 +27,7 @@ namespace WimyGit.UserControls
             PushAllCommand = new DelegateCommand(OnPushAllCommand);
             PopLastCommand = new DelegateCommand(OnPopLastCommand);
             DiffStashedFileAgainstParentCommand = new DelegateCommand(OnDiffStashedFileAgainstParentCommand);
+            DiffStashedFileAgainstWorkingFileCommand = new DelegateCommand(OnDiffStashedFileAgainstWorkingFileCommand);
             DiffStashedFileAgainstHeadCommand = new DelegateCommand(OnDiffStashedFileAgainstHeadCommand);
             ApplyStashCommand = new DelegateCommand(OnApplyStashCommand);
             DeleteStashCommand = new DelegateCommand(OnDeleteStashCommand);
@@ -91,6 +93,39 @@ namespace WimyGit.UserControls
                 case StashedFileInfo.StashedFileType.kUntracked:
                 {
                     gitRepository.GetGitWrapper().StashDiffToolAgainstParentUntracked(SelectedStashItem.Name, SelectedStashedFileInfo.Filename);
+                    return;
+                }
+
+            }
+            System.Diagnostics.Debug.Assert(false, "Not implemented");
+        }
+
+        public void OnDiffStashedFileAgainstWorkingFileCommand(object sender)
+        {
+            if (_gitRepository.TryGetTarget(out IGitRepository gitRepository) == false)
+            {
+                return;
+            }
+            if (SelectedStashItem == null)
+            {
+                return;
+            }
+            if (SelectedStashedFileInfo == null)
+            {
+                return;
+            }
+            switch (SelectedStashedFileInfo.FileType)
+            {
+                case StashedFileInfo.StashedFileType.kModified:
+                {
+                    string cmd = GitCommandCreator.StashDiffToolAgainstWorkingFileModified(SelectedStashItem.Name, SelectedStashedFileInfo.Filename);
+                    gitRepository.CreateGitRunner().RunWithoutWaiting(cmd);
+                    return;
+                }
+                case StashedFileInfo.StashedFileType.kUntracked:
+                {
+                    string cmd = GitCommandCreator.StashDiffToolAgainstWorkingFileUntracked(SelectedStashItem.Name, SelectedStashedFileInfo.Filename);
+                    gitRepository.CreateGitRunner().RunWithoutWaiting(cmd);
                     return;
                 }
 

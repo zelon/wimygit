@@ -70,7 +70,8 @@
                     <ListBox.ContextMenu>
                         <ContextMenu>
                             <MenuItem Header="Diff against Parent" InputGestureText="Ctrl+D" Command="{Binding DiffStashedFileAgainstParentCommand}" />
-                            <MenuItem Header="Diff against HEAD" InputGestureText="Ctrl+Shift+D" Command="{Binding DiffStashedFileAgainstHeadCommand}" />
+                            <MenuItem Header="Diff against Working File" InputGestureText="Ctrl+Shift+D" Command="{Binding DiffStashedFileAgainstWorkingFileCommand}" />
+                            <MenuItem Header="Diff against HEAD" InputGestureText="Ctrl+Shift+Alt+D" Command="{Binding DiffStashedFileAgainstHeadCommand}" />
                         </ContextMenu>
                     </ListBox.ContextMenu>
                     <ListBox.ItemTemplate>
