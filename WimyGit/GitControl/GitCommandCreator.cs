@@ -80,6 +80,16 @@ namespace WimyGit
             return $"difftool HEAD {stashName} -- {filename}";
         }
 
+        public static string ApplyStash(string stashName)
+        {
+            return $"stash apply \"{stashName}\"";
+        }
+
+        public static string DeleteStash(string stashName)
+        {
+            return $"stash drop \"{stashName}\"";
+        }
+
         public static string Checkout(string commitId)
         {
             return $"checkout {commitId}";

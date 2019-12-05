@@ -13,7 +13,8 @@ namespace WimyGit.UserControls
         public ICommand PopLastCommand { get; private set; }
         public ICommand DiffStashedFileAgainstParentCommand { get; private set; }
         public ICommand DiffStashedFileAgainstHeadCommand { get; private set; }
-        public string Output { get; set; }
+        public ICommand ApplyStashCommand { get; private set; }
+        public ICommand DeleteStashCommand { get; private set; }
 
         public ObservableCollection<StashItem> StashItems { get; set; }
         public StashItem SelectedStashItem { get; set; }
@@ -25,6 +26,8 @@ namespace WimyGit.UserControls
             PopLastCommand = new DelegateCommand(OnPopLastCommand);
             DiffStashedFileAgainstParentCommand = new DelegateCommand(OnDiffStashedFileAgainstParentCommand);
             DiffStashedFileAgainstHeadCommand = new DelegateCommand(OnDiffStashedFileAgainstHeadCommand);
+            ApplyStashCommand = new DelegateCommand(OnApplyStashCommand);
+            DeleteStashCommand = new DelegateCommand(OnDeleteStashCommand);
 
             StashItems = new ObservableCollection<StashItem>();
         }
@@ -111,16 +114,45 @@ namespace WimyGit.UserControls
             gitRepository.GetGitWrapper().StashDiffToolAgainstHEAD(SelectedStashItem.Name, SelectedStashedFileInfo.Filename);
         }
 
-        public void SetOutput(List<string> outputs)
+        public void OnApplyStashCommand(object sender)
         {
-            Output = "";
-            foreach (string output in outputs)
+            if (_gitRepository.TryGetTarget(out IGitRepository gitRepository) == false)
             {
-                Output += $"{output}\n";
+                return;
             }
-            NotifyPropertyChanged("Output");
+            if (SelectedStashItem == null)
+            {
+                return;
+            }
+            string cmd = GitCommandCreator.ApplyStash(SelectedStashItem.Name);
+            gitRepository.CreateGitRunner().RunShowDialog(cmd);
+            gitRepository.Refresh();
+        }
 
+        public void OnDeleteStashCommand(object sender)
+        {
+            if (_gitRepository.TryGetTarget(out IGitRepository gitRepository) == false)
+            {
+                return;
+            }
+            if (SelectedStashItem == null)
+            {
+                return;
+            }
+            string cmd = GitCommandCreator.DeleteStash(SelectedStashItem.Name);
+            gitRepository.CreateGitRunner().RunShowDialog(cmd);
+            gitRepository.Refresh();
+        }
+
+        public int RefreshAndGetStashCount()
+        {
             StashItems.Clear();
+            if (_gitRepository.TryGetTarget(out IGitRepository gitRepository) == false)
+            {
+                return 0;
+            }
+            string cmd = GitCommandCreator.StashList();
+            List<string> outputs = gitRepository.CreateGitRunner().Run(cmd);
             foreach (string line in outputs)
             {
                 if (string.IsNullOrEmpty(line.Trim()))
@@ -136,6 +168,8 @@ namespace WimyGit.UserControls
                 StashItems.Add(stashItem);
             }
             NotifyPropertyChanged("StashItems");
+
+            return StashItems.Count;
         }
     }
 }

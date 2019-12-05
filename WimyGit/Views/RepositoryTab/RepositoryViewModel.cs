@@ -114,11 +114,10 @@ namespace WimyGit.ViewModels
                 return false;
             }
 
-            List<string> stashListResult = git_.StashList();
-            StashTabViewModel.SetOutput(stashListResult);
-            if (stashListResult.Count > 0)
+            int stashListCount = StashTabViewModel.RefreshAndGetStashCount();
+            if (stashListCount > 0)
             {
-                StashTabHeader = $"Stash [{stashListResult.Count}]";
+                StashTabHeader = $"Stash [{stashListCount}]";
             }
             else
             {

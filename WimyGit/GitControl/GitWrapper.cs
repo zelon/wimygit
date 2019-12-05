@@ -402,12 +402,6 @@ namespace WimyGit
 			return runner;
 		}
 
-        public List<string> StashList()
-        {
-            string cmd = GitCommandCreator.StashList();
-            return CreateGitRunner().Run(cmd);
-        }
-
         public void StashDiffToolAgainstParentModified(string stashName, string fileName)
         {
             string cmd = GitCommandCreator.StashDiffToolAgainstParentModified(stashName, fileName);

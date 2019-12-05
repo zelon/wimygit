@@ -20,22 +20,16 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto" />
+            <RowDefinition Height="15"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
         <Grid Grid.Row="0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
             <Button Grid.Column="0" Style="{StaticResource StashButtons}" Command="{Binding PushAllCommand}" Content="Save current changes" />
             <Button Grid.Column="1" Style="{StaticResource StashButtons}" Command="{Binding PopLastCommand}" Content="Pop last saved changes" />
-            <Button Grid.Column="2" Style="{StaticResource StashButtons}" Command="" Content="Delete" />
-            <Button Grid.Column="3" Style="{StaticResource StashButtons}" Command="" Content="Apply" />
         </Grid>
         <ListView Grid.Row="1" Name="stashList" ItemsSource="{Binding StashItems}" SelectedValue="{Binding SelectedStashItem}">
             <ListView.View>
@@ -51,39 +45,48 @@
                     <GridViewColumn Header="Base" DisplayMemberBinding="{Binding Base}" />
                 </GridView>
             </ListView.View>
-        </ListView>
-        <Label Grid.Row="2" Content="Files" HorizontalAlignment="Left" VerticalAlignment="Bottom"/>
-        <ListBox Grid.Row="3" SelectedValue="{Binding Path=SelectedStashedFileInfo}" SelectedValuePath=".">
-            <ListBox.ItemsSource>
-                <MultiBinding Converter="{StaticResource stashFileListConverter}">
-                    <Binding Path="."/>
-                    <Binding Path="SelectedItem" ElementName="stashList" />
-                </MultiBinding>
-            </ListBox.ItemsSource>
-            <ListBox.InputBindings>
-                <KeyBinding Modifiers="Ctrl" Key="D" Command="{Binding DiffStashedFileAgainstParentCommand}" />
-                <KeyBinding Modifiers="Ctrl+Shift" Key="D" Command="{Binding DiffStashedFileAgainstHeadCommand}" />
-            </ListBox.InputBindings>
-            <ListBox.ContextMenu>
+            <ListView.ContextMenu>
                 <ContextMenu>
-                    <MenuItem Header="Diff against Parent" InputGestureText="Ctrl+D" Command="{Binding DiffStashedFileAgainstParentCommand}" />
-                    <MenuItem Header="Diff against HEAD" InputGestureText="Ctrl+Shift+D" Command="{Binding DiffStashedFileAgainstHeadCommand}" />
+                    <MenuItem Header="Apply" Command="{Binding ApplyStashCommand}"/>
+                    <MenuItem Header="Delete" Command="{Binding DeleteStashCommand}"/>
                 </ContextMenu>
-            </ListBox.ContextMenu>
-            <ListBox.ItemTemplate>
-                <DataTemplate>
-                    <Grid Margin="0,2">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="auto"/>
-                            <ColumnDefinition Width="auto"/>
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Text="{Binding Status}" Width="auto" Padding="0,0,5,0" FontFamily="Consolas"/>
-                        <TextBlock Grid.Column="1" Text="{Binding Filename}" Width="auto" FontFamily="Consolas"/>
-                    </Grid>
-                </DataTemplate>
-            </ListBox.ItemTemplate>
-        </ListBox>
-        <Label Grid.Row="4" Content="Output" HorizontalAlignment="Left" VerticalAlignment="Bottom"/>
-        <TextBox Grid.Row="5" Text="{Binding Output}" TextWrapping="Wrap" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" />
+            </ListView.ContextMenu>
+        </ListView>
+        <GridSplitter Grid.Row="2" Height="10" HorizontalAlignment="Stretch" />
+        <Grid Grid.Row="3">
+            <DockPanel>
+                <Label DockPanel.Dock="Top" Content="Files" HorizontalAlignment="Left" VerticalAlignment="Bottom" />
+                <ListBox SelectedValue="{Binding Path=SelectedStashedFileInfo}" SelectedValuePath=".">
+                    <ListBox.ItemsSource>
+                        <MultiBinding Converter="{StaticResource stashFileListConverter}">
+                            <Binding Path="."/>
+                            <Binding Path="SelectedItem" ElementName="stashList" />
+                        </MultiBinding>
+                    </ListBox.ItemsSource>
+                    <ListBox.InputBindings>
+                        <KeyBinding Modifiers="Ctrl" Key="D" Command="{Binding DiffStashedFileAgainstParentCommand}" />
+                        <KeyBinding Modifiers="Ctrl+Shift" Key="D" Command="{Binding DiffStashedFileAgainstHeadCommand}" />
+                    </ListBox.InputBindings>
+                    <ListBox.ContextMenu>
+                        <ContextMenu>
+                            <MenuItem Header="Diff against Parent" InputGestureText="Ctrl+D" Command="{Binding DiffStashedFileAgainstParentCommand}" />
+                            <MenuItem Header="Diff against HEAD" InputGestureText="Ctrl+Shift+D" Command="{Binding DiffStashedFileAgainstHeadCommand}" />
+                        </ContextMenu>
+                    </ListBox.ContextMenu>
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Grid Margin="0,2">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="auto"/>
+                                    <ColumnDefinition Width="auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="{Binding Status}" Width="auto" Padding="0,0,5,0" FontFamily="Consolas"/>
+                                <TextBlock Grid.Column="1" Text="{Binding Filename}" Width="auto" FontFamily="Consolas"/>
+                            </Grid>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </DockPanel>
+        </Grid>
     </Grid>
 </UserControl>
