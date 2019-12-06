@@ -5,45 +5,66 @@ using System.Windows.Input;
 
 namespace WimyGit.ViewModels
 {
-    public partial class RepositoryViewModel : NotifyBase, ILogger, IGitRepository
-	{
-		private RepositoryTab repository_tab_;
-		public GitWrapper git_;
-        public DirectoryTreeViewModel DirectoryTree { get; private set; }
-        public HistoryTabViewModel HistoryTabMember { get; private set; }
-        public UserControls.PendingTabViewModel PendingTabViewModel_ { get; private set; }
-        public UserControls.StashTabViewModel StashTabViewModel { get; private set; }
-        public UserControls.BranchAndTagTabViewModel BranchAndTagTabViewModel_ { get; private set; }
-        public string StashTabHeader { get; set; }
+    public class RepositoryViewModel : NotifyBase, ILogger, IGitRepository
+    {
+        private readonly UserControls.PendingTabViewModel _pendingTabViewModel;
+        private readonly UserControls.StashTabViewModel _stashTabViewModel;
+        private readonly UserControls.BranchAndTagTabViewModel _branchAndTagTabViewModel;
+
+        private readonly RepositoryTab repository_tab_;
 
         public RepositoryViewModel(string git_repository_path, RepositoryTab repository_tab,
             UserControls.PendingTabViewModel pendingTabViewModel,
             UserControls.StashTabViewModel stashTabViewModel,
             UserControls.BranchAndTagTabViewModel branchAndTagTabViewModel)
-		{
+        {
             DisplayAuthor = GlobalSetting.GetInstance().GetSignature();
             Directory = git_repository_path;
 
-			git_ = new GitWrapper(Directory, this);
+            git_ = new GitWrapper(Directory, this);
 
             DirectoryTree = new DirectoryTreeViewModel(this);
             HistoryTabMember = new HistoryTabViewModel(git_, this);
-            PendingTabViewModel_ = pendingTabViewModel;
-            StashTabViewModel = stashTabViewModel;
-            BranchAndTagTabViewModel_ = branchAndTagTabViewModel;
+            _pendingTabViewModel = pendingTabViewModel;
+            _stashTabViewModel = stashTabViewModel;
+            _branchAndTagTabViewModel = branchAndTagTabViewModel;
 
             StashTabHeader = "Stash";
 
-			repository_tab_ = repository_tab;
+            repository_tab_ = repository_tab;
 
-			PushCommand = new DelegateCommand((object parameter) => Push());
-			RefreshCommand = new DelegateCommand(async (object parameter) => {
-				await Refresh();
-			});
-			ViewTimelapseCommand = new DelegateCommand((object parameter) => ViewTimeLapse());
-			FetchAllCommand = new DelegateCommand((object parameter) => FetchAll());
-			PullCommand = new DelegateCommand(Pull);
-		}
+            PushCommand = new DelegateCommand((object parameter) => Push());
+            OpenExplorerCommand = new DelegateCommand(OnOpenExplorerCommand);
+            OpenGitBashCommand = new DelegateCommand(OnOpenGitBashCommand);
+            RefreshCommand = new DelegateCommand(async (object parameter) =>
+            {
+                await Refresh();
+            });
+            ViewTimelapseCommand = new DelegateCommand((object parameter) => ViewTimeLapse());
+            FetchAllCommand = new DelegateCommand((object parameter) => FetchAll());
+            PullCommand = new DelegateCommand(Pull);
+        }
+
+        public GitWrapper git_;
+
+        public DirectoryTreeViewModel DirectoryTree { get; private set; }
+        public HistoryTabViewModel HistoryTabMember { get; private set; }
+        public string StashTabHeader { get; set; }
+
+        public ICommand RefreshCommand { get; private set; }
+        public ICommand ViewTimelapseCommand { get; private set; }
+        public ICommand FetchAllCommand { get; private set; }
+        public ICommand PullCommand { get; private set; }
+        public ICommand PushCommand { get; private set; }
+        public ICommand OpenExplorerCommand { get; private set; }
+        public ICommand OpenGitBashCommand { get; private set; }
+
+        public string Directory { get; set; }
+        public string Log { get; set; }
+        public string Branch { get; set; }
+        public string DisplayAuthor { get; set; }
+
+        public string SelectedPath { get; set; }
 
         public string GetRepositoryDirectory()
         {
@@ -65,49 +86,56 @@ namespace WimyGit.ViewModels
             return new RunExternal(ProgramPathFinder.GetGitBin(), Directory);
         }
 
-        public string SelectedPath { get; set; }
-
         public void ViewTimeLapse()
-		{
-			if (string.IsNullOrEmpty(SelectedPath))
-			{
-				MessageBox.ShowMessage("Select a file first");
-				return;
-			}
-			git_.ViewTimeLapse(SelectedPath);
-		}
-
-		public void FetchAll()
-		{
-            DoGitWithProgressWindow("fetch --all");
-		}
-
-		public Task DoWithProgressWindow(string filename, string cmd)
-		{
-			// http://stackoverflow.com/questions/2796470/wpf-create-a-dialog-prompt
-			var console_progress_window = new ConsoleProgressWindow(Directory, filename, cmd);
-			console_progress_window.Owner = GlobalSetting.GetInstance().GetWindow();
-			console_progress_window.ShowDialog();
-			return Refresh();
-		}
-
-        public async void DoGitWithProgressWindow(string cmd)
         {
-            await DoWithProgressWindow(ProgramPathFinder.GetGitBin(), cmd);
+            if (string.IsNullOrEmpty(SelectedPath))
+            {
+                MessageBox.ShowMessage("Select a file first");
+                return;
+            }
+            git_.ViewTimeLapse(SelectedPath);
         }
 
-		public void Pull(object not_used)
-		{
-            DoGitWithProgressWindow("pull");
-		}
+        public void FetchAll()
+        {
+            string cmd = "fetch --all";
+            CreateGitRunner().RunShowDialog(cmd);
+            RefreshAsyncWrapper();
+        }
 
-		public void Push()
-		{
-            DoGitWithProgressWindow("push");
-		}
+        private void OnOpenExplorerCommand(object sender)
+        {
+            RunExternal runner = new RunExternal("explorer.exe", Directory);
+            runner.RunWithoutWaiting(Directory);
+        }
 
-		public async Task<bool> Refresh()
-		{
+        private void OnOpenGitBashCommand(object sender)
+        {
+            RunExternal runner = new RunExternal(ProgramPathFinder.GetGitShell(), Directory);
+            runner.RunShell("--login -i");
+        }
+
+        private void Pull(object not_used)
+        {
+            string cmd = "pull";
+            CreateGitRunner().RunShowDialog(cmd);
+            RefreshAsyncWrapper();
+        }
+
+        private void Push()
+        {
+            string cmd = "push";
+            CreateGitRunner().RunShowDialog(cmd);
+            RefreshAsyncWrapper();
+        }
+
+        private async void RefreshAsyncWrapper()
+        {
+            await Refresh();
+        }
+
+        public async Task<bool> Refresh()
+        {
             AddLog("Refreshing Directory: " + Directory);
             repository_tab_.EnterLoadingScreen();
 
@@ -119,7 +147,7 @@ namespace WimyGit.ViewModels
                 return false;
             }
 
-            int stashListCount = StashTabViewModel.RefreshAndGetStashCount();
+            int stashListCount = _stashTabViewModel.RefreshAndGetStashCount();
             if (stashListCount > 0)
             {
                 StashTabHeader = $"Stash [{stashListCount}]";
@@ -132,18 +160,18 @@ namespace WimyGit.ViewModels
 
             List<string> git_porcelain_result = await git_.GetGitStatusPorcelainAllAsync();
             DirectoryTree.ReloadTreeView();
-            PendingTabViewModel_.RefreshPending(git_porcelain_result);
-            BranchAndTagTabViewModel_.OnRefreshCommand(this);
+            _pendingTabViewModel.RefreshPending(git_porcelain_result);
+            _branchAndTagTabViewModel.OnRefreshCommand(this);
 
             AddLog("Refreshed");
 
-			repository_tab_.LeaveLoadingScreen();
+            repository_tab_.LeaveLoadingScreen();
 
-			return true;
-		}
+            return true;
+        }
 
-		private bool RefreshBranch()
-		{
+        private bool RefreshBranch()
+        {
             if (git_ == null)
             {
                 return false;
@@ -153,53 +181,42 @@ namespace WimyGit.ViewModels
             {
                 return false;
             }
-            PendingTabViewModel_.SetNoCommitsYet(gitRepositoryStatus.branchInfo.NoCommitsYet);
+            _pendingTabViewModel.SetNoCommitsYet(gitRepositoryStatus.branchInfo.NoCommitsYet);
             string currentBranchName = gitRepositoryStatus.branchInfo.CurrentBranchName;
             HistoryTabMember.CurrentBranchName = currentBranchName;
             string output = currentBranchName;
             string ahead_or_behind = gitRepositoryStatus.branchInfo.BranchTrackingRemoteStatus;
-			if (string.IsNullOrEmpty(ahead_or_behind) == false)
-			{
-				output = string.Format("{0} - ({1})", currentBranchName, ahead_or_behind);
-			}
+            if (string.IsNullOrEmpty(ahead_or_behind) == false)
+            {
+                output = string.Format("{0} - ({1})", currentBranchName, ahead_or_behind);
+            }
             if (gitRepositoryStatus.IsOnBisecting)
             {
                 output += " [BISECTING...]";
             }
-			Branch = output;
+            Branch = output;
 
-			NotifyPropertyChanged("Branch");
+            NotifyPropertyChanged("Branch");
 
             return true;
-		}
+        }
 
-		public void AddLog(string log)
-		{
-			if (string.IsNullOrEmpty(log))
-			{
-				return;
-			}
-			Log += String.Format("[{0}] {1}\n", DateTime.Now.ToLocalTime(), log);
-			NotifyPropertyChanged("Log");
-			repository_tab_.ScrollToEndLogTextBox();
-		}
+        public void AddLog(string log)
+        {
+            if (string.IsNullOrEmpty(log))
+            {
+                return;
+            }
+            Log += String.Format("[{0}] {1}\n", DateTime.Now.ToLocalTime(), log);
+            NotifyPropertyChanged("Log");
+            repository_tab_.ScrollToEndLogTextBox();
+        }
 
-		public void AddLog(List<string> logs)
-		{
-			Log += string.Format("[{0}] {1}\n", DateTime.Now.ToLocalTime(), string.Join("\n", logs));
-			NotifyPropertyChanged("Log");
-			repository_tab_.ScrollToEndLogTextBox();
-		}
-
-        public ICommand RefreshCommand { get; private set; }
-		public ICommand ViewTimelapseCommand { get; private set; }
-		public ICommand FetchAllCommand { get; private set; }
-		public ICommand PullCommand { get; private set; }
-		public ICommand PushCommand { get; private set; }
-
-		public string Directory { get; set; }
-		public string Log { get; set; }
-		public string Branch { get; set; }
-		public string DisplayAuthor { get; set; }
-	}
+        public void AddLog(List<string> logs)
+        {
+            Log += string.Format("[{0}] {1}\n", DateTime.Now.ToLocalTime(), string.Join("\n", logs));
+            NotifyPropertyChanged("Log");
+            repository_tab_.ScrollToEndLogTextBox();
+        }
+    }
 }

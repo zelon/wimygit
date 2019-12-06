@@ -78,7 +78,7 @@ namespace WimyGit
 
             button.Content = stackPanel;
 
-            button.Command = new DelegateCommand((object parameter) =>
+            button.Command = new DelegateCommand(async (object parameter) =>
             {
                 var git = GetViewModel().git_;
                 if (git == null)
@@ -91,19 +91,32 @@ namespace WimyGit
                 switch (pluginData.ExecutionType)
                 {
                     case Plugin.ExecutionType.WithoutShellAndNoWaiting:
-                        RunExternal runner = new RunExternal(pluginData.Command, workingDirectory);
-                        try
                         {
-                            runner.RunWithoutWaiting(pluginData.Argument);
+                            RunExternal runner = new RunExternal(pluginData.Command, workingDirectory);
+                            try
+                            {
+                                runner.RunWithoutWaiting(pluginData.Argument);
+                            }
+                            catch (System.Exception exception)
+                            {
+                                MessageBox.ShowMessage("Cannot execute. " + exception.Message);
+                            }
+                            return;
                         }
-                        catch (System.Exception exception)
-                        {
-                            MessageBox.ShowMessage("Cannot execute. " + exception.Message);
-                        }
-                        return;
                     case Plugin.ExecutionType.WimyGitInnerShellAndRefreshRepositoryStatus:
-                        GetViewModel().DoWithProgressWindow(pluginData.Command, pluginData.Argument);
-                        return;
+                        {
+                            RunExternal runner = new RunExternal(pluginData.Command, workingDirectory);
+                            try
+                            {
+                                runner.RunShowDialog(pluginData.Argument);
+                                await GetViewModel().Refresh();
+                            }
+                            catch (System.Exception exception)
+                            {
+                                MessageBox.ShowMessage("Cannot execute. " + exception.Message);
+                            }
+                            return;
+                        }
                 }
             });
 

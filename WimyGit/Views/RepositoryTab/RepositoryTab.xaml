@@ -62,13 +62,13 @@
                     </StackPanel>
                 </Button>
                 <Separator />
-                <Button Width="75" Command="{Binding OpenExplorer}">
+                <Button Width="75" Command="{Binding OpenExplorerCommand}">
                     <StackPanel Orientation="Vertical">
                         <Image Source="..\..\Images\OpenDirectory.png" Style="{StaticResource ToolbarImage}"/>
                         <TextBlock HorizontalAlignment="Center"><Run Text="OpenFolder"/></TextBlock>
                     </StackPanel>
                 </Button>
-                <Button Width="75" Command="{Binding OpenGitBash}">
+                <Button Width="75" Command="{Binding OpenGitBashCommand}">
                     <StackPanel Orientation="Vertical">
                         <Image Source="..\..\Images\Terminal.png" Style="{StaticResource ToolbarImage}"/>
                         <TextBlock HorizontalAlignment="Center"><Run Text="Terminal"/></TextBlock>

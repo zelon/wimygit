@@ -5,7 +5,8 @@ using System.Windows;
 
 namespace WimyGit
 {
-	public partial class ConsoleProgressWindow : Window
+    // http://stackoverflow.com/questions/2796470/wpf-create-a-dialog-prompt
+    public partial class ConsoleProgressWindow : Window
 	{
 		private Process process_;
 		private string repository_path_;
