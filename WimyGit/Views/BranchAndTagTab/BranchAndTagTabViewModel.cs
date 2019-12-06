@@ -72,7 +72,7 @@ namespace WimyGit.UserControls
             }
             string branchName = SelectedBranch.Name;
             string cmd = GitCommandCreator.DeleteBranch(branchName);
-            gitRepository.CreateGitRunner().RunShowDialog(cmd);
+            gitRepository.CreateGitRunner().RunInConsoleProgressWindow(cmd);
 
             gitRepository.Refresh();
         }
@@ -90,7 +90,7 @@ namespace WimyGit.UserControls
             }
             string tagName = SelectedTag.Name;
             string cmd = GitCommandCreator.DeleteTag(tagName);
-            gitRepository.CreateGitRunner().RunShowDialog(cmd);
+            gitRepository.CreateGitRunner().RunInConsoleProgressWindow(cmd);
 
             gitRepository.Refresh();
         }

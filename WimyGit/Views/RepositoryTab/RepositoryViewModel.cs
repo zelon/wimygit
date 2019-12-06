@@ -99,7 +99,7 @@ namespace WimyGit.ViewModels
         public void FetchAll()
         {
             string cmd = "fetch --all";
-            CreateGitRunner().RunShowDialog(cmd);
+            CreateGitRunner().RunInConsoleProgressWindow(cmd);
             RefreshAsyncWrapper();
         }
 
@@ -112,20 +112,20 @@ namespace WimyGit.ViewModels
         private void OnOpenGitBashCommand(object sender)
         {
             RunExternal runner = new RunExternal(ProgramPathFinder.GetGitShell(), Directory);
-            runner.RunShell("--login -i");
+            runner.RunInShell("--login -i");
         }
 
         private void Pull(object not_used)
         {
             string cmd = "pull";
-            CreateGitRunner().RunShowDialog(cmd);
+            CreateGitRunner().RunInConsoleProgressWindow(cmd);
             RefreshAsyncWrapper();
         }
 
         private void Push()
         {
             string cmd = "push";
-            CreateGitRunner().RunShowDialog(cmd);
+            CreateGitRunner().RunInConsoleProgressWindow(cmd);
             RefreshAsyncWrapper();
         }
 

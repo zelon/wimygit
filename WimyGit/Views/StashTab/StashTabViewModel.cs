@@ -53,7 +53,7 @@ namespace WimyGit.UserControls
             }
             string cmd = GitCommandCreator.StashPushAll(stashMessage);
 
-            gitRepository.CreateGitRunner().RunShowDialog(cmd);
+            gitRepository.CreateGitRunner().RunInConsoleProgressWindow(cmd);
             gitRepository.Refresh();
         }
 
@@ -64,7 +64,7 @@ namespace WimyGit.UserControls
                 return;
             }
             string cmd = GitCommandCreator.StashPopLast();
-            gitRepository.CreateGitRunner().RunShowDialog(cmd);
+            gitRepository.CreateGitRunner().RunInConsoleProgressWindow(cmd);
 
             gitRepository.Refresh();
         }
@@ -161,7 +161,7 @@ namespace WimyGit.UserControls
                 return;
             }
             string cmd = GitCommandCreator.ApplyStash(SelectedStashItem.Name);
-            gitRepository.CreateGitRunner().RunShowDialog(cmd);
+            gitRepository.CreateGitRunner().RunInConsoleProgressWindow(cmd);
             gitRepository.Refresh();
         }
 
@@ -176,7 +176,7 @@ namespace WimyGit.UserControls
                 return;
             }
             string cmd = GitCommandCreator.DeleteStash(SelectedStashItem.Name);
-            gitRepository.CreateGitRunner().RunShowDialog(cmd);
+            gitRepository.CreateGitRunner().RunInConsoleProgressWindow(cmd);
             gitRepository.Refresh();
         }
 

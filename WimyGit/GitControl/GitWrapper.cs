@@ -241,7 +241,7 @@ namespace WimyGit
 
 			string cmd = "add --patch " + Util.WrapFilePath(filepath);
 			logger_.AddLog(cmd);
-			CreateGitRunner().RunGitCmdInConsoleAndContinue(cmd);
+			CreateGitRunner().RunInConsoleAndContinue(cmd);
 		}
 
 		public void Unstage(IEnumerable<string> filelist, bool isNoCommitsYet)

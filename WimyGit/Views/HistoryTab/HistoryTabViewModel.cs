@@ -114,10 +114,7 @@ namespace WimyGit.ViewModels
                 return;
             }
             string gitCommand = $"rebase {SelectedHistoryStatus.CommitId}";
-            var console_progress_window = new ConsoleProgressWindow(GitWrapper.GetPath(), ProgramPathFinder.GetGitBin(), gitCommand);
-            console_progress_window.Owner = GlobalSetting.GetInstance().GetWindow();
-            console_progress_window.ShowDialog();
-
+            gitRepository.CreateGitRunner().RunInConsoleProgressWindow(gitCommand);
             gitRepository.Refresh();
         }
 
@@ -132,10 +129,7 @@ namespace WimyGit.ViewModels
                 return;
             }
             string gitCommand = GitCommandCreator.Checkout(SelectedHistoryStatus.CommitId);
-            var console_progress_window = new ConsoleProgressWindow(GitWrapper.GetPath(), ProgramPathFinder.GetGitBin(), gitCommand);
-            console_progress_window.Owner = GlobalSetting.GetInstance().GetWindow();
-            console_progress_window.ShowDialog();
-
+            gitRepository.CreateGitRunner().RunInConsoleProgressWindow(gitCommand);
             gitRepository.Refresh();
         }
 
@@ -150,10 +144,7 @@ namespace WimyGit.ViewModels
                 return;
             }
             string gitCommand = GitCommandCreator.ResetSoft(SelectedHistoryStatus.CommitId);
-            var console_progress_window = new ConsoleProgressWindow(GitWrapper.GetPath(), ProgramPathFinder.GetGitBin(), gitCommand);
-            console_progress_window.Owner = GlobalSetting.GetInstance().GetWindow();
-            console_progress_window.ShowDialog();
-
+            gitRepository.CreateGitRunner().RunInConsoleProgressWindow(gitCommand);
             gitRepository.Refresh();
         }
 
@@ -168,10 +159,7 @@ namespace WimyGit.ViewModels
                 return;
             }
             string gitCommand = GitCommandCreator.ResetMixed(SelectedHistoryStatus.CommitId);
-            var console_progress_window = new ConsoleProgressWindow(GitWrapper.GetPath(), ProgramPathFinder.GetGitBin(), gitCommand);
-            console_progress_window.Owner = GlobalSetting.GetInstance().GetWindow();
-            console_progress_window.ShowDialog();
-
+            gitRepository.CreateGitRunner().RunInConsoleProgressWindow(gitCommand);
             gitRepository.Refresh();
         }
 
@@ -191,10 +179,7 @@ namespace WimyGit.ViewModels
                 return;
             }
             string gitCommand = GitCommandCreator.ResetHard(SelectedHistoryStatus.CommitId);
-            var console_progress_window = new ConsoleProgressWindow(GitWrapper.GetPath(), ProgramPathFinder.GetGitBin(), gitCommand);
-            console_progress_window.Owner = GlobalSetting.GetInstance().GetWindow();
-            console_progress_window.ShowDialog();
-
+            gitRepository.CreateGitRunner().RunInConsoleProgressWindow(gitCommand);
             gitRepository.Refresh();
         }
 

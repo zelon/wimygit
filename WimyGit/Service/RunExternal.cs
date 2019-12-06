@@ -4,58 +4,46 @@ using System.Threading.Tasks;
 
 namespace WimyGit
 {
-	class StringArrayOutput
+	public class StringArrayOutput
 	{
-		private List<string> result_ = new List<string>();
+		private readonly List<string> _result = new List<string>();
 
 		public void OnOutput(string output)
 		{
 			if (output != null)
 			{
-				result_.Add(output);
+				_result.Add(output);
 			}
 		}
 
 		public List<string> GetResult()
 		{
-			return result_;
+			return _result;
 		}
 	}
 
 	public class RunExternal
 	{
-		private readonly string execute_filename_;
-		private readonly string working_directory_;
+		private readonly string _execute_filename;
+		private readonly string _working_directory;
 
 		public RunExternal(string execute_filename, string working_directory)
 		{
-			execute_filename_ = execute_filename;
-			working_directory_ = working_directory;
-		}
-
-		public void RunGitCmdInConsoleAndContinue(string cmd)
-		{
-			Process process = new Process();
-			process.StartInfo.FileName = "cmd.exe";
-			process.StartInfo.Arguments = "/k " + execute_filename_ + " " + cmd;
-			process.StartInfo.UseShellExecute = true;
-			process.StartInfo.CreateNoWindow = false;
-			process.StartInfo.WorkingDirectory = working_directory_;
-
-			process.Start();
+			_execute_filename = execute_filename;
+			_working_directory = working_directory;
 		}
 
 		public List<string> Run(string arguments)
 		{
 			Process process = new Process();
-			process.StartInfo.FileName = execute_filename_;
+			process.StartInfo.FileName = _execute_filename;
 			process.StartInfo.Arguments = arguments;
 			process.StartInfo.UseShellExecute = false;
 			process.StartInfo.RedirectStandardOutput = true;
 			process.StartInfo.RedirectStandardError = true;
 			process.StartInfo.StandardOutputEncoding = System.Text.Encoding.UTF8;
 			process.StartInfo.CreateNoWindow = true;
-			process.StartInfo.WorkingDirectory = working_directory_;
+			process.StartInfo.WorkingDirectory = _working_directory;
 
 			StringArrayOutput output = new StringArrayOutput();
 			process.OutputDataReceived += (object sender, DataReceivedEventArgs e) => {
@@ -77,13 +65,13 @@ namespace WimyGit
 		public async Task<List<string>> RunAsync(string arguments)
 		{
 			Process process = new Process();
-			process.StartInfo.FileName = execute_filename_;
+			process.StartInfo.FileName = _execute_filename;
 			process.StartInfo.Arguments = arguments;
 			process.StartInfo.UseShellExecute = false;
 			process.StartInfo.RedirectStandardOutput = true;
 			process.StartInfo.StandardOutputEncoding = System.Text.Encoding.UTF8;
 			process.StartInfo.CreateNoWindow = true;
-			process.StartInfo.WorkingDirectory = working_directory_;
+			process.StartInfo.WorkingDirectory = _working_directory;
 
 			StringArrayOutput output = new StringArrayOutput();
 			process.OutputDataReceived += (object sender, DataReceivedEventArgs e) => {
@@ -100,30 +88,42 @@ namespace WimyGit
 		public void RunWithoutWaiting(string arguments)
 		{
 			Process process = new Process();
-			process.StartInfo.FileName = execute_filename_;
+			process.StartInfo.FileName = _execute_filename;
 			process.StartInfo.Arguments = arguments;
 			process.StartInfo.UseShellExecute = false;
-			process.StartInfo.WorkingDirectory = working_directory_;
+			process.StartInfo.WorkingDirectory = _working_directory;
 			process.StartInfo.CreateNoWindow = true;
 
 			process.Start();
 		}
 
-		public void RunShell(string arguments)
+		public void RunInShell(string arguments)
 		{
 			Process process = new Process();
-			process.StartInfo.FileName = execute_filename_;
+			process.StartInfo.FileName = _execute_filename;
 			process.StartInfo.Arguments = arguments;
 			process.StartInfo.UseShellExecute = true;
 			process.StartInfo.CreateNoWindow = false;
-			process.StartInfo.WorkingDirectory = working_directory_;
+			process.StartInfo.WorkingDirectory = _working_directory;
 
 			process.Start();
 		}
 
-        public void RunShowDialog(string arguments)
+        public void RunInConsoleAndContinue(string cmd)
         {
-            var console_progress_window = new ConsoleProgressWindow(working_directory_, execute_filename_, arguments);
+            Process process = new Process();
+            process.StartInfo.FileName = "cmd.exe";
+            process.StartInfo.Arguments = "/k " + _execute_filename + " " + cmd;
+            process.StartInfo.UseShellExecute = true;
+            process.StartInfo.CreateNoWindow = false;
+            process.StartInfo.WorkingDirectory = _working_directory;
+
+            process.Start();
+        }
+
+        public void RunInConsoleProgressWindow(string arguments)
+        {
+            var console_progress_window = new ConsoleProgressWindow(_working_directory, _execute_filename, arguments);
             console_progress_window.Owner = GlobalSetting.GetInstance().GetWindow();
             console_progress_window.ShowDialog();
         }

@@ -108,7 +108,7 @@ namespace WimyGit
                             RunExternal runner = new RunExternal(pluginData.Command, workingDirectory);
                             try
                             {
-                                runner.RunShowDialog(pluginData.Argument);
+                                runner.RunInConsoleProgressWindow(pluginData.Argument);
                                 await GetViewModel().Refresh();
                             }
                             catch (System.Exception exception)
