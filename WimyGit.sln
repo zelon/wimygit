@@ -5,7 +5,12 @@ VisualStudioVersion = 16.0.28729.10
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WimyGit", "WimyGit\WimyGit.csproj", "{BEFF9676-8AE4-4F12-9F99-DAC73D258195}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "xUnitTest", "xUnitTest\xUnitTest.csproj", "{143DB1DC-707C-4922-9FFB-07BE288D99CD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "xUnitTest", "xUnitTest\xUnitTest.csproj", "{143DB1DC-707C-4922-9FFB-07BE288D99CD}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{626F97E8-0B4F-47A1-97C5-20FFEABA900C}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
