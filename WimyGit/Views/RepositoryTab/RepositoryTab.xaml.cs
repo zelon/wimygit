@@ -18,12 +18,18 @@ namespace WimyGit
 
             ConstructPluginToolbarButtons();
 
+            UserControls.PendingTabViewModel pendingTabViewModel = (UserControls.PendingTabViewModel)PendingTab.DataContext;
             UserControls.StashTabViewModel stashTabViewModel = (UserControls.StashTabViewModel)StashTab.DataContext;
             UserControls.BranchAndTagTabViewModel branchAndTagTabViewModel = (UserControls.BranchAndTagTabViewModel)BranchAndTagTab.DataContext;
 
-            var viewModel = new ViewModels.RepositoryViewModel(git_repository_path, this, stashTabViewModel, branchAndTagTabViewModel);
+            var viewModel = new ViewModels.RepositoryViewModel(git_repository_path,
+                this,
+                pendingTabViewModel,
+                stashTabViewModel,
+                branchAndTagTabViewModel);
             DataContext = viewModel;
 
+            pendingTabViewModel.SetGitRepository(viewModel);
             stashTabViewModel.SetGitRepository(viewModel);
             branchAndTagTabViewModel.SetGitRepository(viewModel);
 		}
@@ -128,11 +134,6 @@ namespace WimyGit
 		private ViewModels.RepositoryViewModel GetViewModel()
 		{
 			return (ViewModels.RepositoryViewModel)this.DataContext;
-		}
-
-		public void SelectAllUnstagedFilesListBox()
-		{
-			unstagedFileListBox.SelectAll();
 		}
 
 		public void EnterLoadingScreen()

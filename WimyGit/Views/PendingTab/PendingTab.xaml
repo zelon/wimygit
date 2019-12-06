@@ -1,0 +1,126 @@
+﻿<UserControl x:Class="WimyGit.UserControls.PendingTab"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:WimyGit.UserControls"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+    <UserControl.DataContext>
+        <local:PendingTabViewModel />
+    </UserControl.DataContext>
+    <Grid Background="#FFF9F9F9">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="2*" MinHeight="100" />
+            <RowDefinition Height="10" />
+            <RowDefinition Height="3*" MinHeight="100" />
+            <RowDefinition Height="10" />
+            <RowDefinition Height="4*" MinHeight="100" />
+        </Grid.RowDefinitions>
+        <Grid Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+            <DockPanel Grid.Row="0" Grid.Column="0" HorizontalAlignment="Left" Margin="5,5,0,0" VerticalAlignment="Bottom" LastChildFill="True">
+                <Label Content="Author: "/>
+                <Label Content="{Binding DisplayAuthor}"/>
+            </DockPanel>
+            <TextBox Grid.Row="1" Grid.Column="0" x:Name="textBox" AcceptsReturn="True" Text="{Binding CommitMessage}" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"/>
+            <Button Grid.Row="1" Grid.Column="1" Content="_Commit" Command="{Binding CommitCommand}" Padding="40" />
+        </Grid>
+        <GridSplitter Grid.Row="1" Height="10" HorizontalAlignment="Stretch" VerticalAlignment="Center" />
+        <Grid Grid.Row="2">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+            <Label Grid.Row="0" Content="Staged files" HorizontalAlignment="Left" Margin="5,5,0,0" VerticalAlignment="Bottom"/>
+            <ListBox Grid.Row="1" ItemsSource="{Binding StagedList}" SelectionMode="Extended" VirtualizingStackPanel.IsVirtualizing="False">
+                <ListBox.InputBindings>
+                    <KeyBinding Modifiers="Ctrl" Key="D" Command="{Binding StagedDiffCommand}" />
+                    <KeyBinding Modifiers="Ctrl" Key="R" Command="{Binding UnstageCommand}" />
+                </ListBox.InputBindings>
+                <ListBox.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="Diff" InputGestureText="Ctrl+D" Command="{Binding StagedDiffCommand}" />
+                        <MenuItem Header="Unstage" InputGestureText="Ctrl+R" Command="{Binding UnstageCommand}" />
+                        <MenuItem Header="Refresh" InputGestureText="F5" Command="{Binding RefreshCommand}" />
+                    </ContextMenu>
+                </ListBox.ContextMenu>
+                <ListBox.ItemContainerStyle>
+                    <Style TargetType="{x:Type ListBoxItem}">
+                        <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}" />
+                    </Style>
+                </ListBox.ItemContainerStyle>
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <Grid Margin="0,2">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="170" />
+                                <ColumnDefinition Width="auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="{Binding Status}" />
+                            <TextBlock Grid.Column="1" Text="{Binding Display}" Width="auto" />
+                        </Grid>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </Grid>
+        <GridSplitter Grid.Row="3" Height="10" HorizontalAlignment="Stretch" VerticalAlignment="Center" />
+        <Grid Grid.Row="4">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition />
+            </Grid.RowDefinitions>
+            <Label Content="Unstaged files" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="5,5,0,0"/>
+            <Button Grid.Column="0" Grid.ColumnSpan="2" Content="_Stage Selected" Command="{Binding StageSelectedCommand}" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="10" Padding="15"/>
+            <ListBox Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" x:Name="unstagedFileListBox" ItemsSource="{Binding ModifiedList}" SelectionMode="Extended" VirtualizingStackPanel.IsVirtualizing="False">
+                <ListBox.InputBindings>
+                    <KeyBinding Modifiers="Ctrl" Key="D" Command="{Binding ModifiedDiffCommand}" />
+                    <KeyBinding Modifiers="Ctrl" Key="R" Command="{Binding RevertCommand}" />
+                    <KeyBinding Modifiers="Ctrl+Shift" Key="S" Command="{Binding OpenExplorerSelectedFileCommand}" />
+                    <KeyBinding Key="Return" Command="{Binding OpenSelectedFileCommand}" />
+                    <KeyBinding Gesture="Ctrl+A" Command="{Binding SelectAllCommand}" />
+                </ListBox.InputBindings>
+                <ListBox.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="Stage" Command="{Binding StageSelectedCommand}" />
+                        <MenuItem Header="Stage partial" Command="{Binding StageSelectedPartialCommand}" />
+                        <MenuItem Header="Diff" InputGestureText="Ctrl+D" Command="{Binding ModifiedDiffCommand}" />
+                        <MenuItem Header="Revert" InputGestureText="Ctrl+R" Command="{Binding RevertCommand}" />
+                        <MenuItem Header="Refresh" InputGestureText="F5" Command="{Binding RefreshCommand}" />
+                        <MenuItem Header="Open Explorer" InputGestureText="Ctrl+Shift+S" Command="{Binding OpenExplorerSelectedFileCommand}" />
+                        <MenuItem Header="Open" InputGestureText="Return" Command="{Binding OpenSelectedFileCommand}" />
+                        <MenuItem Header="MergeTool" Command="{Binding MergeToolCommand}" />
+                    </ContextMenu>
+                </ListBox.ContextMenu>
+                <ListBox.ItemContainerStyle>
+                    <Style TargetType="{x:Type ListBoxItem}">
+                        <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}" />
+                    </Style>
+                </ListBox.ItemContainerStyle>
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <Grid Margin="0,2">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="170" />
+                                <ColumnDefinition Width="auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="{Binding Status}" />
+                            <TextBlock Grid.Column="1" Text="{Binding Display}" Width="auto" />
+                        </Grid>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </Grid>
+    </Grid>
+</UserControl>

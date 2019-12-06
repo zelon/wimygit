@@ -11,12 +11,13 @@ namespace WimyGit.ViewModels
 		public GitWrapper git_;
         public DirectoryTreeViewModel DirectoryTree { get; private set; }
         public HistoryTabViewModel HistoryTabMember { get; private set; }
+        public UserControls.PendingTabViewModel PendingTabViewModel_ { get; private set; }
         public UserControls.StashTabViewModel StashTabViewModel { get; private set; }
         public UserControls.BranchAndTagTabViewModel BranchAndTagTabViewModel_ { get; private set; }
         public string StashTabHeader { get; set; }
-        private bool noCommitsYet_ = false;
 
         public RepositoryViewModel(string git_repository_path, RepositoryTab repository_tab,
+            UserControls.PendingTabViewModel pendingTabViewModel,
             UserControls.StashTabViewModel stashTabViewModel,
             UserControls.BranchAndTagTabViewModel branchAndTagTabViewModel)
 		{
@@ -27,14 +28,13 @@ namespace WimyGit.ViewModels
 
             DirectoryTree = new DirectoryTreeViewModel(this);
             HistoryTabMember = new HistoryTabViewModel(git_, this);
+            PendingTabViewModel_ = pendingTabViewModel;
             StashTabViewModel = stashTabViewModel;
             BranchAndTagTabViewModel_ = branchAndTagTabViewModel;
 
             StashTabHeader = "Stash";
 
 			repository_tab_ = repository_tab;
-
-			InitializePending();
 
 			PushCommand = new DelegateCommand((object parameter) => Push());
 			RefreshCommand = new DelegateCommand(async (object parameter) => {
@@ -44,6 +44,11 @@ namespace WimyGit.ViewModels
 			FetchAllCommand = new DelegateCommand((object parameter) => FetchAll());
 			PullCommand = new DelegateCommand(Pull);
 		}
+
+        public string GetRepositoryDirectory()
+        {
+            return Directory;
+        }
 
         public GitWrapper GetGitWrapper()
         {
@@ -126,8 +131,8 @@ namespace WimyGit.ViewModels
             NotifyPropertyChanged("StashTabHeader");
 
             List<string> git_porcelain_result = await git_.GetGitStatusPorcelainAllAsync();
-            RefreshPending(git_porcelain_result);
             DirectoryTree.ReloadTreeView();
+            PendingTabViewModel_.RefreshPending(git_porcelain_result);
             BranchAndTagTabViewModel_.OnRefreshCommand(this);
 
             AddLog("Refreshed");
@@ -148,7 +153,7 @@ namespace WimyGit.ViewModels
             {
                 return false;
             }
-            noCommitsYet_ = gitRepositoryStatus.branchInfo.NoCommitsYet;
+            PendingTabViewModel_.SetNoCommitsYet(gitRepositoryStatus.branchInfo.NoCommitsYet);
             string currentBranchName = gitRepositoryStatus.branchInfo.CurrentBranchName;
             HistoryTabMember.CurrentBranchName = currentBranchName;
             string output = currentBranchName;

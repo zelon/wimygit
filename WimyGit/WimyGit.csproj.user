@@ -7,6 +7,9 @@
     <Compile Update="Views\BranchAndTagTab\BranchAndTagTab.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Update="Views\PendingTab\PendingTab.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Update="Views\QuestionWindow\QuestionWindow.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -16,6 +19,9 @@
   </ItemGroup>
   <ItemGroup>
     <Page Update="Views\BranchAndTagTab\BranchAndTagTab.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Views\PendingTab\PendingTab.xaml">
       <SubType>Designer</SubType>
     </Page>
     <Page Update="Views\QuestionWindow\QuestionWindow.xaml">
