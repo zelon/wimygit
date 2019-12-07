@@ -4,6 +4,9 @@
     <_LastSelectedProfileId>C:\git\wimygit\WimyGit\Properties\PublishProfiles\DebugPublishProfile.pubxml</_LastSelectedProfileId>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Update="Views\Remote\RemoteTab.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Update="Views\TagTab\TagTab.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -21,6 +24,9 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <Page Update="Views\Remote\RemoteTab.xaml">
+      <SubType>Designer</SubType>
+    </Page>
     <Page Update="Views\TagTab\TagTab.xaml">
       <SubType>Designer</SubType>
     </Page>

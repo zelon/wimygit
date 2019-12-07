@@ -132,6 +132,9 @@
                     <TabItem Header="Tag">
                         <user_control:TagTab x:Name="TagTab" />
                     </TabItem>
+                    <TabItem Header="Remote">
+                        <user_control:RemoteTab x:Name="RemoteTab" />
+                    </TabItem>
                 </TabControl>
             </Grid>
         </Grid>

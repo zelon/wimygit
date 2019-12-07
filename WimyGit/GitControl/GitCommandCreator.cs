@@ -119,5 +119,15 @@ namespace WimyGit
         {
             return $"reset --hard {commitId}";
         }
+
+        public static string ListRemote()
+        {
+            return "remote --verbose";
+        }
+
+        public static string GetRemoteDetail(string remoteName)
+        {
+            return $"remote --verbose show \"{remoteName}\"";
+        }
     }
 }
