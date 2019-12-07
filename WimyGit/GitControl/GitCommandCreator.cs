@@ -10,6 +10,11 @@ namespace WimyGit
             return "branch --list --verbose";
         }
 
+        public static string SwitchBranch(string branchName)
+        {
+            return $"checkout \"{branchName}\"";
+        }
+
         public static string DeleteBranch(string branchName)
         {
             return $"branch --delete \"{branchName}\"";

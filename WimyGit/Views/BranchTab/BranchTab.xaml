@@ -23,6 +23,7 @@
             </ListView.View>
             <ListView.ContextMenu>
                 <ContextMenu>
+                    <MenuItem Header="Switch" Command="{Binding SwitchBranchCommand}"/>
                     <MenuItem Header="Delete" Command="{Binding DeleteBranchCommand}"/>
                 </ContextMenu>
             </ListView.ContextMenu>
