@@ -9,11 +9,14 @@
     <UserControl.DataContext>
         <local:BranchTabViewModel />
     </UserControl.DataContext>
+    <UserControl.Resources>
+        <local:BoolToStringConverter x:Key="trueToCurrentConverter" TrueString="Current" FalseString="" />
+    </UserControl.Resources>
     <Grid>
         <ListView Width="Auto" ItemsSource="{Binding BranchInfos}" SelectedValue="{Binding SelectedBranch}">
             <ListView.View>
                 <GridView>
-                    <GridViewColumn Header="*" DisplayMemberBinding="{Binding IsCurrent}" />
+                    <GridViewColumn Header="*" DisplayMemberBinding="{Binding IsCurrent, Converter={StaticResource trueToCurrentConverter}}" />
                     <GridViewColumn Header="Name" DisplayMemberBinding="{Binding Name}" />
                     <GridViewColumn Header="CommitId" DisplayMemberBinding="{Binding CommitId}" />
                 </GridView>
