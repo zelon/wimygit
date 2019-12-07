@@ -7,8 +7,7 @@ namespace WimyGit.ViewModels
 {
     public class HistoryTabViewModel : NotifyBase
     {
-        readonly public WeakReference<IGitRepository> _gitRepository;
-        public GitWrapper GitWrapper { get; private set; } // deprecatred
+        public readonly WeakReference<IGitRepository> _gitRepository;
         private string HistorySelectedPath { get; set; }
         public string SelectedRepositoryPath { get; set; }
         public string CurrentBranchName { get; set; }
@@ -24,9 +23,17 @@ namespace WimyGit.ViewModels
         public ICommand ResetHardCommand { get; private set; }
         public ICommand CopyCommitIdCommand { get; private set; }
 
-        public HistoryTabViewModel(GitWrapper gitWrapper, IGitRepository gitRepository)
+        public IGitRepository TryGetGitRepository()
         {
-            GitWrapper = gitWrapper;
+            if (_gitRepository.TryGetTarget(out IGitRepository gitRepository) == false)
+            {
+                return null;
+            }
+            return gitRepository;
+        }
+
+        public HistoryTabViewModel(IGitRepository gitRepository)
+        {
             _gitRepository = new WeakReference<IGitRepository>(gitRepository);
 
             HistoryList = new System.Collections.ObjectModel.ObservableCollection<HistoryStatus>();
@@ -78,7 +85,7 @@ namespace WimyGit.ViewModels
             {
                 return;
             }
-            GitWrapper.CreateBranch(SelectedHistoryStatus.CommitId, branchName);
+            gitRepository.GetGitWrapper().CreateBranch(SelectedHistoryStatus.CommitId, branchName);
 
             gitRepository.Refresh();
         }
@@ -98,7 +105,7 @@ namespace WimyGit.ViewModels
             {
                 return;
             }
-            GitWrapper.CreateTag(SelectedHistoryStatus.CommitId, tagName);
+            gitRepository.GetGitWrapper().CreateTag(SelectedHistoryStatus.CommitId, tagName);
 
             gitRepository.Refresh();
         }
@@ -196,6 +203,10 @@ namespace WimyGit.ViewModels
 
         private void OnDiffHistroySelectedFile()
         {
+            if (_gitRepository.TryGetTarget(out IGitRepository gitRepository) == false)
+            {
+                return;
+            }
             if (SelectedHistoryFile == null)
             {
                 MessageBox.ShowMessage("Select file first in files tab");
@@ -203,11 +214,11 @@ namespace WimyGit.ViewModels
             }
             if (string.IsNullOrEmpty(SelectedHistoryFile.FileName2))
             {
-                GitWrapper.DiffHistorySelected(SelectedHistoryFile.CommitId, SelectedHistoryFile.FileName);
+                gitRepository.GetGitWrapper().DiffHistorySelected(SelectedHistoryFile.CommitId, SelectedHistoryFile.FileName);
             }
             else
             {
-                GitWrapper.DiffHistorySelectedWithRenameTracking(SelectedHistoryFile.CommitId, SelectedHistoryFile.FileName, SelectedHistoryFile.FileName2);
+                gitRepository.GetGitWrapper().DiffHistorySelectedWithRenameTracking(SelectedHistoryFile.CommitId, SelectedHistoryFile.FileName, SelectedHistoryFile.FileName2);
             }
         }
 
@@ -232,10 +243,14 @@ namespace WimyGit.ViewModels
 
         public void RefreshHistory(string selectedPath)
         {
+            if (_gitRepository.TryGetTarget(out IGitRepository gitRepository) == false)
+            {
+                return;
+            }
             HistoryList.Clear();
 
             HistorySelectedPath = selectedPath;
-            SelectedRepositoryPath = selectedPath.Replace(GitWrapper.GetPath(), "").Replace(@"\", "/");
+            SelectedRepositoryPath = selectedPath.Replace(gitRepository.GetRepositoryDirectory(), "").Replace(@"\", "/");
             if (string.IsNullOrEmpty(SelectedRepositoryPath))
             {
                 SelectedRepositoryPath = "/";
@@ -247,7 +262,11 @@ namespace WimyGit.ViewModels
 
         async void AddHistoryFrom(string selected_path, int skip_count)
         {
-            var waiter = GitWrapper.GetHistory(selected_path, skip_count, /*max_count=*/20);
+            if (_gitRepository.TryGetTarget(out IGitRepository gitRepository) == false)
+            {
+                return;
+            }
+            var waiter = gitRepository.GetGitWrapper().GetHistory(selected_path, skip_count, /*max_count=*/20);
             var commits = await waiter;
             foreach (var commit in commits)
             {

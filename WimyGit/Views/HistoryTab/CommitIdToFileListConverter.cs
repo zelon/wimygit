@@ -30,8 +30,13 @@ namespace WimyGit
             {
                 return null;
             }
+            IGitRepository gitRepository = historyTabViewModel.TryGetGitRepository();
+            if (gitRepository == null)
+            {
+                return null;
+            }
             List<HistoryFile> output = new List<HistoryFile>();
-            foreach (var file_info in historyTabViewModel.GitWrapper.GetFilelistOfCommit(commitId))
+            foreach (var file_info in gitRepository.GetGitWrapper().GetFilelistOfCommit(commitId))
             {
                 HistoryFile file = new HistoryFile();
                 file.CommitId = commitId;
