@@ -2,9 +2,9 @@
 
 namespace WimyGit.UserControls
 {
-    public partial class BranchAndTagTab : UserControl
+    public partial class TagTab : UserControl
     {
-        public BranchAndTagTab()
+        public TagTab()
         {
             InitializeComponent();
         }

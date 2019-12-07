@@ -20,18 +20,21 @@ namespace WimyGit
 
             UserControls.PendingTabViewModel pendingTabViewModel = (UserControls.PendingTabViewModel)PendingTab.DataContext;
             UserControls.StashTabViewModel stashTabViewModel = (UserControls.StashTabViewModel)StashTab.DataContext;
-            UserControls.BranchAndTagTabViewModel branchAndTagTabViewModel = (UserControls.BranchAndTagTabViewModel)BranchAndTagTab.DataContext;
+            UserControls.BranchTabViewModel branchTabViewModel = (UserControls.BranchTabViewModel)BranchTab.DataContext;
+            UserControls.TagTabViewModel TagTabViewModel = (UserControls.TagTabViewModel)TagTab.DataContext;
 
             var viewModel = new ViewModels.RepositoryViewModel(git_repository_path,
                 this,
                 pendingTabViewModel,
                 stashTabViewModel,
-                branchAndTagTabViewModel);
+                branchTabViewModel,
+                TagTabViewModel);
             DataContext = viewModel;
 
             pendingTabViewModel.SetGitRepository(viewModel);
             stashTabViewModel.SetGitRepository(viewModel);
-            branchAndTagTabViewModel.SetGitRepository(viewModel);
+            branchTabViewModel.SetGitRepository(viewModel);
+            TagTabViewModel.SetGitRepository(viewModel);
 		}
 
         private void ConstructPluginToolbarButtons()

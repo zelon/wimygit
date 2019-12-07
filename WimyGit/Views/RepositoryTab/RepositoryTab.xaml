@@ -126,8 +126,11 @@
                     <TabItem Header="{Binding StashTabHeader}">
                         <user_control:StashTab x:Name="StashTab"/>
                     </TabItem>
-                    <TabItem Header="Branch &amp; Tag">
-                        <user_control:BranchAndTagTab x:Name="BranchAndTagTab" />
+                    <TabItem Header="Branch">
+                        <user_control:BranchTab x:Name="BranchTab" />
+                    </TabItem>
+                    <TabItem Header="Tag">
+                        <user_control:TagTab x:Name="TagTab" />
                     </TabItem>
                 </TabControl>
             </Grid>

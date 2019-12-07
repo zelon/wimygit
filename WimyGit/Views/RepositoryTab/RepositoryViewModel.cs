@@ -9,14 +9,16 @@ namespace WimyGit.ViewModels
     {
         private readonly UserControls.PendingTabViewModel _pendingTabViewModel;
         private readonly UserControls.StashTabViewModel _stashTabViewModel;
-        private readonly UserControls.BranchAndTagTabViewModel _branchAndTagTabViewModel;
+        private readonly UserControls.BranchTabViewModel _branchTabViewModel;
+        private readonly UserControls.TagTabViewModel _tagTabViewModel;
 
         private readonly RepositoryTab repository_tab_;
 
         public RepositoryViewModel(string git_repository_path, RepositoryTab repository_tab,
             UserControls.PendingTabViewModel pendingTabViewModel,
             UserControls.StashTabViewModel stashTabViewModel,
-            UserControls.BranchAndTagTabViewModel branchAndTagTabViewModel)
+            UserControls.BranchTabViewModel branchTabViewModel,
+            UserControls.TagTabViewModel tagTabViewModel)
         {
             DisplayAuthor = GlobalSetting.GetInstance().GetSignature();
             Directory = git_repository_path;
@@ -27,7 +29,8 @@ namespace WimyGit.ViewModels
             HistoryTabMember = new HistoryTabViewModel(this);
             _pendingTabViewModel = pendingTabViewModel;
             _stashTabViewModel = stashTabViewModel;
-            _branchAndTagTabViewModel = branchAndTagTabViewModel;
+            _branchTabViewModel = branchTabViewModel;
+            _tagTabViewModel = tagTabViewModel;
 
             StashTabHeader = "Stash";
 
@@ -161,7 +164,8 @@ namespace WimyGit.ViewModels
             List<string> git_porcelain_result = await git_.GetGitStatusPorcelainAllAsync();
             DirectoryTree.ReloadTreeView();
             _pendingTabViewModel.RefreshPending(git_porcelain_result);
-            _branchAndTagTabViewModel.OnRefreshCommand(this);
+            _branchTabViewModel.Refresh();
+            _tagTabViewModel.Refresh();
 
             AddLog("Refreshed");
 
