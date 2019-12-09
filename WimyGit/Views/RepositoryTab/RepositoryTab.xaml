@@ -10,7 +10,6 @@
              d:DesignHeight="800" d:DesignWidth="1024" Background="#FFF9F9F9"
              IsVisibleChanged="OnIsVisibleChanged">
     <UserControl.InputBindings>
-        <KeyBinding Modifiers="Ctrl" Key="Return" Command="{Binding CommitCommand}" />
         <KeyBinding Key="F5" Command="{Binding RefreshCommand}" />
     </UserControl.InputBindings>
     <UserControl.Resources>

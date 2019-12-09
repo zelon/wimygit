@@ -9,6 +9,9 @@
     <UserControl.DataContext>
         <local:PendingTabViewModel />
     </UserControl.DataContext>
+    <UserControl.InputBindings>
+        <KeyBinding Modifiers="Ctrl" Key="Return" Command="{Binding CommitCommand}" />
+    </UserControl.InputBindings>
     <Grid Background="#FFF9F9F9">
         <Grid.RowDefinitions>
             <RowDefinition Height="2*" MinHeight="100" />
