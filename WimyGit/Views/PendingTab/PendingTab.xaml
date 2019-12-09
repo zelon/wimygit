@@ -26,10 +26,7 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition/>
             </Grid.RowDefinitions>
-            <DockPanel Grid.Row="0" Grid.Column="0" HorizontalAlignment="Left" Margin="5,5,0,0" VerticalAlignment="Bottom" LastChildFill="True">
-                <Label Content="Author: "/>
-                <Label Content="{Binding DisplayAuthor}"/>
-            </DockPanel>
+            <Label Grid.Row="0" Grid.Column="0" Content="Commit message "/>
             <TextBox Grid.Row="1" Grid.Column="0" x:Name="textBox" AcceptsReturn="True" Text="{Binding CommitMessage}" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"/>
             <Button Grid.Row="1" Grid.Column="1" Content="_Commit" Command="{Binding CommitCommand}" Padding="40" />
         </Grid>

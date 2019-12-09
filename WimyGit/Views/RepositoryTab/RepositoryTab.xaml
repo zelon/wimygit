@@ -22,7 +22,7 @@
     <Grid Margin="0,0,0,0">
         <Grid.RowDefinitions>
             <RowDefinition Height="65" />
-            <RowDefinition Height="30" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="15" />
             <RowDefinition Height="100" />
@@ -77,8 +77,20 @@
             </ToolBar>
         </Grid>
         <Grid Grid.Row="1">
-            <TextBlock Text="Current Branch:" HorizontalAlignment="Left" Margin="10,0,0,0" VerticalAlignment="Center" Height="18"/>
-            <TextBlock Text="{Binding Branch}" HorizontalAlignment="Left" Margin="109,0,0,0" VerticalAlignment="Center" Width="236" Height="18"/>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+                <Label Grid.Row="0" Grid.Column="0" Content="Author: " HorizontalAlignment="Right" />
+                <Label Grid.Row="0" Grid.Column="1" Content="{Binding DisplayAuthor}" HorizontalAlignment="Left" />
+                <Label Grid.Row="1" Grid.Column="0" Content="Current Branch: " HorizontalAlignment="Right" />
+                <Label Grid.Row="1" Grid.Column="1" Content="{Binding Branch}" HorizontalAlignment="Left" />
+            </Grid>
         </Grid>
         <Grid Grid.Row="2" Margin="0,0,0,0">
             <Grid.ColumnDefinitions>
