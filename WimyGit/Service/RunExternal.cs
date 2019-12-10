@@ -26,11 +26,17 @@ namespace WimyGit
 	{
 		private readonly string _execute_filename;
 		private readonly string _working_directory;
+        private readonly bool _useDebugOutput = false;
 
 		public RunExternal(string execute_filename, string working_directory)
 		{
 			_execute_filename = execute_filename;
 			_working_directory = working_directory;
+
+            if (Debugger.IsAttached)
+            {
+                _useDebugOutput = true;
+            }
 		}
 
 		public List<string> Run(string arguments)
@@ -55,7 +61,11 @@ namespace WimyGit
 			process.EnableRaisingEvents = true;
 
 			process.Start();
-			process.BeginOutputReadLine();
+            if (_useDebugOutput)
+            {
+                Debug.WriteLine($"arguments: {arguments}");
+            }
+            process.BeginOutputReadLine();
 			process.BeginErrorReadLine();
 			process.WaitForExit();
 
@@ -80,7 +90,12 @@ namespace WimyGit
 			process.EnableRaisingEvents = true;
 
 			process.Start();
-			process.BeginOutputReadLine();
+            if (_useDebugOutput)
+            {
+                Debug.WriteLine($"arguments: {arguments}");
+            }
+
+            process.BeginOutputReadLine();
 			await Task.Run(() => process.WaitForExit());
 			return output.GetResult();
 		}
@@ -95,9 +110,13 @@ namespace WimyGit
 			process.StartInfo.CreateNoWindow = true;
 
 			process.Start();
-		}
+            if (_useDebugOutput)
+            {
+                Debug.WriteLine($"arguments: {arguments}");
+            }
+        }
 
-		public void RunInShell(string arguments)
+        public void RunInShell(string arguments)
 		{
 			Process process = new Process();
 			process.StartInfo.FileName = _execute_filename;
@@ -107,18 +126,26 @@ namespace WimyGit
 			process.StartInfo.WorkingDirectory = _working_directory;
 
 			process.Start();
-		}
+            if (_useDebugOutput)
+            {
+                Debug.WriteLine($"arguments: {arguments}");
+            }
+        }
 
-        public void RunInConsoleAndContinue(string cmd)
+        public void RunInConsoleAndContinue(string arguments)
         {
             Process process = new Process();
             process.StartInfo.FileName = "cmd.exe";
-            process.StartInfo.Arguments = "/k " + _execute_filename + " " + cmd;
+            process.StartInfo.Arguments = "/k " + _execute_filename + " " + arguments;
             process.StartInfo.UseShellExecute = true;
             process.StartInfo.CreateNoWindow = false;
             process.StartInfo.WorkingDirectory = _working_directory;
 
             process.Start();
+            if (_useDebugOutput)
+            {
+                Debug.WriteLine($"arguments: {arguments}");
+            }
         }
 
         public void RunInConsoleProgressWindow(string arguments)
