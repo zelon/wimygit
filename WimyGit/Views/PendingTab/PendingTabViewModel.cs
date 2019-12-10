@@ -37,6 +37,8 @@ namespace WimyGit.UserControls
             }
         }
 
+        public bool IsAmendCommit { get; set; }
+
         public PendingTabViewModel()
         {
             StageSelectedCommand = new DelegateCommand(OnStageSelectedCommand, CanStageSelected);
@@ -186,7 +188,7 @@ namespace WimyGit.UserControls
                 MessageBox.ShowMessage("No staged file");
                 return;
             }
-            gitRepository.GetGitWrapper().Commit(CommitMessage);
+            gitRepository.GetGitWrapper().Commit(CommitMessage, IsAmendCommit);
             CommitMessage = "";
             await gitRepository.Refresh();
         }

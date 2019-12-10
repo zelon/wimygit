@@ -303,7 +303,7 @@ namespace WimyGit
 			return string.Format("{0} <{1}>", name, email);
 		}
 
-		public void Commit(string commit_message)
+		public void Commit(string commit_message, bool isAmend = false)
 		{
 			// Use temp file to commit with multiline message
 			string temp_filename;
@@ -321,6 +321,10 @@ namespace WimyGit
 				stream.Write(commit_message);
 			}
 			string cmd = "commit --file=\"" + temp_filename + "\"";
+            if (isAmend)
+            {
+                cmd += " --amend";
+            }
 			CreateGitRunner().Run(cmd);
 
 			File.Delete(temp_filename);
