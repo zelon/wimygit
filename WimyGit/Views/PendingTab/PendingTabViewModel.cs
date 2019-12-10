@@ -15,6 +15,7 @@ namespace WimyGit.UserControls
         public ICommand SelectAllCommand { get; private set; }
         public DelegateCommand StageSelectedCommand { get; private set; }
         public DelegateCommand StageSelectedPartialCommand { get; private set; }
+        public ICommand AmendClickedCommand { get; private set; }
         public ICommand CommitCommand { get; private set; }
         public ICommand ModifiedDiffCommand { get; private set; }
         public ICommand StagedDiffCommand { get; private set; }
@@ -46,6 +47,7 @@ namespace WimyGit.UserControls
             ModifiedDiffCommand = new DelegateCommand(OnModifiedDiffCommand);
             StagedDiffCommand = new DelegateCommand(OnStagedDiffCommand);
             UnstageCommand = new DelegateCommand(OnUnstageCommand);
+            AmendClickedCommand = new DelegateCommand(OnAmendClickedCommand);
             CommitCommand = new DelegateCommand(OnCommitCommand);
             RevertCommand = new DelegateCommand(OnRevertCommand);
             OpenExplorerSelectedFileCommand = new DelegateCommand(OnOpenExplorerSelectedFileCommand);
@@ -172,6 +174,37 @@ namespace WimyGit.UserControls
             OnSelectAllCallbackViewSide();
         }
 
+        public async void OnAmendClickedCommand(object parameter)
+        {
+            if (_gitRepository.TryGetTarget(out IGitRepository gitRepository) == false)
+            {
+                return;
+            }
+            if (IsAmendCommit == false)
+            {
+                return;
+            }
+            string cmd = GitCommandCreator.GetLastCommitMessage();
+            List<string> lines = await gitRepository.CreateGitRunner().RunAsync(cmd);
+            if (lines.Count < 2)
+            {
+                MessageBox.ShowMessage("Invalid HEAD commit message");
+                return;
+            }
+            // remove empty last line
+            if (string.IsNullOrEmpty(lines[lines.Count - 1]))
+            {
+                lines.RemoveAt(lines.Count - 1);
+            }
+            string lastCommitMessage = string.Join(Environment.NewLine, lines);
+            string showMessage = $"{lastCommitMessage}{Environment.NewLine}Use HEAD message as amend commit message?";
+            if (MessageBox.ShowMessageWithYesNo(showMessage) == System.Windows.MessageBoxResult.Yes)
+            {
+                CommitMessage = lastCommitMessage;
+                NotifyPropertyChanged("CommitMessage");
+            }
+        }
+
         public async void OnCommitCommand(object parameter)
         {
             if (_gitRepository.TryGetTarget(out IGitRepository gitRepository) == false)
@@ -190,6 +223,8 @@ namespace WimyGit.UserControls
             }
             gitRepository.GetGitWrapper().Commit(CommitMessage, IsAmendCommit);
             CommitMessage = "";
+            IsAmendCommit = false;
+            NotifyPropertyChanged("IsAmendCommit");
             await gitRepository.Refresh();
         }
 

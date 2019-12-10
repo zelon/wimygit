@@ -5,6 +5,11 @@ namespace WimyGit
     {
         static private readonly string kEmptyTreeCommitId = "4b825dc642cb6eb9a060e54bf8d69288fbee4904";
 
+        public static string GetLastCommitMessage()
+        {
+            return $"log --max-count=1 --pretty=%B HEAD";
+        }
+
         public static string ListBranch()
         {
             return "branch --list --verbose";

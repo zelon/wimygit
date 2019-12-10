@@ -35,7 +35,7 @@
                     <ColumnDefinition/>
                 </Grid.ColumnDefinitions>
                 <Label Grid.Column="0" Content="Commit message "/>
-                <CheckBox Grid.Column="1" HorizontalAlignment="Right" Content="Amend Commit" IsChecked="{Binding IsAmendCommit}" Margin="0,5,10,5" />
+                <CheckBox Grid.Column="1" HorizontalAlignment="Right" Content="Amend Commit" Command="{Binding AmendClickedCommand}" IsChecked="{Binding IsAmendCommit}" Margin="0,5,10,5" />
             </Grid>
             <TextBox Grid.Row="1" Grid.Column="0" x:Name="textBox" AcceptsReturn="True" Text="{Binding CommitMessage}" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"/>
             <Button Grid.Row="1" Grid.Column="1" Content="_Commit" Command="{Binding CommitCommand}" Padding="40" />
