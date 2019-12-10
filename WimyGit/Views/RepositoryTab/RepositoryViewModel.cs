@@ -39,16 +39,13 @@ namespace WimyGit.ViewModels
 
             repository_tab_ = repository_tab;
 
-            PushCommand = new DelegateCommand((object parameter) => Push());
+            PushCommand = new DelegateCommand((object parameter) => OnPushCommand());
             OpenExplorerCommand = new DelegateCommand(OnOpenExplorerCommand);
             OpenGitBashCommand = new DelegateCommand(OnOpenGitBashCommand);
-            RefreshCommand = new DelegateCommand(async (object parameter) =>
-            {
-                await Refresh();
-            });
-            ViewTimelapseCommand = new DelegateCommand((object parameter) => ViewTimeLapse());
-            FetchAllCommand = new DelegateCommand((object parameter) => FetchAll());
-            PullCommand = new DelegateCommand(Pull);
+            RefreshCommand = new DelegateCommand(async (object parameter) => await Refresh());
+            ViewTimelapseCommand = new DelegateCommand((object parameter) => OnViewTimeLapseCommand());
+            FetchAllCommand = new DelegateCommand(async (object parameter) => await OnFetchAllCommand());
+            PullCommand = new DelegateCommand(async (object parameter) => await OnPullCommand());
         }
 
         public GitWrapper git_;
@@ -92,7 +89,7 @@ namespace WimyGit.ViewModels
             return new RunExternal(ProgramPathFinder.GetGitBin(), Directory);
         }
 
-        public void ViewTimeLapse()
+        public void OnViewTimeLapseCommand()
         {
             if (string.IsNullOrEmpty(SelectedPath))
             {
@@ -102,11 +99,11 @@ namespace WimyGit.ViewModels
             git_.ViewTimeLapse(SelectedPath);
         }
 
-        public void FetchAll()
+        public async Task OnFetchAllCommand()
         {
             string cmd = "fetch --all";
             CreateGitRunner().RunInConsoleProgressWindow(cmd);
-            RefreshAsyncWrapper();
+            await Refresh();
         }
 
         private void OnOpenExplorerCommand(object sender)
@@ -121,22 +118,17 @@ namespace WimyGit.ViewModels
             runner.RunInShell("--login -i");
         }
 
-        private void Pull(object not_used)
+        private async Task OnPullCommand()
         {
             string cmd = "pull";
             CreateGitRunner().RunInConsoleProgressWindow(cmd);
-            RefreshAsyncWrapper();
+            await Refresh();
         }
 
-        private void Push()
+        private async void OnPushCommand()
         {
             string cmd = "push";
             CreateGitRunner().RunInConsoleProgressWindow(cmd);
-            RefreshAsyncWrapper();
-        }
-
-        private async void RefreshAsyncWrapper()
-        {
             await Refresh();
         }
 
