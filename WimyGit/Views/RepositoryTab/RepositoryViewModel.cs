@@ -142,6 +142,7 @@ namespace WimyGit.ViewModels
 
         public async Task<bool> Refresh()
         {
+            DateTime start = DateTime.Now;
             AddLog("Refreshing Directory: " + Directory);
             repository_tab_.EnterLoadingScreen();
 
@@ -153,7 +154,17 @@ namespace WimyGit.ViewModels
                 return false;
             }
 
-            int stashListCount = _stashTabViewModel.RefreshAndGetStashCount();
+            DirectoryTree.ReloadTreeView();
+
+            Task<List<string>> git_porcelain_result = git_.GetGitStatusPorcelainAllAsync();
+            Task<int> stashTabResult = _stashTabViewModel.RefreshAndGetStashCount();
+            Task branchTabResult = _branchTabViewModel.Refresh();
+            Task tagTabResult = _tagTabViewModel.Refresh();
+            Task remoteTabResult = _remoteTabViewModel.Refresh();
+
+            _pendingTabViewModel.RefreshPending(await git_porcelain_result);
+
+            int stashListCount = await stashTabResult;
             if (stashListCount > 0)
             {
                 StashTabHeader = $"Stash [{stashListCount}]";
@@ -163,17 +174,19 @@ namespace WimyGit.ViewModels
                 StashTabHeader = "Stash";
             }
             NotifyPropertyChanged("StashTabHeader");
-
-            List<string> git_porcelain_result = await git_.GetGitStatusPorcelainAllAsync();
-            DirectoryTree.ReloadTreeView();
-            _pendingTabViewModel.RefreshPending(git_porcelain_result);
-            _branchTabViewModel.Refresh();
-            _tagTabViewModel.Refresh();
-            _remoteTabViewModel.Refresh();
+            await branchTabResult;
+            await remoteTabResult;
+            await tagTabResult;
 
             AddLog("Refreshed");
 
             repository_tab_.LeaveLoadingScreen();
+
+            if (System.Diagnostics.Debugger.IsAttached)
+            {
+                TimeSpan elapsed = DateTime.Now - start;
+                AddLog($"Refresh elapsed: {elapsed.TotalMilliseconds}");
+            }
 
             return true;
         }

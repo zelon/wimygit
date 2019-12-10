@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using System.Windows.Input;
 
 
@@ -180,7 +181,7 @@ namespace WimyGit.UserControls
             gitRepository.Refresh();
         }
 
-        public int RefreshAndGetStashCount()
+        public async Task<int> RefreshAndGetStashCount()
         {
             StashItems.Clear();
             if (_gitRepository.TryGetTarget(out IGitRepository gitRepository) == false)
@@ -188,7 +189,7 @@ namespace WimyGit.UserControls
                 return 0;
             }
             string cmd = GitCommandCreator.StashList();
-            List<string> outputs = gitRepository.CreateGitRunner().Run(cmd);
+            List<string> outputs = await gitRepository.CreateGitRunner().RunAsync(cmd);
             foreach (string line in outputs)
             {
                 if (string.IsNullOrEmpty(line.Trim()))

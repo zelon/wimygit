@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using System.Windows.Input;
 
 namespace WimyGit.UserControls
@@ -26,7 +27,7 @@ namespace WimyGit.UserControls
             _gitRepository = new WeakReference<IGitRepository>(gitRepository);
         }
 
-        public void Refresh()
+        public async Task Refresh()
         {
             if (_gitRepository.TryGetTarget(out var gitRepository) == false)
             {
@@ -36,7 +37,7 @@ namespace WimyGit.UserControls
 
             BranchInfos.Clear();
             string cmd = GitCommandCreator.ListBranch();
-            foreach (var branchInfo in BranchParser.Parse(gitRepository.CreateGitRunner().Run(cmd)))
+            foreach (var branchInfo in BranchParser.Parse(await gitRepository.CreateGitRunner().RunAsync(cmd)))
             {
                 BranchInfos.Add(branchInfo);
             }

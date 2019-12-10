@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using System.Windows.Input;
 
 namespace WimyGit.UserControls
@@ -25,7 +26,7 @@ namespace WimyGit.UserControls
             _gitRepository = new WeakReference<IGitRepository>(gitRepository);
         }
 
-        public void Refresh()
+        public async Task Refresh()
         {
             if (_gitRepository.TryGetTarget(out var gitRepository) == false)
             {
@@ -35,7 +36,7 @@ namespace WimyGit.UserControls
 
             TagInfos.Clear();
             string cmd = GitCommandCreator.ListTag();
-            foreach (var tagInfo in TagParser.Parse(gitRepository.CreateGitRunner().Run(cmd)))
+            foreach (var tagInfo in TagParser.Parse(await gitRepository.CreateGitRunner().RunAsync(cmd)))
             {
                 TagInfos.Add(tagInfo);
             }

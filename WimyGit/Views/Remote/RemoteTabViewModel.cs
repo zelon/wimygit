@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 
 namespace WimyGit.UserControls
 {
@@ -24,7 +25,7 @@ namespace WimyGit.UserControls
             GitRepo = gitRepository;
         }
 
-        public void Refresh()
+        public async Task Refresh()
         {
             if (_gitRepository.TryGetTarget(out IGitRepository gitRepository) == false)
             {
@@ -33,7 +34,7 @@ namespace WimyGit.UserControls
             RemoteInfos.Clear();
 
             string cmd = GitCommandCreator.ListRemote();
-            List<string> lines = gitRepository.CreateGitRunner().Run(cmd);
+            List<string> lines = await gitRepository.CreateGitRunner().RunAsync(cmd);
             List<RemoteInfo> remoteInfos = RemoteParser.Parse(lines);
             foreach (RemoteInfo remoteInfo in remoteInfos)
             {
