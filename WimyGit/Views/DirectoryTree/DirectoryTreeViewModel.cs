@@ -153,6 +153,10 @@ namespace WimyGit.ViewModels
 
         public void OnSelectedPathChanged(string path)
         {
+            if (repositoryViewModel_.git_ == null)
+            {
+                return;
+            }
             repositoryViewModel_.SelectedPath = path;
             repositoryViewModel_.HistoryTabMember.RefreshHistory(path);
         }

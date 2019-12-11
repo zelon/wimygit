@@ -197,7 +197,7 @@ namespace WimyGit.UserControls
                 lines.RemoveAt(lines.Count - 1);
             }
             string lastCommitMessage = string.Join(Environment.NewLine, lines);
-            string showMessage = $"{lastCommitMessage}{Environment.NewLine}Use HEAD message as amend commit message?";
+            string showMessage = $"{lastCommitMessage}{Environment.NewLine}{Environment.NewLine}Use above HEAD message as amend commit message?";
             if (UIService.ShowMessageWithYesNo(showMessage) == System.Windows.MessageBoxResult.Yes)
             {
                 CommitMessage = lastCommitMessage;

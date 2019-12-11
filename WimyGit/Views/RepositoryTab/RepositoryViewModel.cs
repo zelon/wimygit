@@ -190,6 +190,10 @@ namespace WimyGit.ViewModels
                 return false;
             }
             GitRepositoryStatus gitRepositoryStatus = git_.GetRepositoryStatus();
+            if (gitRepositoryStatus == null)
+            {
+                return false;
+            }
             if (gitRepositoryStatus.branchInfo == null)
             {
                 return false;
