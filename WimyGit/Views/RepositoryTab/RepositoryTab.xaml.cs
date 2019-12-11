@@ -1,6 +1,4 @@
-﻿using System;
-using System.Windows;
-using System.Windows.Media.Imaging;
+﻿using System.Windows;
 using System.Windows.Input;
 using System.Windows.Controls;
 
@@ -15,8 +13,6 @@ namespace WimyGit
 			git_repository_path_ = git_repository_path;
 
 			InitializeComponent();
-
-            ConstructPluginToolbarButtons();
 
             UserControls.PendingTabViewModel pendingTabViewModel = (UserControls.PendingTabViewModel)PendingTab.DataContext;
             UserControls.StashTabViewModel stashTabViewModel = (UserControls.StashTabViewModel)StashTab.DataContext;
@@ -38,95 +34,9 @@ namespace WimyGit
             branchTabViewModel.SetGitRepository(viewModel);
             tagTabViewModel.SetGitRepository(viewModel);
             remoteTabViewModel.SetGitRepository(viewModel);
-		}
 
-        private void ConstructPluginToolbarButtons()
-        {
-            // Default Plugins
-            {
-                AddToolbarButton(CreateGitRemoteShowPlugin());
-            }
-            foreach (Plugin.PluginData pluginData in Plugin.PluginController.GetPlugins())
-            {
-                AddToolbarButton(pluginData);
-            }
-        }
-
-        private Plugin.PluginData CreateGitRemoteShowPlugin()
-        {
-            return new Plugin.PluginData(
-                title: "RemoteInfo",
-                iconPath: @"..\..\Images\Extension.png",
-                command: "git",
-                argument: "remote -v show",
-                executionType: Plugin.ExecutionType.WimyGitInnerShellAndRefreshRepositoryStatus);
-        }
-
-        private void AddToolbarButton(Plugin.PluginData pluginData)
-        {
-            Button button = new Button();
-            button.Width = 100;
-            StackPanel stackPanel = new StackPanel();
-            stackPanel.Orientation = Orientation.Vertical;
-
-            BitmapImage bitmapImage = new BitmapImage(new System.Uri(pluginData.IconPath, UriKind.RelativeOrAbsolute));
-            Image image = new Image();
-            image.Source = bitmapImage;
-            image.Width = 32;
-            image.Height = 32;
-
-            TextBlock textBlock = new TextBlock();
-            textBlock.HorizontalAlignment = HorizontalAlignment.Center;
-            textBlock.Text = pluginData.Title;
-
-            stackPanel.Children.Add(image);
-            stackPanel.Children.Add(textBlock);
-
-            button.Content = stackPanel;
-
-            button.Command = new DelegateCommand(async (object parameter) =>
-            {
-                var git = GetViewModel().git_;
-                if (git == null)
-                {
-                    UIService.ShowMessage("Git is null");
-                    return;
-                }
-                string workingDirectory = git.GetPath();
-
-                switch (pluginData.ExecutionType)
-                {
-                    case Plugin.ExecutionType.WithoutShellAndNoWaiting:
-                        {
-                            RunExternal runner = new RunExternal(pluginData.Command, workingDirectory);
-                            try
-                            {
-                                runner.RunWithoutWaiting(pluginData.Argument);
-                            }
-                            catch (System.Exception exception)
-                            {
-                                UIService.ShowMessage("Cannot execute. " + exception.Message);
-                            }
-                            return;
-                        }
-                    case Plugin.ExecutionType.WimyGitInnerShellAndRefreshRepositoryStatus:
-                        {
-                            RunExternal runner = new RunExternal(pluginData.Command, workingDirectory);
-                            try
-                            {
-                                runner.RunInConsoleProgressWindow(pluginData.Argument);
-                                await GetViewModel().Refresh();
-                            }
-                            catch (System.Exception exception)
-                            {
-                                UIService.ShowMessage("Cannot execute. " + exception.Message);
-                            }
-                            return;
-                        }
-                }
-            });
-
-            toolBar.Items.Add(button);
+            IGitRepository gitRepository = viewModel;
+            Plugin.PluginController.ConstructPluginToolbarButtons(toolBar, gitRepository);
         }
 
         private void OnIsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
