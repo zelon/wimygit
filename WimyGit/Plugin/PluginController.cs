@@ -29,7 +29,7 @@ namespace WimyGit.Plugin
                 }
                 catch (System.Exception exception)
                 {
-                    WimyGit.MessageBox.ShowMessage(string.Format("Cannot load plugin,{0},{1}", directory_name, exception.Message));
+                    UIService.ShowMessage(string.Format("Cannot load plugin,{0},{1}", directory_name, exception.Message));
                 }
             }
             return _pluginDatas;

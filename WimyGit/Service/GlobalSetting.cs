@@ -33,11 +33,6 @@ namespace WimyGit
 			return window_;
 		}
 
-		public System.Windows.MessageBoxResult ConfirmMsg(string msg, string caption)
-		{
-			return System.Windows.MessageBox.Show(msg, caption, System.Windows.MessageBoxButton.OKCancel);
-		}
-
 		public void ViewFile(string filename)
 		{
 			string cmd = String.Format("-d {0}.untracked {0}", filename);

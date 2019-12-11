@@ -89,7 +89,7 @@ namespace WimyGit
                 var git = GetViewModel().git_;
                 if (git == null)
                 {
-                    MessageBox.ShowMessage("Git is null");
+                    UIService.ShowMessage("Git is null");
                     return;
                 }
                 string workingDirectory = git.GetPath();
@@ -105,7 +105,7 @@ namespace WimyGit
                             }
                             catch (System.Exception exception)
                             {
-                                MessageBox.ShowMessage("Cannot execute. " + exception.Message);
+                                UIService.ShowMessage("Cannot execute. " + exception.Message);
                             }
                             return;
                         }
@@ -119,7 +119,7 @@ namespace WimyGit
                             }
                             catch (System.Exception exception)
                             {
-                                MessageBox.ShowMessage("Cannot execute. " + exception.Message);
+                                UIService.ShowMessage("Cannot execute. " + exception.Message);
                             }
                             return;
                         }

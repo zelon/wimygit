@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Windows;
 using System.Windows.Input;
-using WimyGit.Service;
 
 namespace WimyGit.ViewModels
 {
@@ -80,7 +79,7 @@ namespace WimyGit.ViewModels
             {
                 return;
             }
-            string branchName = UIService.GetInstance().AskAndGetString("Enter branch name", "");
+            string branchName = UIService.AskAndGetString("Enter branch name", "");
             if (branchName == null)
             {
                 return;
@@ -100,7 +99,7 @@ namespace WimyGit.ViewModels
             {
                 return;
             }
-            string tagName = UIService.GetInstance().AskAndGetString("Enter tag name", "");
+            string tagName = UIService.AskAndGetString("Enter tag name", "");
             if (tagName == null)
             {
                 return;
@@ -180,7 +179,7 @@ namespace WimyGit.ViewModels
             {
                 return;
             }
-            var result = MessageBox.ShowMessageWithOKCancel("Reset hard can affect on working directory. Continue?");
+            var result = UIService.ShowMessageWithOKCancel("Reset hard can affect on working directory. Continue?");
             if (result != MessageBoxResult.OK)
             {
                 return;
@@ -209,7 +208,7 @@ namespace WimyGit.ViewModels
             }
             if (SelectedHistoryFile == null)
             {
-                MessageBox.ShowMessage("Select file first in files tab");
+                UIService.ShowMessage("Select file first in files tab");
                 return;
             }
             if (string.IsNullOrEmpty(SelectedHistoryFile.FileName2))

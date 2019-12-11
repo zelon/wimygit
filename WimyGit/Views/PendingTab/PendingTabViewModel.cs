@@ -188,7 +188,7 @@ namespace WimyGit.UserControls
             List<string> lines = await gitRepository.CreateGitRunner().RunAsync(cmd);
             if (lines.Count < 2)
             {
-                MessageBox.ShowMessage("Invalid HEAD commit message");
+                UIService.ShowMessage("Invalid HEAD commit message");
                 return;
             }
             // remove empty last line
@@ -198,7 +198,7 @@ namespace WimyGit.UserControls
             }
             string lastCommitMessage = string.Join(Environment.NewLine, lines);
             string showMessage = $"{lastCommitMessage}{Environment.NewLine}Use HEAD message as amend commit message?";
-            if (MessageBox.ShowMessageWithYesNo(showMessage) == System.Windows.MessageBoxResult.Yes)
+            if (UIService.ShowMessageWithYesNo(showMessage) == System.Windows.MessageBoxResult.Yes)
             {
                 CommitMessage = lastCommitMessage;
                 NotifyPropertyChanged("CommitMessage");
@@ -213,12 +213,12 @@ namespace WimyGit.UserControls
             }
             if (String.IsNullOrEmpty(CommitMessage))
             {
-                MessageBox.ShowMessage("Empty commit message");
+                UIService.ShowMessage("Empty commit message");
                 return;
             }
             if (StagedList.Count == 0)
             {
-                MessageBox.ShowMessage("No staged file");
+                UIService.ShowMessage("No staged file");
                 return;
             }
             gitRepository.GetGitWrapper().Commit(CommitMessage, IsAmendCommit);
@@ -273,7 +273,7 @@ namespace WimyGit.UserControls
 
             foreach (string error_msg in error_msg_list)
             {
-                MessageBox.ShowMessage(error_msg);
+                UIService.ShowMessage(error_msg);
             }
         }
 
@@ -320,7 +320,7 @@ namespace WimyGit.UserControls
             {
                 return;
             }
-            if (GlobalSetting.GetInstance().ConfirmMsg(msg, "Revert") == System.Windows.MessageBoxResult.Cancel)
+            if (UIService.ConfirmMsg(msg, "Revert") == System.Windows.MessageBoxResult.Cancel)
             {
                 return;
             }

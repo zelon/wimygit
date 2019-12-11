@@ -313,7 +313,7 @@ namespace WimyGit
 			}
 			catch (IOException)
 			{
-				MessageBox.ShowMessage("Cannot create temp file for commit");
+				UIService.ShowMessage("Cannot create temp file for commit");
 				return;
 			}
 			using (var stream = File.CreateText(temp_filename))

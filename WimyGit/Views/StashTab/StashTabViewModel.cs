@@ -47,7 +47,7 @@ namespace WimyGit.UserControls
             {
                 return;
             }
-            string stashMessage = Service.UIService.GetInstance().AskAndGetString("Enter stash message", "");
+            string stashMessage = UIService.AskAndGetString("Enter stash message", "");
             if (string.IsNullOrEmpty(stashMessage))
             {
                 return;

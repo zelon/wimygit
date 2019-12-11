@@ -31,13 +31,13 @@ namespace WimyGit.UserControls
 
 			if (paths.Length != 1)
 			{
-				MessageBox.ShowMessage("Please drop one directory only");
+                UIService.ShowMessage("Please drop one directory only");
 				return;
 			}
 			string repository_path = paths[0];
 			if (Util.IsValidGitDirectory(repository_path) == false)
 			{
-                if (Service.UIService.GetInstance().AskAndGitInit(repository_path) == false)
+                if (UIService.AskAndGitInit(repository_path) == false)
                 {
                     return;
                 }

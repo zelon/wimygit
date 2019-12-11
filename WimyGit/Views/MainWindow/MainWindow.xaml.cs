@@ -65,7 +65,7 @@ namespace WimyGit
             }
             catch (System.IO.FileNotFoundException ex)
             {
-                MessageBox.ShowMessage(ex.Message);
+                UIService.ShowMessage(ex.Message);
                 System.Environment.Exit(1);
             }
         }
@@ -92,13 +92,13 @@ namespace WimyGit
 
             if (paths.Length != 1)
             {
-                MessageBox.ShowMessage("Please drop one directory only");
+                UIService.ShowMessage("Please drop one directory only");
                 return;
             }
             string repository_path = paths[0];
             if (Util.IsValidGitDirectory(repository_path) == false)
             {
-                if (Service.UIService.GetInstance().AskAndGitInit(repository_path) == false)
+                if (UIService.AskAndGitInit(repository_path) == false)
                 {
                     return;
                 }

@@ -33,7 +33,7 @@ namespace WimyGit.UserControls
 		public DelegateCommand BrowseCommand { get; private set; }
 		void OnBrowseCommand(object sender)
 		{
-            MessageBox.ShowMessage("Drag folder from explorer");
+            UIService.ShowMessage("Drag folder from explorer");
 
             RunExternal runner = new RunExternal("explorer.exe", ".");
             runner.RunWithoutWaiting(Directory);
@@ -44,7 +44,7 @@ namespace WimyGit.UserControls
 		{
             if (Util.IsValidGitDirectory(Directory) == false)
             {
-                if (Service.UIService.GetInstance().AskAndGitInit(Directory) == false)
+                if (UIService.AskAndGitInit(Directory) == false)
                 {
                     return;
                 }

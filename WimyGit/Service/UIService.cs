@@ -1,34 +1,43 @@
-﻿using System;
-using System.Diagnostics;
+﻿using System.Windows;
 using WimyGit.UI.QuestionWindow;
 
-namespace WimyGit.Service
+namespace WimyGit
 {
-    class UIService
+    public static class UIService
     {
-        private static UIService instance_ = null;
+        private const string Caption = "WimyGit";
 
-        public static UIService GetInstance()
+        public static void ShowMessage(string message)
         {
-            if (instance_ == null)
-            {
-                instance_ = new UIService();
-            }
-            return instance_;
+            MainWindow window = GlobalSetting.GetInstance().GetWindow();
+            MessageBox.Show(window, message, Caption);
         }
 
-        private UIService()
+        public static MessageBoxResult ConfirmMsg(string msg, string caption)
         {
+            return MessageBox.Show(msg, caption, MessageBoxButton.OKCancel);
         }
 
-        public string AskAndGetString(string questionMessage, string defaultAnswer)
+        public static MessageBoxResult ShowMessageWithYesNo(string message)
+        {
+            MainWindow window = GlobalSetting.GetInstance().GetWindow();
+            return MessageBox.Show(window, message, Caption, MessageBoxButton.YesNo, MessageBoxImage.Question);
+        }
+
+        public static MessageBoxResult ShowMessageWithOKCancel(string message)
+        {
+            MainWindow window = GlobalSetting.GetInstance().GetWindow();
+            return MessageBox.Show(window, message, Caption, MessageBoxButton.OKCancel, MessageBoxImage.Question);
+        }
+
+        public static string AskAndGetString(string questionMessage, string defaultAnswer)
         {
             QuestionWindow questionWindow = new QuestionWindow();
             questionWindow.Question.Content = questionMessage;
             questionWindow.Answer.Text = defaultAnswer ?? "";
             questionWindow.ShowDialog();
             
-            if (questionWindow.Result == System.Windows.MessageBoxResult.OK)
+            if (questionWindow.Result == MessageBoxResult.OK)
             {
                 return questionWindow.Answer.Text;
             }
@@ -36,13 +45,12 @@ namespace WimyGit.Service
         }
 
         // return true if selected yes and initialized git
-        public bool AskAndGitInit(string directory)
+        public static bool AskAndGitInit(string directory)
         {
             string message = $"Invalid git root directory:{directory}\n\n";
             message += $"Initialize as GIT repository?\n\n";
             message += $"This will execute 'git init' and create {directory}\\.git directory";
-            var result = MessageBox.ShowMessageWithYesNo(message);
-            if (result != System.Windows.MessageBoxResult.Yes)
+            if (ShowMessageWithYesNo(message) != MessageBoxResult.Yes)
             {
                 return false;
             }
