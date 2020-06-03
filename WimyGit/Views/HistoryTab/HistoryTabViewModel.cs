@@ -195,7 +195,14 @@ namespace WimyGit.ViewModels
             {
                 return;
             }
-            Clipboard.SetText(SelectedHistoryStatus.CommitId);
+            try
+            {
+                Clipboard.SetText(SelectedHistoryStatus.CommitId);
+            }
+            catch (Exception exception)
+            {
+                UIService.ConfirmMsg("Cannot copy to clipboard: " + exception.Message, "Error");
+            }
         }
 
         public ICommand DiffHistorySelectedFile { get; private set; }
