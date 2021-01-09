@@ -1,0 +1,3 @@
+Copy plugin directories to %LOCALAPPDATA%\WimyGit\Plugins
+
+For example, C:\Users\wimygit\AppData\Local\WimyGit\Plugins\OpenVsCode\Plugin.xml

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wimygit_plugin xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../Plugin.xsd">
+  <version>1</version>
+  <name>VimGitIgnore</name>
+  <description>Edit .gitignore with gvim</description>
+  <title>VimGitIgnore</title>
+  <icon>
+    <type>plugin_directory</type>
+    <path>Vim.png</path>
+  </icon>
+  <command>gvim.exe</command>
+  <arguments>
+      <argument>
+          <type>repository_directory</type>
+          <value>.gitignore</value>
+      </argument>
+  </arguments>
+  <execution_type>WithoutShellAndNoWaiting</execution_type>
+</wimygit_plugin>

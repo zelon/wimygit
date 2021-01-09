@@ -11,7 +11,14 @@
       <xs:element name="icon">
         <xs:complexType>
           <xs:sequence>
-            <xs:element name="type" type="xs:string"/>
+              <xs:element name="type">
+                  <xs:simpleType>
+                      <xs:restriction base="xs:string">
+                        <xs:enumeration value="embedded"/>
+                        <xs:enumeration value="plugin_directory"/>
+                      </xs:restriction>
+                  </xs:simpleType>
+              </xs:element>
             <xs:element name="path" type="xs:string"/>
           </xs:sequence>
         </xs:complexType>
@@ -28,6 +35,7 @@
                       <xs:restriction base="xs:string">
                         <xs:enumeration value="string"/>
                         <xs:enumeration value="inputbox"/>
+                        <xs:enumeration value="repository_directory"/>
                       </xs:restriction>
                     </xs:simpleType>
                   </xs:element>
@@ -41,6 +49,8 @@
       <xs:element name="execution_type">
         <xs:simpleType>
           <xs:restriction base="xs:string">
+            <xs:enumeration value="WithoutShellAndNoWaiting" />
+            <xs:enumeration value="KeepShellAndNoWaiting" />
             <xs:enumeration value="WimyGitInnerShellAndRefreshRepositoryStatus" />
           </xs:restriction>
         </xs:simpleType>

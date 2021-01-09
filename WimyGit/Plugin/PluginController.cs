@@ -9,6 +9,7 @@ namespace WimyGit.Plugin
 {
     public class PluginController
     {
+        private static string DefaultExtensionIconPath = @"..\..\Images\Extension.png";
         private static List<PluginData> _pluginDatas = null;
 
         public static List<PluginData> GetPlugins()
@@ -58,11 +59,13 @@ namespace WimyGit.Plugin
 
         public static PluginData CreateGitRemoteShowPlugin()
         {
+            List<PluginArgument> argumentInfos = new List<PluginArgument>();
+            argumentInfos.Add(new PluginArgument(PluginArgument.Type.String, "remote -v show"));
             return new Plugin.PluginData(
                 title: "RemoteInfo",
-                iconPath: @"..\..\Images\Extension.png",
+                iconPath: DefaultExtensionIconPath,
                 command: "git",
-                argument: "remote -v show",
+                arguments: argumentInfos,
                 executionType: Plugin.ExecutionType.WimyGitInnerShellAndRefreshRepositoryStatus);
         }
 
@@ -73,7 +76,15 @@ namespace WimyGit.Plugin
             StackPanel stackPanel = new StackPanel();
             stackPanel.Orientation = Orientation.Vertical;
 
-            BitmapImage bitmapImage = new BitmapImage(new Uri(pluginData.IconPath, UriKind.RelativeOrAbsolute));
+            BitmapImage bitmapImage = null;
+            try
+            {
+                bitmapImage = new BitmapImage(new Uri(pluginData.IconPath, UriKind.RelativeOrAbsolute));
+            }
+            catch
+            {
+                bitmapImage = new BitmapImage(new Uri(DefaultExtensionIconPath, UriKind.RelativeOrAbsolute));
+            }
             Image image = new Image();
             image.Source = bitmapImage;
             image.Width = 32;
@@ -91,6 +102,7 @@ namespace WimyGit.Plugin
             button.Command = new DelegateCommand(async (object parameter) =>
             {
                 string workingDirectory = gitRepository.GetRepositoryDirectory();
+                string arguments = PluginArgument.ToArgumentString(pluginData.Arguments, gitRepository.GetRepositoryDirectory());
 
                 switch (pluginData.ExecutionType)
                 {
@@ -99,7 +111,7 @@ namespace WimyGit.Plugin
                             RunExternal runner = new RunExternal(pluginData.Command, workingDirectory);
                             try
                             {
-                                runner.RunWithoutWaiting(pluginData.Argument);
+                                runner.RunWithoutWaiting(arguments);
                             }
                             catch (System.Exception exception)
                             {
@@ -112,7 +124,7 @@ namespace WimyGit.Plugin
                             RunExternal runner = new RunExternal(pluginData.Command, workingDirectory);
                             try
                             {
-                                runner.RunInConsoleProgressWindow(pluginData.Argument);
+                                runner.RunInConsoleProgressWindow(arguments);
                                 await gitRepository.Refresh();
                             }
                             catch (System.Exception exception)

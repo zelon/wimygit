@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<wimygit_plugin xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../Plugin.xsd">
+<wimygit_plugin xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../Plugin.xsd">
   <version>1</version>
-  <name>Sample</name>
-  <description>Wimygit plugin Sample</description>
-  <title>Sample</title>
+  <name>GitCommand</name>
+  <description>Sample GitCommand</description>
+  <title>GitCommand</title>
   <icon>
-    <type>embeded</type>
-    <path>..\Images\Extension.png</path>
+    <type>plugin_directory</type>
+    <path>GitCommand.png</path>
   </icon>
   <command>git</command>
   <arguments>

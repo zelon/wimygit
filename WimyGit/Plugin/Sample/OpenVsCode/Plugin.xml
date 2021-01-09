@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wimygit_plugin xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../Plugin.xsd">
+  <version>1</version>
+  <name>OpenVsCode</name>
+  <description>Open Visual Studio Code</description>
+  <title>OpenVsCode</title>
+  <icon>
+    <type>embedded</type>
+    <path>..\..\Images\VsCode.png</path>
+  </icon>
+  <command>cmd.exe</command>
+  <arguments>
+      <argument>
+          <type>string</type>
+          <value>/c</value>
+      </argument>
+      <argument>
+          <type>string</type>
+          <value>code</value>
+      </argument>
+      <argument>
+          <type>repository_directory</type>
+          <value></value>
+      </argument>
+  </arguments>
+  <execution_type>WithoutShellAndNoWaiting</execution_type>
+</wimygit_plugin>
