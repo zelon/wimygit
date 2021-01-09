@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Windows.Data;
+using WimyGitLib;
 
 namespace WimyGit.UserControls
 {

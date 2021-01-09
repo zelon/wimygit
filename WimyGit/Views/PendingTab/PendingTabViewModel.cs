@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Windows.Input;
+using WimyGitLib;
 
 namespace WimyGit.UserControls
 {
@@ -105,7 +106,7 @@ namespace WimyGit.UserControls
         }
 
 
-        void AddModifiedList(GitFileStatus.Pair git_file_status, SelectionRecover backup_selection,
+        void AddModifiedList(WimyGitLib.GitFileStatus.Pair git_file_status, SelectionRecover backup_selection,
                              ObservableCollection<FileStatus> to)
         {
             FileStatus status = new FileStatus(this);
@@ -117,7 +118,7 @@ namespace WimyGit.UserControls
             to.Add(status);
         }
 
-        void AddStagedList(GitFileStatus.Pair git_file_status, SelectionRecover backup_selection,
+        void AddStagedList(WimyGitLib.GitFileStatus.Pair git_file_status, SelectionRecover backup_selection,
                            ObservableCollection<FileStatus> to)
         {
             FileStatus status = new FileStatus(this);

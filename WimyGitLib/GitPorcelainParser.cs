@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 
-namespace WimyGit
+namespace WimyGitLib
 {
 	public class GitFileStatus
 	{

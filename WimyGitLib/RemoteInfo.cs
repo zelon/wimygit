@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace WimyGit.UserControls
+﻿
+namespace WimyGitLib
 {
     public class RemoteInfo
     {

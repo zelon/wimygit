@@ -1,5 +1,5 @@
 using Xunit;
-using WimyGit;
+using WimyGitLib;
 
 namespace xUnitTest
 {

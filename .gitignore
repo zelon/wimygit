@@ -5,5 +5,7 @@ xUnitTest/bin/
 xUnitTest/obj/
 WimyGit/bin
 WimyGit/obj
+WimyGitLib/bin
+WimyGitLib/obj
 .vs/
 *.swp

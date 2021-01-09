@@ -13,11 +13,11 @@ namespace WimyGit.UserControls
         {
             DeleteBranchCommand = new DelegateCommand(OnDeleteBranchCommand);
             SwitchBranchCommand = new DelegateCommand(OnSwitchBranchCommand);
-            BranchInfos = new ObservableCollection<BranchInfo>();
+            BranchInfos = new ObservableCollection<WimyGitLib.BranchInfo>();
         }
 
-        public ObservableCollection<BranchInfo> BranchInfos { get; set; }
-        public BranchInfo SelectedBranch { get; set; }
+        public ObservableCollection<WimyGitLib.BranchInfo> BranchInfos { get; set; }
+        public WimyGitLib.BranchInfo SelectedBranch { get; set; }
 
         public ICommand SwitchBranchCommand { get; private set; }
         public ICommand DeleteBranchCommand { get; private set; }
@@ -37,7 +37,7 @@ namespace WimyGit.UserControls
 
             BranchInfos.Clear();
             string cmd = GitCommandCreator.ListBranch();
-            foreach (var branchInfo in BranchParser.Parse(await gitRepository.CreateGitRunner().RunAsync(cmd)))
+            foreach (var branchInfo in WimyGitLib.BranchParser.Parse(await gitRepository.CreateGitRunner().RunAsync(cmd)))
             {
                 BranchInfos.Add(branchInfo);
             }

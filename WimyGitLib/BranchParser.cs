@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
-namespace WimyGit.UserControls
+namespace WimyGitLib
 {
     public class BranchInfo
     {
