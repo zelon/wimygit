@@ -87,8 +87,8 @@ namespace WimyGit.Plugin
             }
             Image image = new Image();
             image.Source = bitmapImage;
-            image.Width = 32;
-            image.Height = 32;
+            image.Width = 48;
+            image.Height = 48;
 
             TextBlock textBlock = new TextBlock();
             textBlock.HorizontalAlignment = HorizontalAlignment.Center;

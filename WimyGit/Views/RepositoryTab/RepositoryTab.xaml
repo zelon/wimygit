@@ -14,20 +14,20 @@
     </UserControl.InputBindings>
     <UserControl.Resources>
         <Style x:Key="ToolbarImage" TargetType="Image">
-            <Setter Property="Width" Value="32" />
-            <Setter Property="Height" Value="32" />
+            <Setter Property="Width" Value="48" />
+            <Setter Property="Height" Value="48" />
         </Style>
     </UserControl.Resources>
     <Grid Margin="0,0,0,0">
         <Grid.RowDefinitions>
-            <RowDefinition Height="65" />
+            <RowDefinition Height="80" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="15" />
             <RowDefinition Height="100" />
         </Grid.RowDefinitions>
         <Grid Grid.Row="0">
-            <ToolBar x:Name="toolBar" HorizontalAlignment="Left" VerticalAlignment="Top" Height="65" Background="{x:Null}">
+            <ToolBar x:Name="toolBar" HorizontalAlignment="Left" VerticalAlignment="Top" Height="80" Background="{x:Null}">
                 <Button Width="75" Command="{Binding RefreshCommand}">
                     <StackPanel Orientation="Vertical">
                         <Image Source="..\..\Images\Refresh.png" Style="{StaticResource ToolbarImage}"/>
