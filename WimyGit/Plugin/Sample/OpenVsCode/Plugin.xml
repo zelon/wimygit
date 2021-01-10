@@ -5,8 +5,8 @@
   <description>Open Visual Studio Code</description>
   <title>OpenVsCode</title>
   <icon>
-    <type>embedded</type>
-    <path>..\..\Images\VsCode.png</path>
+    <type>plugin_directory</type>
+    <path>VsCode.png</path>
   </icon>
   <command>cmd.exe</command>
   <arguments>
