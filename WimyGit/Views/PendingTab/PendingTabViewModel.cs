@@ -310,12 +310,20 @@ namespace WimyGit.UserControls
             {
                 return;
             }
+            int kMinimumShowFilenameCount = 20;
             List<string> file_list = new List<string>();
             string msg = "Revert below:\n\n";
             foreach (var item in SelectedModifiedFilePathList)
             {
                 file_list.Add(item);
-                msg += string.Format("{0}\n", item);
+                if (file_list.Count < kMinimumShowFilenameCount)
+                {
+                    msg += string.Format("{0}\n", item);
+                }
+                else if (file_list.Count == 30)
+                {
+                    msg += "...";
+                }
             }
             if (file_list.Count == 0)
             {
@@ -325,11 +333,26 @@ namespace WimyGit.UserControls
             {
                 return;
             }
-            foreach (var item in file_list)
+            List<string> logs = new List<string>();
+            List<string> collectedFilenames = new List<string>();
+            foreach (string item in file_list)
             {
-                gitRepository.AddLog("Revert: " + item);
-                gitRepository.GetGitWrapper().P4Revert(item);
+                logs.Add("Revert: " + item);
+                collectedFilenames.Add(item);
+                if (collectedFilenames.Count > 50)
+                {
+                    string command = gitRepository.GetGitWrapper().P4Revert(collectedFilenames);
+                    logs.Add($"Command: {command}");
+
+                    collectedFilenames.Clear();
+                }
             }
+            if (collectedFilenames.Count > 0)
+            {
+                string command = gitRepository.GetGitWrapper().P4Revert(collectedFilenames);
+                logs.Add($"Command: {command}");
+            }
+            gitRepository.AddLog(logs);
             await gitRepository.Refresh();
         }
 

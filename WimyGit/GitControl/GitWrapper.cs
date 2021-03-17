@@ -393,11 +393,16 @@ namespace WimyGit
             return gitRepositoryStatus.branchInfo;
 		}
 
-		public void P4Revert(string filename)
+		public string P4Revert(List<string> filenames)
 		{
-			string cmd = string.Format("checkout -- {0}", Util.WrapFilePath(filename));
-			logger_.AddLog(cmd);
+            string cmd = string.Format("checkout --");
+            foreach (string filename in filenames)
+            {
+                cmd += $" {Util.WrapFilePath(filename)}";
+            }
 			CreateGitRunner().Run(cmd);
+
+            return cmd;
 		}
 
 		private RunExternal CreateGitRunner()
