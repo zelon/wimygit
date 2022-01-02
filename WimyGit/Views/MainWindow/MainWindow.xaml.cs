@@ -43,6 +43,19 @@ namespace WimyGit
             }
         }
 
+        private void OnMenuButtonClick(object sender, RoutedEventArgs e)
+        {
+            Button menuButton = (Button)sender;
+            menuButton.ContextMenu.Placement = System.Windows.Controls.Primitives.PlacementMode.Bottom;
+            menuButton.ContextMenu.PlacementTarget = menuButton;
+            menuButton.ContextMenu.IsOpen = true;
+        }
+
+        private void CloseWindow(object sender, RoutedEventArgs e)
+        {
+            Close();
+        }
+
         private void OnAddNewTabButtonClick(object sender, RoutedEventArgs e)
         {
             AddNewTab();

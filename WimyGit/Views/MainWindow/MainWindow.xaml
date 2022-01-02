@@ -14,6 +14,22 @@
         </Grid.RowDefinitions>
         <Grid Grid.Row="0" Margin="0,0,0,0">
             <TabControl x:Name="tab_control_"  HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="0,0,0,0">
+                <TabItem HorizontalAlignment="Center" VerticalAlignment="Center" Width="45" Height="40" >
+                    <TabItem.Header>
+                        <Button Click="OnMenuButtonClick" Name="menuButton">
+                            <Button.ContextMenu>
+                                <ContextMenu>
+                                    <Separator />
+                                    <MenuItem Header="Exit" Click="CloseWindow" />
+                                </ContextMenu>
+                            </Button.ContextMenu>
+                            <Image Source="..\..\Images\Menu.png" />
+                        </Button>
+                    </TabItem.Header>
+                    <TabItem.Content>
+                        <Grid Background="#FFE5E5E5"/>
+                    </TabItem.Content>
+                </TabItem>
                 <TabItem Focusable="False" Padding="0" HorizontalAlignment="Center" Width="62" Height="40" Margin="3,3,3,3" VerticalAlignment="Center">
                     <TabItem.Header>
                         <Button Click="OnAddNewTabButtonClick" Width="65" Height="45" Content="+" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold" FontSize="20" />
