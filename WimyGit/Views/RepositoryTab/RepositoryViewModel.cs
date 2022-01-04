@@ -40,6 +40,7 @@ namespace WimyGit.ViewModels
             repository_tab_ = repository_tab;
 
             PushCommand = new DelegateCommand((object parameter) => OnPushCommand());
+            PushTagCommand = new DelegateCommand((object parameter) => OnPushTagCommand());
             OpenExplorerCommand = new DelegateCommand(OnOpenExplorerCommand);
             OpenGitBashCommand = new DelegateCommand(OnOpenGitBashCommand);
             RefreshCommand = new DelegateCommand(async (object parameter) => await Refresh());
@@ -59,6 +60,7 @@ namespace WimyGit.ViewModels
         public ICommand FetchAllCommand { get; private set; }
         public ICommand PullCommand { get; private set; }
         public ICommand PushCommand { get; private set; }
+        public ICommand PushTagCommand { get; private set; }
         public ICommand OpenExplorerCommand { get; private set; }
         public ICommand OpenGitBashCommand { get; private set; }
 
@@ -128,6 +130,13 @@ namespace WimyGit.ViewModels
         private async void OnPushCommand()
         {
             string cmd = "push";
+            CreateGitRunner().RunInConsoleProgressWindow(cmd);
+            await Refresh();
+        }
+
+        private async void OnPushTagCommand()
+        {
+            string cmd = "push --tags";
             CreateGitRunner().RunInConsoleProgressWindow(cmd);
             await Refresh();
         }

@@ -87,5 +87,12 @@ namespace WimyGit
             newColor.Opacity = 0.5;
             LoadingScreen.Fill = newColor;
         }
+
+        private void ShowPushMenu(object sender, RoutedEventArgs e)
+        {
+            Button button = (Button)sender;
+            button.ContextMenu.PlacementTarget = button;
+            button.ContextMenu.IsOpen = true;
+        }
     }
 }
