@@ -8,11 +8,22 @@
              d:DesignHeight="450" d:DesignWidth="800" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
              >
     <Grid Background="{DynamicResource {x:Static SystemColors.WindowBrushKey}}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" AllowDrop="True" DragOver="Grid_DragOver" DragDrop.Drop="Grid_Drop">
-        <Grid HorizontalAlignment="Center" Height="129" Margin="0,0,0,0" VerticalAlignment="Stretch">
-            <ComboBox Text="{Binding Directory}" ItemsSource="{Binding RepositoryList}" IsEditable="True" HorizontalAlignment="Left" Margin="10,31,0,0" VerticalAlignment="Top" Width="254"/>
-            <Button Command="{Binding BrowseCommand}" Content="Browse..." HorizontalAlignment="Left" Margin="267,31,0,0" VerticalAlignment="Top" Width="76" Height="22"/>
-            <Button Command="{Binding OkayCommand}" Content="OK" HorizontalAlignment="Center" Margin="0,58,0,0" VerticalAlignment="Top" Width="334" Height="59" />
-            <Label Content="Type the git directory or browse or drag the git directory here" HorizontalAlignment="Center" Margin="0,0,0,0" VerticalAlignment="Top"/>
+        <Grid HorizontalAlignment="Center" Height="139" Margin="0,0,0,0" VerticalAlignment="Stretch" Width="500">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="1*" />
+                <RowDefinition Height="1*" />
+                <RowDefinition Height="3*" />
+            </Grid.RowDefinitions>
+            <Label Grid.Row="0" Content="Type the git directory or browse or drag the git directory here." HorizontalAlignment="Center" />
+            <Grid Grid.Row="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="7*" />
+                    <ColumnDefinition Width="3*" />
+                </Grid.ColumnDefinitions>
+                <ComboBox Grid.Column="0" Text="{Binding Directory}" ItemsSource="{Binding RepositoryList}" IsEditable="True" Margin="0,0,0,0" />
+                <Button Grid.Column="1" Command="{Binding BrowseCommand}" Content="Browse..." Margin="5,0,0,0" />
+            </Grid>
+            <Button Grid.Row="2" Command="{Binding OkayCommand}" Content="OK" Margin="0,5,0,5" />
         </Grid>
     </Grid>
 </UserControl>
