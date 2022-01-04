@@ -22,8 +22,8 @@
         </Grid.RowDefinitions>
         <Grid Grid.Row="0">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition/>
-                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="85*"/>
+                <ColumnDefinition Width="15*" MinWidth="100" MaxWidth="150"/>
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
@@ -38,7 +38,7 @@
                 <CheckBox Grid.Column="1" HorizontalAlignment="Right" Content="Amend Commit" Command="{Binding AmendClickedCommand}" IsChecked="{Binding IsAmendCommit}" Margin="0,5,10,5" />
             </Grid>
             <TextBox Grid.Row="1" Grid.Column="0" x:Name="textBox" AcceptsReturn="True" Text="{Binding CommitMessage}" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"/>
-            <Button Grid.Row="1" Grid.Column="1" Content="_Commit" Command="{Binding CommitCommand}" Padding="40" />
+            <Button Grid.Row="1" Grid.Column="1" Content="_Commit" Command="{Binding CommitCommand}" />
         </Grid>
         <GridSplitter Grid.Row="1" Height="10" HorizontalAlignment="Stretch" VerticalAlignment="Center" />
         <Grid Grid.Row="2">
