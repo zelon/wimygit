@@ -5,8 +5,8 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:WimyGit.UserControls"
              mc:Ignorable="d" 
-             d:DesignHeight="40" d:DesignWidth="150">
-    <Grid MouseUp="Grid_MouseUp">
+             d:DesignHeight="40" d:DesignWidth="150" MouseUp="Grid_MouseUp">
+    <Grid Margin="0,0,0,0" VerticalAlignment="Stretch" >
         <Grid.ColumnDefinitions>
             <ColumnDefinition MinWidth="100" />
             <ColumnDefinition />

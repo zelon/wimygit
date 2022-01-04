@@ -12,8 +12,13 @@ namespace WimyGit
 
         private void AddTab(string path, bool is_focused)
         {
+            Thickness zeroThickness = new Thickness(0, 0, 0, 0);
             TabItem tab_item = new TabItem();
+            tab_item.Padding = zeroThickness;
+            tab_item.Margin = zeroThickness;
             var tab_header = new UserControls.RepositoryTabHeader(tab_control_);
+            tab_header.Padding = zeroThickness;
+            tab_header.Margin = zeroThickness;
             tab_header.Path.Content = path;
             tab_header.Title.Content = Util.GetRepositoryName(path);
             tab_item.Header = tab_header;
