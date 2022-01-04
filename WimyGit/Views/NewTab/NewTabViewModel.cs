@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.ObjectModel;
+using System.Windows.Forms;
 
 namespace WimyGit.UserControls
 {
@@ -8,7 +9,7 @@ namespace WimyGit.UserControls
 		void NewGitFilePath(string path);
 	}
 
-	class NewTabViewModel
+	class NewTabViewModel : NotifyBase
 	{
 		public string Directory { get; set; }
 		public ObservableCollection<string> RepositoryList { get; set; }
@@ -33,10 +34,14 @@ namespace WimyGit.UserControls
 		public DelegateCommand BrowseCommand { get; private set; }
 		void OnBrowseCommand(object sender)
 		{
-            UIService.ShowMessage("Drag folder from explorer");
-
-            RunExternal runner = new RunExternal("explorer.exe", ".");
-            runner.RunWithoutWaiting(Directory);
+            FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog();
+            var result = folderBrowserDialog.ShowDialog();
+            if (result != DialogResult.OK)
+            {
+                return;
+            }
+            Directory = folderBrowserDialog.SelectedPath;
+            NotifyPropertyChanged("Directory");
         }
 
 		public DelegateCommand OkayCommand { get; private set; }
