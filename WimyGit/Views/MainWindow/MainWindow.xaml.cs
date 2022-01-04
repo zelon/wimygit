@@ -51,6 +51,13 @@ namespace WimyGit
             menuButton.ContextMenu.IsOpen = true;
         }
 
+        private void ShowPluginFolderInExplorer(object sender, RoutedEventArgs e)
+        {
+            string pluginRootDirectory = Plugin.PluginController.GetPluginRootDirectoryPath();
+            RunExternal runner = new RunExternal("explorer.exe", pluginRootDirectory);
+            runner.RunWithoutWaiting(pluginRootDirectory);
+        }
+
         private void CloseWindow(object sender, RoutedEventArgs e)
         {
             Close();

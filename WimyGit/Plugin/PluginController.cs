@@ -40,7 +40,7 @@ namespace WimyGit.Plugin
             return _pluginDatas;
         }
 
-        private static string GetPluginRootDirectoryPath()
+        public static string GetPluginRootDirectoryPath()
         {
             return Path.Combine(Config.ConfigFileController.GetConfigDirectoryPath(), "Plugins");
         }
