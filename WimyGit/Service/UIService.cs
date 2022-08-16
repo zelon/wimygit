@@ -33,6 +33,7 @@ namespace WimyGit
         public static string AskAndGetString(string questionMessage, string defaultAnswer)
         {
             QuestionWindow questionWindow = new QuestionWindow();
+            questionWindow.Owner = GlobalSetting.GetInstance().GetWindow();
             questionWindow.Question.Content = questionMessage;
             questionWindow.Answer.Text = defaultAnswer ?? "";
             questionWindow.ShowDialog();
