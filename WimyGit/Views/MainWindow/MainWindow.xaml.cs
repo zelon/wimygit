@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using System.Diagnostics;
+using System.Windows;
 using System.Windows.Controls;
 
 namespace WimyGit
@@ -54,6 +55,19 @@ namespace WimyGit
             menuButton.ContextMenu.Placement = System.Windows.Controls.Primitives.PlacementMode.Bottom;
             menuButton.ContextMenu.PlacementTarget = menuButton;
             menuButton.ContextMenu.IsOpen = true;
+        }
+
+        private void OpenUrlLink(string url)
+        {
+            Process p = new Process();
+            p.StartInfo.UseShellExecute = true;
+            p.StartInfo.FileName = url;
+            p.Start();
+        }
+
+        private void ShowHelpHowToInstallPlugin(object sender, RoutedEventArgs e)
+        {
+            OpenUrlLink("https://github.com/zelon/wimygit/wiki/How-to-install-a-plugin");
         }
 
         private void ShowPluginFolderInExplorer(object sender, RoutedEventArgs e)
