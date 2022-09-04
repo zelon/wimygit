@@ -8,7 +8,7 @@
              d:DesignHeight="450" d:DesignWidth="800"
              >
     <Grid>
-        <TreeView x:Name="treeView" ItemsSource="{Binding TreeItems}" SelectedValuePath="Path" SelectedItemChanged="OnTreeViewSelectedItemChanged">
+        <TreeView x:Name="treeView" ItemsSource="{Binding TreeItems}" SelectedValuePath="Path" SelectedItemChanged="OnTreeViewSelectedItemChanged" FontFamily="Consolas">
             <TreeView.ItemContainerStyle>
                 <Style TargetType="{x:Type TreeViewItem}">
                     <Setter Property="IsExpanded" Value="{Binding IsExpanded,Mode=TwoWay}" />
