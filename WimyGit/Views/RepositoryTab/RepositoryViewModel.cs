@@ -47,6 +47,18 @@ namespace WimyGit.ViewModels
             ViewTimelapseCommand = new DelegateCommand((object parameter) => OnViewTimeLapseCommand());
             FetchAllCommand = new DelegateCommand(async (object parameter) => await OnFetchAllCommand());
             PullCommand = new DelegateCommand(async (object parameter) => await OnPullCommand());
+            GitCleanDryCommand = new DelegateCommand(async (object parameter) =>
+            {
+                string cmd = "clean -f -d -n";
+                CreateGitRunner().RunInConsoleProgressWindow(cmd);
+                await Refresh();
+            });
+            GitCleanCommand = new DelegateCommand(async (object parameter) =>
+            {
+                string cmd = "clean -f -d";
+                CreateGitRunner().RunInConsoleProgressWindow(cmd);
+                await Refresh();
+            });
         }
 
         public GitWrapper git_;
@@ -59,6 +71,8 @@ namespace WimyGit.ViewModels
         public ICommand ViewTimelapseCommand { get; private set; }
         public ICommand FetchAllCommand { get; private set; }
         public ICommand PullCommand { get; private set; }
+        public ICommand GitCleanDryCommand { get; private set; }
+        public ICommand GitCleanCommand { get; private set; }
         public ICommand PushCommand { get; private set; }
         public ICommand PushTagCommand { get; private set; }
         public ICommand OpenExplorerCommand { get; private set; }

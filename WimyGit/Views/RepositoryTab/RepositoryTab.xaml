@@ -69,6 +69,23 @@
                     </Button.ContextMenu>
                     <Image Source="..\..\Images\ExpandMore.png"/>
                 </Button>
+                <Button Width="60" Click="ShowOperationMenu" Name="OperationButton">
+                    <StackPanel Orientation="Vertical">
+                        <Image Source="..\..\Images\Operation.png" Style="{StaticResource ToolbarImage}"/>
+                        <TextBlock HorizontalAlignment="Center"><Run Text="Operation..."/></TextBlock>
+                    </StackPanel>
+                    <Button.ContextMenu>
+                        <ContextMenu Placement="Bottom">
+                            <MenuItem Header="Delete all untracked files(git clean)...">
+                                <MenuItem Header="Show delete candidate files(git clean -d -f -n)" Command="{Binding GitCleanDryCommand}" />
+                                <MenuItem Header="Go Delete(git clean -d -f)" Command="{Binding GitCleanCommand}" />
+                            </MenuItem>
+                        </ContextMenu>
+                    </Button.ContextMenu>
+                </Button>
+                <Button Width="24" Height="65" Margin="0,0,0,0" Background="{x:Null}" Click="ShowOperationMenu" Name="OperationExpandButton">
+                    <Image Source="..\..\Images\ExpandMore.png"/>
+                </Button>
                 <Separator />
                 <Button Width="75" Command="{Binding OpenExplorerCommand}">
                     <StackPanel Orientation="Vertical">

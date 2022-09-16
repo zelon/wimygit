@@ -94,5 +94,12 @@ namespace WimyGit
             button.ContextMenu.PlacementTarget = button;
             button.ContextMenu.IsOpen = true;
         }
+
+        private void ShowOperationMenu(object sender, RoutedEventArgs e)
+        {
+            Button button = OperationButton;
+            button.ContextMenu.PlacementTarget = button;
+            button.ContextMenu.IsOpen = true;
+        }
     }
 }
