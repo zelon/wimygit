@@ -108,6 +108,7 @@
                         <MenuItem Header="Open Explorer" InputGestureText="Ctrl+Shift+S" Command="{Binding OpenExplorerSelectedFileCommand}" />
                         <MenuItem Header="Open" InputGestureText="Return" Command="{Binding OpenSelectedFileCommand}" />
                         <MenuItem Header="MergeTool" Command="{Binding MergeToolCommand}" />
+                        <MenuItem Header="Add to .gitignore" Command="{Binding AddToGitIgnoreCommand}" />
                     </ContextMenu>
                 </ListBox.ContextMenu>
                 <ListBox.ItemContainerStyle>

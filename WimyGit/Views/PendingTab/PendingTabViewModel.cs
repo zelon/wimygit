@@ -25,6 +25,7 @@ namespace WimyGit.UserControls
         public ICommand OpenExplorerSelectedFileCommand { get; private set; }
         public ICommand OpenSelectedFileCommand { get; private set; }
         public ICommand MergeToolCommand { get; private set; }
+        public ICommand AddToGitIgnoreCommand { get; private set; }
 
         public Action OnSelectAllCallbackViewSide;
 
@@ -54,6 +55,7 @@ namespace WimyGit.UserControls
             OpenExplorerSelectedFileCommand = new DelegateCommand(OnOpenExplorerSelectedFileCommand);
             OpenSelectedFileCommand = new DelegateCommand(OnOpenSelectedFileCommand);
             MergeToolCommand = new DelegateCommand(OnMergeToolCommand);
+            AddToGitIgnoreCommand = new DelegateCommand(OnAddToGitIgnoreCommand);
 
             SelectAllCommand = new DelegateCommand(OnSelectAllCommand);
 
@@ -129,8 +131,6 @@ namespace WimyGit.UserControls
 
             to.Add(status);
         }
-
-
 
         async void OnStageSelectedCommand(object parameter)
         {
@@ -395,6 +395,24 @@ namespace WimyGit.UserControls
             {
                 gitRepository.GetGitWrapper().MergeTool(item);
             }
+        }
+
+        public async void OnAddToGitIgnoreCommand(object parameter)
+        {
+            if (_gitRepository.TryGetTarget(out IGitRepository gitRepository) == false)
+            {
+                return;
+            }
+            foreach (var item in SelectedModifiedFilePathList)
+            {
+                string cmd = $"/c echo {item} >> .gitignore";
+
+                string directory = gitRepository.GetRepositoryDirectory();
+                RunExternal runner = new RunExternal("cmd.exe", directory);
+
+                runner.RunInConsoleProgressWindow(cmd);
+            }
+            await gitRepository.Refresh();
         }
 
         public IEnumerable<string> SelectedModifiedFilePathList {
