@@ -69,10 +69,10 @@
                     </Button.ContextMenu>
                     <Image Source="..\..\Images\ExpandMore.png"/>
                 </Button>
-                <Button Width="60" Click="ShowOperationMenu" Name="OperationButton">
+                <Button Width="60" Click="ShowToolsMenu" Name="ToolsButton">
                     <StackPanel Orientation="Vertical">
-                        <Image Source="..\..\Images\Operation.png" Style="{StaticResource ToolbarImage}"/>
-                        <TextBlock HorizontalAlignment="Center"><Run Text="Operation..."/></TextBlock>
+                        <Image Source="..\..\Images\Tools.png" Style="{StaticResource ToolbarImage}"/>
+                        <TextBlock HorizontalAlignment="Center"><Run Text="Tools..."/></TextBlock>
                     </StackPanel>
                     <Button.ContextMenu>
                         <ContextMenu Placement="Bottom">
@@ -83,7 +83,7 @@
                         </ContextMenu>
                     </Button.ContextMenu>
                 </Button>
-                <Button Width="24" Height="65" Margin="0,0,0,0" Background="{x:Null}" Click="ShowOperationMenu" Name="OperationExpandButton">
+                <Button Width="24" Height="65" Margin="0,0,0,0" Background="{x:Null}" Click="ShowToolsMenu" Name="ToolsExpandButton">
                     <Image Source="..\..\Images\ExpandMore.png"/>
                 </Button>
                 <Separator />
