@@ -5,6 +5,9 @@ xUnitTest/bin/
 xUnitTest/obj/
 WimyGit/bin
 WimyGit/obj
+WimyGit/Properties/PublishProfiles/DebugPublishProfile.pubxml.user
+WimyGit/Properties/PublishProfiles/ReleasePublishProfile.pubxml.user
+WimyGit/WimyGit.csproj.user
 WimyGitLib/bin
 WimyGitLib/obj
 .vs/
