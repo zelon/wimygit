@@ -49,7 +49,7 @@ namespace WimyGit.Plugin
         {
             // Default Plugins
             {
-                AddToolbarButton(CreateGitRemoteShowPlugin(), toolBar, gitRepository);
+                //AddToolbarButton(CreateGitRemoteShowPlugin(), toolBar, gitRepository);
             }
             foreach (PluginData pluginData in PluginController.GetPlugins())
             {
@@ -57,17 +57,17 @@ namespace WimyGit.Plugin
             }
         }
 
-        public static PluginData CreateGitRemoteShowPlugin()
-        {
-            List<PluginArgument> argumentInfos = new List<PluginArgument>();
-            argumentInfos.Add(new PluginArgument(PluginArgument.Type.String, "remote -v show"));
-            return new Plugin.PluginData(
-                title: "RemoteInfo",
-                iconPath: DefaultExtensionIconPath,
-                command: "git",
-                arguments: argumentInfos,
-                executionType: Plugin.ExecutionType.WimyGitInnerShellAndRefreshRepositoryStatus);
-        }
+        //public static PluginData CreateGitRemoteShowPlugin()
+        //{
+        //    List<PluginArgument> argumentInfos = new List<PluginArgument>();
+        //    argumentInfos.Add(new PluginArgument(PluginArgument.Type.String, "remote -v show"));
+        //    return new Plugin.PluginData(
+        //        title: "RemoteInfo",
+        //        iconPath: DefaultExtensionIconPath,
+        //        command: "git",
+        //        arguments: argumentInfos,
+        //        executionType: Plugin.ExecutionType.WimyGitInnerShellAndRefreshRepositoryStatus);
+        //}
 
         public static void AddToolbarButton(PluginData pluginData, ToolBar toolBar, IGitRepository gitRepository)
         {
