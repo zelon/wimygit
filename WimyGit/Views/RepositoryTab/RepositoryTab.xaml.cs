@@ -92,7 +92,7 @@ namespace WimyGit
 
         private void ShowPushMenu(object sender, RoutedEventArgs e)
         {
-            Button button = (Button)sender;
+            Button button = PushButton;
             button.ContextMenu.PlacementTarget = button;
             button.ContextMenu.IsOpen = true;
         }

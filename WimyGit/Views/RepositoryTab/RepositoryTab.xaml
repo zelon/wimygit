@@ -54,19 +54,19 @@
                         <TextBlock HorizontalAlignment="Center"><Run Text="Pull"/></TextBlock>
                     </StackPanel>
                 </Button>
-                <Button Width="60" Command="{Binding PushCommand}">
+                <Button Width="60" Command="{Binding PushCommand}" Name="PushButton">
                     <StackPanel Orientation="Vertical">
                         <Image Source="..\..\Images\Push.png" Style="{StaticResource ToolbarImage}"/>
                         <TextBlock HorizontalAlignment="Center"><Run Text="Push"/></TextBlock>
                     </StackPanel>
-                </Button>
-                <Button Width="24" Height="65" Margin="0,0,0,0" Background="{x:Null}" Click="ShowPushMenu" Name="PushExpandButton">
                     <Button.ContextMenu>
-                        <ContextMenu Placement="Right">
+                        <ContextMenu Placement="Bottom">
                             <MenuItem Header="git push" Command="{Binding PushCommand}" />
                             <MenuItem Header="git push --tags" Command="{Binding PushTagCommand}" />
                         </ContextMenu>
                     </Button.ContextMenu>
+                </Button>
+                <Button Width="24" Height="65" Margin="0,0,0,0" Background="{x:Null}" Click="ShowPushMenu">
                     <Image Source="..\..\Images\ExpandMore.png"/>
                 </Button>
                 <Button Width="60" Click="ShowToolsMenu" Name="ToolsButton">
