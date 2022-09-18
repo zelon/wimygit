@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Windows.Controls;
 using System.Windows.Input;
 
 namespace WimyGit.ViewModels
@@ -20,7 +21,8 @@ namespace WimyGit.ViewModels
             UserControls.StashTabViewModel stashTabViewModel,
             UserControls.BranchTabViewModel branchTabViewModel,
             UserControls.TagTabViewModel tagTabViewModel,
-            UserControls.RemoteTabViewModel remoteTabViewModel)
+            UserControls.RemoteTabViewModel remoteTabViewModel,
+            RichTextBox quickDiffRichTextBox)
         {
             DisplayAuthor = GlobalSetting.GetInstance().GetSignature();
             Directory = git_repository_path;
@@ -28,7 +30,7 @@ namespace WimyGit.ViewModels
             git_ = new GitWrapper(Directory, this);
 
             DirectoryTree = new DirectoryTreeViewModel(this);
-            QuickDiffViewModel = new QuickDiffViewModel();
+            QuickDiffViewModel = new QuickDiffViewModel(quickDiffRichTextBox);
             HistoryTabMember = new HistoryTabViewModel(this);
             _pendingTabViewModel = pendingTabViewModel;
             _stashTabViewModel = stashTabViewModel;
@@ -266,9 +268,9 @@ namespace WimyGit.ViewModels
             return QuickDiffViewModel.NeedToDiff;
         }
 
-        public void SetQuickDiff(string content)
+        public void SetQuickDiff(string title, List<string> msgs)
         {
-            QuickDiffViewModel.Output = content;
+            QuickDiffViewModel.SetRichText(title, msgs);
         }
     }
 }

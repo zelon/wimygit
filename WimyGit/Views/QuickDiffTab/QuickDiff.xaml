@@ -7,13 +7,20 @@
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
     <Grid>
-    <!--
-        <RichTextBox x:Name="RichOutput" FontFamily="Consolas">
-            <FlowDocument>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <TextBlock Grid.Row="0" Text="{Binding Title}" FontFamily="Consolas" FontSize="12" />
+        <RichTextBox Grid.Row="1" x:Name="RichOutput" FontFamily="Consolas" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+            <RichTextBox.Resources>
+                <Style TargetType="{x:Type Paragraph}">
+                    <Setter Property="Margin" Value="3" />
+                </Style>
+            </RichTextBox.Resources>
+            <FlowDocument Background="Black" Foreground="LightGray">
                 <Paragraph>No diff</Paragraph>
             </FlowDocument>
         </RichTextBox>
-        -->
-        <TextBox Text="{Binding Output}" />
     </Grid>
 </UserControl>

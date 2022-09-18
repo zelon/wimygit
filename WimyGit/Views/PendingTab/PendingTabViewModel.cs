@@ -434,12 +434,9 @@ namespace WimyGit.UserControls
                 string directory = gitRepository.GetRepositoryDirectory();
                 RunExternal runner = gitRepository.CreateGitRunner();
 
-                string lines = $"From UNSTAGED {item}\n";
-                foreach (string line in runner.Run(cmd))
-                {
-                    lines += line + "\n";
-                }
-                gitRepository.SetQuickDiff(lines);
+                gitRepository.AddLog(cmd);
+                var lines = runner.Run(cmd);
+                gitRepository.SetQuickDiff($"[UNSTAGED] {item}", lines);
             }
         }
 
@@ -463,12 +460,8 @@ namespace WimyGit.UserControls
                 string directory = gitRepository.GetRepositoryDirectory();
                 RunExternal runner = gitRepository.CreateGitRunner();
 
-                string lines = $"From STAGED {item}\n";
-                foreach (string line in runner.Run(cmd))
-                {
-                    lines += line + "\n";
-                }
-                gitRepository.SetQuickDiff(lines);
+                var lines = runner.Run(cmd);
+                gitRepository.SetQuickDiff($"[STAGED] {item}", lines);
             }
         }
 

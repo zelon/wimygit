@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -11,34 +12,77 @@ namespace WimyGit.ViewModels
     public class QuickDiffViewModel : NotifyBase
     {
         public bool NeedToDiff { get; set; } = false;
-        private string output_ = "no diff file selected";
-        public string Output
-        {
-            get { return output_; }
-            set {
-                output_ = value;
-                NotifyPropertyChanged("Output");
-            }
-        }
+        public string Title { get; set; } = "No title";
 
         private RichTextBox _richTextBox;
 
-        public QuickDiffViewModel(/*RichTextBox richTextBox*/)
+        public QuickDiffViewModel(RichTextBox richTextBox)
         {
-            //_richTextBox = richTextBox;
+            _richTextBox = richTextBox;
         }
 
-        public void SetRichText(List<string> texts)
+        public void SetRichText(string title, List<string> texts)
         {
-            FlowDocument flowDocument = new FlowDocument();
-            Paragraph paragraph = new Paragraph();
+            Title = title;
+            NotifyPropertyChanged("Title");
+
+            var flowDocument = _richTextBox.Document;
+            flowDocument.Blocks.Clear();
             foreach (string line in texts)
             {
-                paragraph.Inlines.Add(line);
+                flowDocument.Blocks.Add(ConvertToParagraph(line));
             }
-            flowDocument.Blocks.Clear();
-            flowDocument.Blocks.Add(paragraph);
-            _richTextBox.Document = flowDocument;
+        }
+
+        private Paragraph ConvertToParagraph(string line)
+        {
+            var removeBrush = System.Windows.Media.Brushes.Red;
+            var addBrush = System.Windows.Media.Brushes.LightGreen;
+
+            Paragraph paragraph = new Paragraph();
+            Run run = new Run(line);
+            run.Background = System.Windows.Media.Brushes.Black;
+
+            if (line.StartsWith("@@ "))
+            {
+                var reg = new System.Text.RegularExpressions.Regex("@@( .* )@@(.*)");
+                var match = reg.Match(line);
+                if (match.Success)
+                {
+                    var range = match.Groups[1].Value;
+                    var remaining = match.Groups[2].Value;
+
+                    paragraph.Inlines.Add(new Run($"@@{range}@@") { Foreground = System.Windows.Media.Brushes.SkyBlue });
+                    paragraph.Inlines.Add(new Run(remaining));
+
+                    run.Foreground = System.Windows.Media.Brushes.White;
+                }
+                else
+                {
+                    paragraph.Inlines.Add(run);
+                }
+            }
+            else
+            {
+                if (line.StartsWith("diff") || line.StartsWith("index"))
+                {
+                    run.Foreground = System.Windows.Media.Brushes.White;
+                }
+                else if (line.StartsWith("---") || line.StartsWith("+++"))
+                {
+                    run.Foreground = System.Windows.Media.Brushes.White;
+                }
+                else if (line.StartsWith('+'))
+                {
+                    run.Foreground = addBrush;
+                }
+                else if (line.StartsWith('-'))
+                {
+                    run.Foreground = removeBrush;
+                }
+                paragraph.Inlines.Add(run);
+            }
+            return paragraph;
         }
     }
 }

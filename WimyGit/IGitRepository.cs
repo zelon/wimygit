@@ -10,6 +10,6 @@ namespace WimyGit
         public void AddLog(string message);
         public void AddLog(System.Collections.Generic.List<string> logs);
         public bool NeedToSetQuickDiff();
-        public void SetQuickDiff(string content);
+        public void SetQuickDiff(string title, System.Collections.Generic.List<string> content);
     }
 }
