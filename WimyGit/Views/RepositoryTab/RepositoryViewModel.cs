@@ -28,6 +28,7 @@ namespace WimyGit.ViewModels
             git_ = new GitWrapper(Directory, this);
 
             DirectoryTree = new DirectoryTreeViewModel(this);
+            QuickDiffViewModel = new QuickDiffViewModel();
             HistoryTabMember = new HistoryTabViewModel(this);
             _pendingTabViewModel = pendingTabViewModel;
             _stashTabViewModel = stashTabViewModel;
@@ -64,6 +65,7 @@ namespace WimyGit.ViewModels
         public GitWrapper git_;
 
         public DirectoryTreeViewModel DirectoryTree { get; private set; }
+        public QuickDiffViewModel QuickDiffViewModel { get; private set; }
         public HistoryTabViewModel HistoryTabMember { get; private set; }
         public string StashTabHeader { get; set; }
 
@@ -257,6 +259,16 @@ namespace WimyGit.ViewModels
             Log += string.Format("[{0}] {1}\n", DateTime.Now.ToLocalTime(), string.Join("\n", logs));
             NotifyPropertyChanged("Log");
             repository_tab_.ScrollToEndLogTextBox();
+        }
+
+        public bool NeedToSetQuickDiff()
+        {
+            return QuickDiffViewModel.NeedToDiff;
+        }
+
+        public void SetQuickDiff(string content)
+        {
+            QuickDiffViewModel.Output = content;
         }
     }
 }

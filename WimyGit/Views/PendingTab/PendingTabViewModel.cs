@@ -405,14 +405,71 @@ namespace WimyGit.UserControls
             }
             foreach (var item in SelectedModifiedFilePathList)
             {
-                string cmd = $"/c echo {item} >> .gitignore";
-
+                string cmd = $"diff";
                 string directory = gitRepository.GetRepositoryDirectory();
-                RunExternal runner = new RunExternal("cmd.exe", directory);
+                RunExternal runner = new RunExternal("git.exe", directory);
 
-                runner.RunInConsoleProgressWindow(cmd);
+                runner.Run(cmd);
             }
             await gitRepository.Refresh();
+        }
+
+        public void OnUnstagedFilesSelectionChanged()
+        {
+            if (_gitRepository.TryGetTarget(out IGitRepository gitRepository) == false)
+            {
+                return;
+            }
+            if (SelectedModifiedFilePathList.Count() != 1)
+            {
+                return;
+            }
+            if (gitRepository.NeedToSetQuickDiff() == false)
+            {
+                //return;
+            }
+            foreach (var item in SelectedModifiedFilePathList)
+            {
+                string cmd = "diff -- " + Util.WrapFilePath(item);
+                string directory = gitRepository.GetRepositoryDirectory();
+                RunExternal runner = gitRepository.CreateGitRunner();
+
+                string lines = $"From UNSTAGED {item}\n";
+                foreach (string line in runner.Run(cmd))
+                {
+                    lines += line + "\n";
+                }
+                gitRepository.SetQuickDiff(lines);
+            }
+        }
+
+        public void OnStagedFilesSelectionChanged()
+        {
+            if (_gitRepository.TryGetTarget(out IGitRepository gitRepository) == false)
+            {
+                return;
+            }
+            if (SelectedStagedFilePathList.Count() != 1)
+            {
+                return;
+            }
+            if (gitRepository.NeedToSetQuickDiff() == false)
+            {
+                //return;
+            }
+            foreach (var item in SelectedStagedFilePathList)
+            {
+                string cmd = "diff --cached -- " + Util.WrapFilePath(item);
+                string directory = gitRepository.GetRepositoryDirectory();
+                RunExternal runner = gitRepository.CreateGitRunner();
+
+                string lines = $"From STAGED {item}\n";
+                foreach (string line in runner.Run(cmd))
+                {
+                    lines += line + "\n";
+                }
+                gitRepository.SetQuickDiff(lines);
+            }
         }
 
         public IEnumerable<string> SelectedModifiedFilePathList {

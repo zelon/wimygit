@@ -124,7 +124,14 @@
                 <ColumnDefinition Width="80*" />
             </Grid.ColumnDefinitions>
             <Grid>
-                <local_view:DirectoryTree DataContext="{Binding DirectoryTree}" />
+                <TabControl>
+                    <TabItem Header="Workspace">
+                        <local_view:DirectoryTree DataContext="{Binding DirectoryTree}" />
+                    </TabItem>
+                    <TabItem Header="Quick Diff">
+                        <local_view:QuickDiff DataContext="{Binding QuickDiffViewModel}" />
+                    </TabItem>
+                </TabControl>
             </Grid>
             <GridSplitter Grid.Column="1" Width="15" HorizontalAlignment="Stretch"/>
             <Grid Grid.Column="2">

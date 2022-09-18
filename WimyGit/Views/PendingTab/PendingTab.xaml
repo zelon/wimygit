@@ -47,7 +47,7 @@
                 <RowDefinition/>
             </Grid.RowDefinitions>
             <Label Grid.Row="0" Content="Staged files" HorizontalAlignment="Left" Margin="5,5,0,0" VerticalAlignment="Bottom"/>
-            <ListBox Grid.Row="1" ItemsSource="{Binding StagedList}" SelectionMode="Extended" VirtualizingStackPanel.IsVirtualizing="False">
+            <ListBox Grid.Row="1" ItemsSource="{Binding StagedList}" SelectionMode="Extended" VirtualizingStackPanel.IsVirtualizing="False" SelectionChanged="OnStagedFileListBox_SelectionChanged" GotKeyboardFocus="OnStagedFileListBox_GotFocus">
                 <ListBox.InputBindings>
                     <KeyBinding Modifiers="Ctrl" Key="D" Command="{Binding StagedDiffCommand}" />
                     <KeyBinding Modifiers="Ctrl" Key="R" Command="{Binding UnstageCommand}" />
@@ -90,7 +90,7 @@
             </Grid.RowDefinitions>
             <Label Content="Unstaged files" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="5,5,0,0"/>
             <Button Grid.Column="0" Grid.ColumnSpan="2" Content="_Stage Selected" Command="{Binding StageSelectedCommand}" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="10" Padding="15"/>
-            <ListBox Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" x:Name="unstagedFileListBox" ItemsSource="{Binding ModifiedList}" SelectionMode="Extended" VirtualizingStackPanel.IsVirtualizing="False">
+            <ListBox Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" x:Name="unstagedFileListBox" ItemsSource="{Binding ModifiedList}" SelectionMode="Extended" VirtualizingStackPanel.IsVirtualizing="False" SelectionChanged="OnUnstagedFileListBox_SelectionChanged" GotKeyboardFocus="OnStagedFileListBox_GotFocus">
                 <ListBox.InputBindings>
                     <KeyBinding Modifiers="Ctrl" Key="D" Command="{Binding ModifiedDiffCommand}" />
                     <KeyBinding Modifiers="Ctrl" Key="R" Command="{Binding RevertCommand}" />

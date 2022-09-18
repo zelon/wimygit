@@ -9,5 +9,7 @@ namespace WimyGit
         public RunExternal CreateGitRunner();
         public void AddLog(string message);
         public void AddLog(System.Collections.Generic.List<string> logs);
+        public bool NeedToSetQuickDiff();
+        public void SetQuickDiff(string content);
     }
 }
