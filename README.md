@@ -1,11 +1,11 @@
 # wimygit
 Git client like p4v
 
-# Under developing
+# Developing Environment
 * Language : C#
 * OS       : Windows
 * GUI      : WPF
-* IDE      : Visual Studio 2017
+* IDE      : Visual Studio 2022
 
 # Screenshot
 ![Screenshot](https://raw.githubusercontent.com/zelon/wimygit/master/ScreenShot.png)
