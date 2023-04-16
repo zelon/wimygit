@@ -1,12 +1,23 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net6.0-windows</TargetFramework>
+    <TargetFramework>net7.0-windows</TargetFramework>
     <UseWPF>true</UseWPF>
     <UseWindowsForms>true</UseWindowsForms>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <ApplicationIcon>Icon.ico</ApplicationIcon>
+    <Title>WimyGit</Title>
+    <Description>WimyGit</Description>
+    <PackageProjectUrl>https://github.com/zelon/wimygit</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/zelon/wimygit</RepositoryUrl>
+    <PackageTags>git;ui;windows</PackageTags>
     <!--<Nullable>enable</Nullable>-->
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <CheckForOverflowUnderflow>True</CheckForOverflowUnderflow>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <CheckForOverflowUnderflow>True</CheckForOverflowUnderflow>
   </PropertyGroup>
   <ItemGroup>
     <Resource Include="**\*.png" />
