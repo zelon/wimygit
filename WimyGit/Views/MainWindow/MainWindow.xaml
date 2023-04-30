@@ -14,9 +14,9 @@
         </Grid.RowDefinitions>
         <Grid Grid.Row="0" Margin="0,0,0,0">
             <TabControl x:Name="tab_control_"  HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="0,0,0,0">
-                <TabItem Focusable="False" Padding="0" Width="45" Height="40" Margin="0,0,0,0" HorizontalAlignment="Left">
+                <TabItem Focusable="False" Padding="0" Width="60" Height="40" Margin="10,0,10,0" HorizontalAlignment="Center" Background="Transparent" BorderBrush="Transparent">
                     <TabItem.Header>
-                        <Button Click="OnMenuButtonClick" Name="menuButton" Width="45" Height="40" Margin="0,0,0,0">
+                        <Button Click="OnMenuButtonClick" Name="menuButton" Width="40" Height="40" Margin="0,0,0,0" BorderBrush="Transparent" Background="Transparent">
                             <Button.ContextMenu>
                                 <ContextMenu>
                                     <MenuItem Header="Help">
@@ -30,9 +30,6 @@
                             <Image Source="..\..\Images\Menu.png" />
                         </Button>
                     </TabItem.Header>
-                    <TabItem.Content>
-                        <Grid Background="#FFE5E5E5"/>
-                    </TabItem.Content>
                 </TabItem>
                 <TabItem Focusable="False" Padding="0" HorizontalAlignment="Center" Width="62" Height="40" Margin="3,3,3,3" VerticalAlignment="Center">
                     <TabItem.Header>
