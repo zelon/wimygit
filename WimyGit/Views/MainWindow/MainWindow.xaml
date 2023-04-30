@@ -23,6 +23,7 @@
                                         <MenuItem Header="How to install a plugin" Click="ShowHelpHowToInstallPlugin" />
                                     </MenuItem>
                                     <Separator />
+                                    <MenuItem Header="Show WimyGit Release page on Github" Click="ShowWimygitReleasePage" />
                                     <MenuItem Header="Show Plugin folder in Explorer" Click="ShowPluginFolderInExplorer" />
                                     <MenuItem Header="Exit" Click="CloseWindow" />
                                 </ContextMenu>

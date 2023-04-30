@@ -70,6 +70,11 @@ namespace WimyGit
             OpenUrlLink("https://github.com/zelon/wimygit/wiki/How-to-install-a-plugin");
         }
 
+        private void ShowWimygitReleasePage(object sender, RoutedEventArgs e)
+        {
+            OpenUrlLink("https://github.com/zelon/wimygit/releases");
+        }
+
         private void ShowPluginFolderInExplorer(object sender, RoutedEventArgs e)
         {
             string pluginRootDirectory = Plugin.PluginController.GetPluginRootDirectoryPath();
