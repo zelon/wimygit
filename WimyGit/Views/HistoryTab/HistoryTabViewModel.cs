@@ -266,13 +266,13 @@ namespace WimyGit.ViewModels
             AddHistoryFrom(HistorySelectedPath, skip_count:0);
         }
 
-        async void AddHistoryFrom(string selected_path, int skip_count)
+        private async void AddHistoryFrom(string selected_path, int skip_count)
         {
             if (_gitRepository.TryGetTarget(out IGitRepository gitRepository) == false)
             {
                 return;
             }
-            var waiter = gitRepository.GetGitWrapper().GetHistory(selected_path, skip_count, /*max_count=*/20);
+            var waiter = gitRepository.GetGitWrapper().GetHistory(selected_path, skip_count, /*max_count=*/100);
             var commits = await waiter;
             foreach (var commit in commits)
             {
