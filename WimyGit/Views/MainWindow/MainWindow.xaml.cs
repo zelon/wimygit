@@ -17,7 +17,7 @@ namespace WimyGit
             TabItem tab_item = new TabItem();
             tab_item.Padding = zeroThickness;
             tab_item.Margin = zeroThickness;
-            var tab_header = new UserControls.RepositoryTabHeader(tab_control_);
+            var tab_header = new UserControls.RepositoryTabHeader(tab_control_, path);
             tab_header.Padding = zeroThickness;
             tab_header.Margin = zeroThickness;
             tab_header.Path.Content = path;

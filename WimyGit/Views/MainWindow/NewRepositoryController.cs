@@ -26,7 +26,7 @@ namespace WimyGit
         private void Execute(string path)
         {
             TabItem new_tab_item = new TabItem();
-            var tab_header = new UserControls.RepositoryTabHeader(tabControl_);
+            var tab_header = new UserControls.RepositoryTabHeader(tabControl_, path);
             tab_header.SetRepositoryPath(path);
             new_tab_item.Header = tab_header;
             if (path == null)

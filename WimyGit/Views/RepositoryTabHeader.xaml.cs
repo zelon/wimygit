@@ -8,12 +8,13 @@ namespace WimyGit.UserControls
 	{
 		private TabControl tab_control_;
 
-		public RepositoryTabHeader(System.Windows.Controls.TabControl tab_control)
+		public RepositoryTabHeader(System.Windows.Controls.TabControl tab_control, string path)
 		{
 			tab_control_ = tab_control;
-
 			InitializeComponent();
-		}
+
+            ToolTip = path;
+        }
 
         public void SetRepositoryPath (string path)
         {
@@ -24,6 +25,7 @@ namespace WimyGit.UserControls
             }
             Path.Content = path;
             Title.Content = Util.GetRepositoryName(path);
+            ToolTip = path;
         }
 
 		private void CloseButton_Click(object sender, RoutedEventArgs e)
