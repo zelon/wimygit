@@ -79,7 +79,7 @@ namespace WimyGit.ViewModels
             {
                 return;
             }
-            string branchName = UIService.AskAndGetString("Enter branch name", "");
+            string branchName = UIService.AskAndGetString("Enter new branch name", "", info: $"Selected Commit id: {SelectedHistoryStatus.CommitId}");
             if (branchName == null)
             {
                 return;

@@ -30,10 +30,11 @@ namespace WimyGit
             return MessageBox.Show(window, message, Caption, MessageBoxButton.OKCancel, MessageBoxImage.Question);
         }
 
-        public static string AskAndGetString(string questionMessage, string defaultAnswer)
+        public static string AskAndGetString(string questionMessage, string defaultAnswer, string info = "")
         {
             QuestionWindow questionWindow = new QuestionWindow();
             questionWindow.Owner = GlobalSetting.GetInstance().GetWindow();
+            questionWindow.Information.Content = info;
             questionWindow.Question.Content = questionMessage;
             questionWindow.Answer.Text = defaultAnswer ?? "";
             questionWindow.ShowDialog();

@@ -26,8 +26,8 @@
                 </ListView.InputBindings>
                 <ListView.ContextMenu>
                     <ContextMenu>
-                        <MenuItem Header="Create Branch" Command="{Binding CreateBranchCommand}" />
-                        <MenuItem Header="Create Tag" Command="{Binding CreateTagCommand}" />
+                        <MenuItem Header="Create Branch..." Command="{Binding CreateBranchCommand}" />
+                        <MenuItem Header="Create Tag..." Command="{Binding CreateTagCommand}" />
                         <MenuItem Header="Rebase" Command="{Binding RebaseCommand}" />
                         <Separator/>
                         <MenuItem Header="Reset">
