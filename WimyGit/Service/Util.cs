@@ -59,7 +59,7 @@ namespace WimyGit
             var fileVersionInfo = FileVersionInfo.GetVersionInfo(Environment.ProcessPath);
             Debug.Assert(fileVersionInfo != null);
 
-            var fileVersion = fileVersionInfo.FileVersion;
+            var fileVersion = fileVersionInfo.ProductVersion;
             Debug.Assert(fileVersion != null);
 
             return System.Version.Parse(fileVersion);
