@@ -12,7 +12,7 @@ namespace WimyGit
 
         public static string ListBranch()
         {
-            return "branch --list --verbose";
+            return "branch -vv";
         }
 
         public static string SwitchBranch(string branchName)

@@ -8,6 +8,7 @@ namespace WimyGitLib
         public bool IsCurrent { get; set; }
         public string Name { get; set; }
         public string CommitId { get; set; }
+        public string AdditionalInfo { get; set; }
     }
 
     public static class BranchParser
@@ -25,7 +26,7 @@ namespace WimyGitLib
 
         public static BranchInfo ParseLine(string line)
         {
-            Regex regex = new Regex(@"([\s\*])\s(\S+)\s+(\S+)");
+            Regex regex = new Regex(@"([\s\*])\s(\S+)\s+(\S+)\s+(.*)");
             BranchInfo branchInfo = new BranchInfo();
 
             Match match = regex.Match(line);
@@ -36,6 +37,7 @@ namespace WimyGitLib
             branchInfo.IsCurrent = (match.Groups[1].Value == "*");
             branchInfo.Name = match.Groups[2].Value;
             branchInfo.CommitId = match.Groups[3].Value;
+            branchInfo.AdditionalInfo = match.Groups[4].Value;
 
             return branchInfo;
         }

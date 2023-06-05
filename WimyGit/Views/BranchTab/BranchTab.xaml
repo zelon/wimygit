@@ -19,6 +19,7 @@
                     <GridViewColumn Header="*" DisplayMemberBinding="{Binding IsCurrent, Converter={StaticResource trueToCurrentConverter}}" />
                     <GridViewColumn Header="Name" DisplayMemberBinding="{Binding Name}" />
                     <GridViewColumn Header="CommitId" DisplayMemberBinding="{Binding CommitId}" />
+                    <GridViewColumn Header="AdditionalInfo" DisplayMemberBinding="{Binding AdditionalInfo}" />
                 </GridView>
             </ListView.View>
             <ListView.ContextMenu>
