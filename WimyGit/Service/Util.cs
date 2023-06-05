@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using System.IO;
 
 namespace WimyGit
@@ -52,5 +53,16 @@ namespace WimyGit
 			}
 			return true;
 		}
-	}
+
+        public static Version GetVersion()
+        {
+            var fileVersionInfo = FileVersionInfo.GetVersionInfo(Environment.ProcessPath);
+            Debug.Assert(fileVersionInfo != null);
+
+            var fileVersion = fileVersionInfo.FileVersion;
+            Debug.Assert(fileVersion != null);
+
+            return System.Version.Parse(fileVersion);
+        }
+    }
 }

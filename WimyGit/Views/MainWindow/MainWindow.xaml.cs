@@ -1,4 +1,7 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
+using System.Net.Http;
+using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -75,6 +78,23 @@ namespace WimyGit
             OpenUrlLink("https://github.com/zelon/wimygit/releases");
         }
 
+        static readonly HttpClient httpClient = new HttpClient();
+        private async void CheckLatestRelease(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                httpClient.DefaultRequestHeaders.Add("User-Agent", "WimyGitUpdateChecker");
+                var response = await httpClient.GetAsync("https://api.github.com/repos/zelon/wimygit/releases/latest");
+                response.EnsureSuccessStatusCode();
+                string responseBody = await response.Content.ReadAsStringAsync();
+                Debug.Assert(string.IsNullOrEmpty(responseBody));
+            }
+            catch (Exception ex)
+            {
+                UIService.ShowMessage($"Cannot check latest release,exception:{ex.Message}");
+            }
+        }
+
         private void ShowPluginFolderInExplorer(object sender, RoutedEventArgs e)
         {
             string pluginRootDirectory = Plugin.PluginController.GetPluginRootDirectoryPath();
@@ -103,9 +123,8 @@ namespace WimyGit
         {
             try
             {
-                string output = ProgramPathFinder.ExecuteAndGetOutput(ProgramPathFinder.GetGitBin(),
-                    "--version");
-                this.Title += " - " + output;
+                string gitVersionOutput = ProgramPathFinder.ExecuteAndGetOutput(ProgramPathFinder.GetGitBin(), "--version");
+                this.Title += $" v{Util.GetVersion().ToString()} :: {gitVersionOutput}";
             }
             catch (System.IO.FileNotFoundException ex)
             {
