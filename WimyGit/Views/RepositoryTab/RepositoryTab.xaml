@@ -11,6 +11,8 @@
              IsVisibleChanged="OnIsVisibleChanged">
     <UserControl.InputBindings>
         <KeyBinding Key="F5" Command="{Binding RefreshCommand}" />
+        <KeyBinding Gesture="CTRL+E" Command="{Binding OpenExplorerCommand}" />
+        <KeyBinding Gesture="CTRL+ALT+T" Command="{Binding OpenGitBashCommand}" />
     </UserControl.InputBindings>
     <UserControl.Resources>
         <Style x:Key="ToolbarImage" TargetType="Image">
