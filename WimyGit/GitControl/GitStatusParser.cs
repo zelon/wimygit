@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using WimyGitLib;
 
 namespace WimyGit
 {
@@ -14,9 +15,25 @@ namespace WimyGit
             }
             GitRepositoryStatus gitRepositoryStatus = new GitRepositoryStatus();
             gitRepositoryStatus.branchInfo = ParseBranchInfo(results);
+            gitRepositoryStatus.rebaseOnCommitId = ParseRebaseInfo(results);
             gitRepositoryStatus.IsOnBisecting = ParseBisectInfo(results);
-
+            gitRepositoryStatus.wholeLines = results;
             return gitRepositoryStatus;
+        }
+
+        private static string ParseRebaseInfo(List<string> results)
+        {
+            // interactive rebase in progress; onto 0619041
+            var regex = new Regex("interactive rebase in progress; onto (.*)");
+            foreach (string line in results)
+            {
+                var match = regex.Match(line);
+                if (match.Success)
+                {
+                    return match.Groups[1].Value;
+                }
+            }
+            return "";
         }
 
         private static BranchInfo ParseBranchInfo(List<string> results)

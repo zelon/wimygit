@@ -28,7 +28,9 @@ namespace WimyGit
     public class GitRepositoryStatus
     {
         public BranchInfo branchInfo { get; set; }
+        public string rebaseOnCommitId;
         public bool IsOnBisecting { get; set; }
+        public List<string> wholeLines { get; set; }
     }
 
     public class BranchInfo

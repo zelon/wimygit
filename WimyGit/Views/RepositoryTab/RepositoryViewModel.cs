@@ -85,6 +85,7 @@ namespace WimyGit.ViewModels
         public string Directory { get; set; }
         public string Log { get; set; }
         public string Branch { get; set; }
+        public string Info { get; set; }
         public string DisplayAuthor { get; set; }
 
         public string SelectedPath { get; set; }
@@ -239,8 +240,20 @@ namespace WimyGit.ViewModels
                 output += " [BISECTING...]";
             }
             Branch = output;
-
             NotifyPropertyChanged("Branch");
+
+            if (string.IsNullOrEmpty(gitRepositoryStatus.rebaseOnCommitId) == false)
+            {
+                Info = $"Rebase in progress onto {gitRepositoryStatus.rebaseOnCommitId}";
+                foreach (var line in gitRepositoryStatus.wholeLines)
+                {
+                    Info += "\n" + line;
+                }
+            } else
+            {
+                Info = "";
+            }
+            NotifyPropertyChanged("Info");
 
             return true;
         }

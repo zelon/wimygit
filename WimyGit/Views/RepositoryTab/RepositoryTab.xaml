@@ -137,7 +137,12 @@
             </Grid>
             <GridSplitter Grid.Column="1" Width="15" HorizontalAlignment="Stretch"/>
             <Grid Grid.Column="2">
-                <TabControl x:Name="tabControl" HorizontalContentAlignment="Left" VerticalContentAlignment="Stretch">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <Label Content="{Binding Info}" HorizontalAlignment="Left" Grid.Row="0" FontFamily="Consolas" />
+                <TabControl x:Name="tabControl" HorizontalContentAlignment="Left" VerticalContentAlignment="Stretch" Grid.Row="1">
                     <TabControl.Resources>
                         <Style TargetType="TabItem">
                             <Setter Property="Template">
