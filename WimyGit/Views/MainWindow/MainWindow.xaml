@@ -26,6 +26,7 @@
                                     <MenuItem Header="Show WimyGit Release page on Github" Click="ShowWimygitReleasePage" />
                                     <MenuItem Header="Show Plugin folder in Explorer" Click="ShowPluginFolderInExplorer" />
                                     <Separator />
+                                    <MenuItem Header="Show WimyGit directory in Explorer" Click="ShowWimyGitDirectoryInExplorer" />
                                     <MenuItem Header="Check Latest Version" Click="CheckLatestRelease" />
                                     <Separator />
                                     <MenuItem Header="Exit" Click="CloseWindow" />

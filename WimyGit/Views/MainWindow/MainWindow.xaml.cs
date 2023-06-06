@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -85,6 +86,13 @@ namespace WimyGit
             string pluginRootDirectory = Plugin.PluginController.GetPluginRootDirectoryPath();
             RunExternal runner = new RunExternal("explorer.exe", pluginRootDirectory);
             runner.RunWithoutWaiting(pluginRootDirectory);
+        }
+
+        private void ShowWimyGitDirectoryInExplorer(object sender, RoutedEventArgs e)
+        {
+            string wimygitDirectory = System.IO.Path.GetDirectoryName(Environment.ProcessPath);
+            RunExternal runner = new RunExternal("explorer.exe", wimygitDirectory);
+            runner.RunWithoutWaiting(wimygitDirectory);
         }
 
         private void CloseWindow(object sender, RoutedEventArgs e)
