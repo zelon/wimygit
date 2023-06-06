@@ -77,7 +77,7 @@ namespace WimyGit
 
         private async void CheckLatestRelease(object sender, RoutedEventArgs e)
         {
-            await LatestVersionController.StartCheck();
+            await LatestVersionController.StartCheck(this);
         }
 
         private void ShowPluginFolderInExplorer(object sender, RoutedEventArgs e)

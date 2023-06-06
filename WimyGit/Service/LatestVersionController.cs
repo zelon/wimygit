@@ -10,7 +10,7 @@ namespace WimyGit
 	{
         static readonly HttpClient httpClient = new HttpClient();
 
-        public static async Task StartCheck()
+        public static async Task StartCheck(MainWindow mainWindow)
         {
             try
             {
@@ -35,18 +35,23 @@ namespace WimyGit
                     {
                         return;
                     }
+                    mainWindow.IsEnabled = false;
                     var processDirectory = System.IO.Path.GetDirectoryName(Environment.ProcessPath);
                     string downloadFilePath = System.IO.Path.Combine(processDirectory, parseResult.DownloadFilename);
 
-                    System.Net.WebClient webClient = new System.Net.WebClient();
-                    webClient.DownloadProgressChanged += (object sender, System.Net.DownloadProgressChangedEventArgs e) => {
-                    };
-                    webClient.DownloadFileCompleted += (object sender, System.ComponentModel.AsyncCompletedEventArgs e) => {
-                        UIService.ShowMessage("Download completed");
-                        RunExternal runner = new RunExternal("explorer.exe", processDirectory);
-                        runner.RunWithoutWaiting(processDirectory);
-                    };
-                    webClient.DownloadFileAsync(new Uri(browserDownloadUrl), downloadFilePath);
+                    using var fileDownloadStream = await httpClient.GetStreamAsync(browserDownloadUrl);
+                    using var fileWriteStream = System.IO.File.OpenWrite(downloadFilePath);
+                    await fileDownloadStream.CopyToAsync(fileWriteStream);
+
+                    mainWindow.IsEnabled = true;
+
+                    var openExplorerResult = UIService.ShowMessageWithYesNo("Download completed. Do you want to open downloaded directory?");
+                    if (openExplorerResult == MessageBoxResult.No)
+                    {
+                        return;
+                    }
+                    RunExternal runner = new RunExternal("explorer.exe", processDirectory);
+                    runner.RunWithoutWaiting(processDirectory);
                 }
                 else
                 {
@@ -56,6 +61,10 @@ namespace WimyGit
             catch (Exception ex)
             {
                 UIService.ShowMessage($"Cannot check latest release,exception:{ex.Message}");
+            }
+            finally
+            {
+                mainWindow.IsEnabled = true;
             }
         }
     }
