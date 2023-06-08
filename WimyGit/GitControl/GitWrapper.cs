@@ -153,6 +153,12 @@ namespace WimyGit
             CreateGitRunner().Run(cmd);
         }
 
+        public void CreateBranchWithCheckout(string commitId, string branchName)
+        {
+            string cmd = $"checkout -b {branchName} {commitId}";
+            CreateGitRunner().Run(cmd);
+        }
+
         public void Rebase(string commitId)
         {
             string cmd = $"rebase {commitId}";

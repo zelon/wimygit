@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Windows;
 using System.Windows.Input;
+using WimyGit.Views;
 
 namespace WimyGit.ViewModels
 {
@@ -79,12 +80,20 @@ namespace WimyGit.ViewModels
             {
                 return;
             }
-            string branchName = UIService.AskAndGetString("Enter new branch name", "", info: $"Selected Commit id: {SelectedHistoryStatus.CommitId}");
-            if (branchName == null)
+            var result = NewBranchWindow.NewWinddow(SelectedHistoryStatus.CommitId, out string newBranchName, out bool checkout);
+            if (result == MessageBoxResult.Cancel)
             {
                 return;
             }
-            gitRepository.GetGitWrapper().CreateBranch(SelectedHistoryStatus.CommitId, branchName);
+
+            if (checkout)
+            {
+                gitRepository.GetGitWrapper().CreateBranchWithCheckout(SelectedHistoryStatus.CommitId, newBranchName);
+            }
+            else
+            {
+                gitRepository.GetGitWrapper().CreateBranch(SelectedHistoryStatus.CommitId, newBranchName);
+            }
 
             gitRepository.Refresh();
         }
