@@ -430,13 +430,30 @@ namespace WimyGit.UserControls
             }
             foreach (var item in SelectedModifiedFilePathList)
             {
-                string cmd = "diff -- " + Util.WrapFilePath(item);
-                string directory = gitRepository.GetRepositoryDirectory();
-                RunExternal runner = gitRepository.CreateGitRunner();
+                var file_status = GetModifiedStatus(item);
+                if (file_status == null)
+                {
+                    continue;
+                }
+                List<string> lines;
+                string prefix = "[UNSTAGED]";
+                if (file_status.Status == "Untracked")
+                {
+                    string filename = Path.Combine(gitRepository.GetGitWrapper().GetPath(), item);
+                    lines = File.ReadAllLines(filename).ToList();
+                    prefix += "[NEW FILE]";
+                }
+                else
+                {
+                    string cmd = "diff -- " + Util.WrapFilePath(item);
+                    string directory = gitRepository.GetRepositoryDirectory();
+                    RunExternal runner = gitRepository.CreateGitRunner();
 
-                gitRepository.AddLog(cmd);
-                var lines = runner.Run(cmd);
-                gitRepository.SetQuickDiff($"[UNSTAGED] {item}", lines);
+                    gitRepository.AddLog(cmd);
+                    lines = runner.Run(cmd);
+                    prefix += "[DIFF]";
+                }
+                gitRepository.SetQuickDiff($"{prefix} {item}", lines);
             }
         }
 
