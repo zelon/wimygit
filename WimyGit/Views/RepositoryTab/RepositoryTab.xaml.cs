@@ -1,7 +1,6 @@
 ﻿using System.Windows;
 using System.Windows.Input;
 using System.Windows.Controls;
-using WimyGit.View;
 
 namespace WimyGit
 {
@@ -28,7 +27,7 @@ namespace WimyGit
                 branchTabViewModel,
                 tagTabViewModel,
                 remoteTabViewModel,
-                QuickDiffTab.RichOutput);
+                QuickDiffItem, QuickDiffTab.RichOutput);
             DataContext = viewModel;
 
             pendingTabViewModel.SetGitRepository(viewModel);

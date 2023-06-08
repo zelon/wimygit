@@ -426,7 +426,7 @@ namespace WimyGit.UserControls
             }
             if (gitRepository.NeedToSetQuickDiff() == false)
             {
-                //return;
+                return;
             }
             foreach (var item in SelectedModifiedFilePathList)
             {

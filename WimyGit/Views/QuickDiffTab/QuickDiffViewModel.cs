@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 using System.Windows.Controls;
 using System.Windows.Documents;
 
@@ -11,7 +6,6 @@ namespace WimyGit.ViewModels
 {
     public class QuickDiffViewModel : NotifyBase
     {
-        public bool NeedToDiff { get; set; } = false;
         public string Title { get; set; } = "No title";
 
         private RichTextBox _richTextBox;

@@ -15,6 +15,7 @@ namespace WimyGit.ViewModels
         private readonly UserControls.RemoteTabViewModel _remoteTabViewModel;
 
         private readonly RepositoryTab repository_tab_;
+        private readonly TabItem _quickDiffTabItem;
 
         public RepositoryViewModel(string git_repository_path, RepositoryTab repository_tab,
             UserControls.PendingTabViewModel pendingTabViewModel,
@@ -22,15 +23,18 @@ namespace WimyGit.ViewModels
             UserControls.BranchTabViewModel branchTabViewModel,
             UserControls.TagTabViewModel tagTabViewModel,
             UserControls.RemoteTabViewModel remoteTabViewModel,
-            RichTextBox quickDiffRichTextBox)
+            TabItem quickDiffTabItem, RichTextBox quickDiffRichTextBox)
         {
             DisplayAuthor = GlobalSetting.GetInstance().GetSignature();
             Directory = git_repository_path;
 
             git_ = new GitWrapper(Directory, this);
 
+
             DirectoryTree = new DirectoryTreeViewModel(this);
             QuickDiffViewModel = new QuickDiffViewModel(quickDiffRichTextBox);
+            _quickDiffTabItem = quickDiffTabItem;
+
             HistoryTabMember = new HistoryTabViewModel(this);
             _pendingTabViewModel = pendingTabViewModel;
             _stashTabViewModel = stashTabViewModel;
@@ -278,7 +282,7 @@ namespace WimyGit.ViewModels
 
         public bool NeedToSetQuickDiff()
         {
-            return QuickDiffViewModel.NeedToDiff;
+            return _quickDiffTabItem.IsSelected;
         }
 
         public void SetQuickDiff(string title, List<string> msgs)

@@ -130,7 +130,7 @@
                     <TabItem Header="Workspace">
                         <local_view:DirectoryTree DataContext="{Binding DirectoryTree}" />
                     </TabItem>
-                    <TabItem Header="Quick Diff">
+                    <TabItem x:Name="QuickDiffItem" Header="Quick Diff">
                         <local_view:QuickDiff DataContext="{Binding QuickDiffViewModel}" x:Name="QuickDiffTab" />
                     </TabItem>
                 </TabControl>
