@@ -280,7 +280,7 @@ namespace WimyGit.ViewModels
             repository_tab_.ScrollToEndLogTextBox();
         }
 
-        public bool NeedToSetQuickDiff()
+        public bool IsQuickDiffTabSelected()
         {
             return _quickDiffTabItem.IsSelected;
         }

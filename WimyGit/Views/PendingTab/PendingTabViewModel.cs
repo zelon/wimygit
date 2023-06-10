@@ -414,71 +414,61 @@ namespace WimyGit.UserControls
             await gitRepository.Refresh();
         }
 
-        public void OnUnstagedFilesSelectionChanged()
+        private void QuickDiff(string item, FileStatus fileStatus, string displayPrefix, string diffCommandPrefix)
         {
             if (_gitRepository.TryGetTarget(out IGitRepository gitRepository) == false)
             {
                 return;
             }
-            if (SelectedModifiedFilePathList.Count() != 1)
+            if (gitRepository.IsQuickDiffTabSelected() == false)
             {
                 return;
             }
-            if (gitRepository.NeedToSetQuickDiff() == false)
+            if (fileStatus == null)
+            {
+                return;
+            }
+            List<string> lines;
+            if (fileStatus.Status == "Untracked" // ModifiedList
+                || fileStatus.Status == "Added in stage") // StagedList
+            {
+                string filename = Path.Combine(gitRepository.GetGitWrapper().GetPath(), item);
+                lines = File.ReadAllLines(filename).ToList();
+                displayPrefix += "[NEW FILE]";
+            }
+            else
+            {
+                string cmd = diffCommandPrefix + Util.WrapFilePath(item);
+                RunExternal runner = gitRepository.CreateGitRunner();
+
+                gitRepository.AddLog(cmd);
+                lines = runner.Run(cmd);
+                displayPrefix += "[DIFF]";
+            }
+            gitRepository.SetQuickDiff($"{displayPrefix} {item}", lines);
+        }
+
+        public void OnUnstagedFilesSelectionChanged()
+        {
+            if (SelectedModifiedFilePathList.Count() != 1)
             {
                 return;
             }
             foreach (var item in SelectedModifiedFilePathList)
             {
-                var file_status = GetModifiedStatus(item);
-                if (file_status == null)
-                {
-                    continue;
-                }
-                List<string> lines;
-                string prefix = "[UNSTAGED]";
-                if (file_status.Status == "Untracked")
-                {
-                    string filename = Path.Combine(gitRepository.GetGitWrapper().GetPath(), item);
-                    lines = File.ReadAllLines(filename).ToList();
-                    prefix += "[NEW FILE]";
-                }
-                else
-                {
-                    string cmd = "diff -- " + Util.WrapFilePath(item);
-                    string directory = gitRepository.GetRepositoryDirectory();
-                    RunExternal runner = gitRepository.CreateGitRunner();
-
-                    gitRepository.AddLog(cmd);
-                    lines = runner.Run(cmd);
-                    prefix += "[DIFF]";
-                }
-                gitRepository.SetQuickDiff($"{prefix} {item}", lines);
+                QuickDiff(item, GetModifiedStatus(item), "[UNSTAGED]", diffCommandPrefix: "diff -- ");
             }
         }
 
         public void OnStagedFilesSelectionChanged()
         {
-            if (_gitRepository.TryGetTarget(out IGitRepository gitRepository) == false)
-            {
-                return;
-            }
             if (SelectedStagedFilePathList.Count() != 1)
             {
                 return;
             }
-            if (gitRepository.NeedToSetQuickDiff() == false)
-            {
-                //return;
-            }
             foreach (var item in SelectedStagedFilePathList)
             {
-                string cmd = "diff --cached -- " + Util.WrapFilePath(item);
-                string directory = gitRepository.GetRepositoryDirectory();
-                RunExternal runner = gitRepository.CreateGitRunner();
-
-                var lines = runner.Run(cmd);
-                gitRepository.SetQuickDiff($"[STAGED] {item}", lines);
+                QuickDiff(item, GetStagedStatus(item), "[STAGED]", diffCommandPrefix: "diff --cached -- ");
             }
         }
 
@@ -493,6 +483,18 @@ namespace WimyGit.UserControls
         public void SetNoCommitsYet(bool val)
         {
             noCommitsYet_ = val;
+        }
+
+        private FileStatus GetStagedStatus(string filepath)
+        {
+            foreach (var status in StagedList)
+            {
+                if (status.FilePath == filepath)
+                {
+                    return status;
+                }
+            }
+            return null;
         }
 
         private FileStatus GetModifiedStatus(string filepath)
