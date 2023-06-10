@@ -202,16 +202,10 @@ namespace WimyGit.ViewModels
             await remoteTabResult;
             await tagTabResult;
 
-            AddLog("Refreshed");
-
             repository_tab_.LeaveLoadingScreen();
 
-            if (System.Diagnostics.Debugger.IsAttached)
-            {
-                TimeSpan elapsed = DateTime.Now - start;
-                AddLog($"Refresh elapsed: {elapsed.TotalMilliseconds}");
-            }
-
+            TimeSpan elapsed = DateTime.Now - start;
+            AddLog($"Refreshed elapsed: {elapsed.TotalMilliseconds}");
             return true;
         }
 
