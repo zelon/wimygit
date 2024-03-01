@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Windows;
 using System.Windows.Input;
 using WimyGitLib;
 
@@ -329,7 +330,7 @@ namespace WimyGit.UserControls
             {
                 return;
             }
-            if (UIService.ConfirmMsg(msg, "Revert") == System.Windows.MessageBoxResult.Cancel)
+            if (MessageBox.Show(msg, "Revert", MessageBoxButton.OKCancel, MessageBoxImage.Warning) == System.Windows.MessageBoxResult.Cancel)
             {
                 return;
             }
