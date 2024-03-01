@@ -34,7 +34,8 @@ namespace WimyGit.UserControls
 		public DelegateCommand BrowseCommand { get; private set; }
 		void OnBrowseCommand(object sender)
 		{
-            FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog();
+#pragma warning disable CA1416
+            using FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog();
             var result = folderBrowserDialog.ShowDialog();
             if (result != DialogResult.OK)
             {
@@ -42,9 +43,10 @@ namespace WimyGit.UserControls
             }
             Directory = folderBrowserDialog.SelectedPath;
             NotifyPropertyChanged("Directory");
+#pragma warning restore CA1416
         }
 
-		public DelegateCommand OkayCommand { get; private set; }
+        public DelegateCommand OkayCommand { get; private set; }
 		void OnOkayCommand(object sender)
 		{
             if (Util.IsValidGitDirectory(Directory) == false)
