@@ -13,6 +13,10 @@
         <KeyBinding Key="F5" Command="{Binding RefreshCommand}" />
         <KeyBinding Gesture="CTRL+E" Command="{Binding OpenExplorerCommand}" />
         <KeyBinding Gesture="CTRL+ALT+T" Command="{Binding OpenGitBashCommand}" />
+        <KeyBinding Gesture="CTRL+SHIFT+D" Command="{Binding OpenQuickDiffTabCommand}" />
+        <KeyBinding Gesture="CTRL+1" Command="{Binding OpenPendingTabCommand}" />
+        <KeyBinding Gesture="CTRL+2" Command="{Binding OpenHistoryTabCommand}" />
+        <KeyBinding Gesture="CTRL+T" Command="{Binding OpenHistoryTabCommand}" />
     </UserControl.InputBindings>
     <UserControl.Resources>
         <Style x:Key="ToolbarImage" TargetType="Image">

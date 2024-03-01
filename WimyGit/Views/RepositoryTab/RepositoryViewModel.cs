@@ -50,6 +50,9 @@ namespace WimyGit.ViewModels
             PushTagCommand = new DelegateCommand((object parameter) => OnPushTagCommand());
             OpenExplorerCommand = new DelegateCommand(OnOpenExplorerCommand);
             OpenGitBashCommand = new DelegateCommand(OnOpenGitBashCommand);
+            OpenQuickDiffTabCommand = new DelegateCommand(OnOpenQuickDiffTabCommand);
+            OpenPendingTabCommand = new DelegateCommand(OnOpenPendingTabCommand);
+            OpenHistoryTabCommand = new DelegateCommand(OnOpenHistoryTabCommand);
             RefreshCommand = new DelegateCommand(async (object parameter) => await Refresh());
             ViewTimelapseCommand = new DelegateCommand((object parameter) => OnViewTimeLapseCommand());
             FetchAllCommand = new DelegateCommand(async (object parameter) => await OnFetchAllCommand());
@@ -85,6 +88,9 @@ namespace WimyGit.ViewModels
         public ICommand PushTagCommand { get; private set; }
         public ICommand OpenExplorerCommand { get; private set; }
         public ICommand OpenGitBashCommand { get; private set; }
+        public ICommand OpenQuickDiffTabCommand { get; private set; }
+        public ICommand OpenPendingTabCommand { get; private set; }
+        public ICommand OpenHistoryTabCommand { get; private set; }
 
         public string Directory { get; set; }
         public string Log { get; set; }
@@ -141,6 +147,23 @@ namespace WimyGit.ViewModels
         {
             RunExternal runner = new RunExternal(ProgramPathFinder.GetGitShell(), Directory);
             runner.RunInShell("--login -i");
+        }
+
+        private void OnOpenQuickDiffTabCommand (object sender)
+        {
+            _quickDiffTabItem.Focus();
+        }
+
+        private void OnOpenPendingTabCommand (object sender)
+        {
+            TabItem pendingTab = (TabItem)repository_tab_.tabControl.Items[0];
+            pendingTab.Focus();
+        }
+
+        private void OnOpenHistoryTabCommand (object sender)
+        {
+            TabItem historyTab = (TabItem)repository_tab_.tabControl.Items[1];
+            historyTab.Focus();
         }
 
         private async Task OnPullCommand()
