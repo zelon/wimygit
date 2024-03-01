@@ -27,7 +27,7 @@ namespace WimyGit
                 branchTabViewModel,
                 tagTabViewModel,
                 remoteTabViewModel,
-                QuickDiffItem, QuickDiffTab.RichOutput);
+                WorkspaceItem, QuickDiffItem, QuickDiffTab.RichOutput);
             DataContext = viewModel;
 
             pendingTabViewModel.SetGitRepository(viewModel);

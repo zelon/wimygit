@@ -15,6 +15,7 @@ namespace WimyGit.ViewModels
         private readonly UserControls.RemoteTabViewModel _remoteTabViewModel;
 
         private readonly RepositoryTab repository_tab_;
+        private readonly TabItem _workspaceTabItem;
         private readonly TabItem _quickDiffTabItem;
 
         public RepositoryViewModel(string git_repository_path, RepositoryTab repository_tab,
@@ -23,7 +24,7 @@ namespace WimyGit.ViewModels
             UserControls.BranchTabViewModel branchTabViewModel,
             UserControls.TagTabViewModel tagTabViewModel,
             UserControls.RemoteTabViewModel remoteTabViewModel,
-            TabItem quickDiffTabItem, RichTextBox quickDiffRichTextBox)
+            TabItem workspaceTabItem, TabItem quickDiffTabItem, RichTextBox quickDiffRichTextBox)
         {
             DisplayAuthor = GlobalSetting.GetInstance().GetSignature();
             Directory = git_repository_path;
@@ -33,6 +34,7 @@ namespace WimyGit.ViewModels
 
             DirectoryTree = new DirectoryTreeViewModel(this);
             QuickDiffViewModel = new QuickDiffViewModel(quickDiffRichTextBox);
+            _workspaceTabItem = workspaceTabItem;
             _quickDiffTabItem = quickDiffTabItem;
 
             HistoryTabMember = new HistoryTabViewModel(this);
@@ -50,6 +52,7 @@ namespace WimyGit.ViewModels
             PushTagCommand = new DelegateCommand((object parameter) => OnPushTagCommand());
             OpenExplorerCommand = new DelegateCommand(OnOpenExplorerCommand);
             OpenGitBashCommand = new DelegateCommand(OnOpenGitBashCommand);
+            SwapFocusWorkspaceAndQuickDiffTabCommand = new DelegateCommand(OnSwapFocusWorkspaceAndQuickDiffTabCommand);
             OpenQuickDiffTabCommand = new DelegateCommand(OnOpenQuickDiffTabCommand);
             OpenPendingTabCommand = new DelegateCommand(OnOpenPendingTabCommand);
             OpenHistoryTabCommand = new DelegateCommand(OnOpenHistoryTabCommand);
@@ -88,6 +91,7 @@ namespace WimyGit.ViewModels
         public ICommand PushTagCommand { get; private set; }
         public ICommand OpenExplorerCommand { get; private set; }
         public ICommand OpenGitBashCommand { get; private set; }
+        public ICommand SwapFocusWorkspaceAndQuickDiffTabCommand { get; private set; }
         public ICommand OpenQuickDiffTabCommand { get; private set; }
         public ICommand OpenPendingTabCommand { get; private set; }
         public ICommand OpenHistoryTabCommand { get; private set; }
@@ -147,6 +151,18 @@ namespace WimyGit.ViewModels
         {
             RunExternal runner = new RunExternal(ProgramPathFinder.GetGitShell(), Directory);
             runner.RunInShell("--login -i");
+        }
+
+        private void OnSwapFocusWorkspaceAndQuickDiffTabCommand(object sender)
+        {
+            if (_quickDiffTabItem.IsSelected)
+            {
+                _workspaceTabItem.Focus();
+            }
+            else
+            {
+                _quickDiffTabItem.Focus();
+            }
         }
 
         private void OnOpenQuickDiffTabCommand (object sender)
