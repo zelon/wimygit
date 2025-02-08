@@ -5,44 +5,45 @@ namespace WimyGit.Config
 {
 	public class Model
 	{
-		public LinkedList<string> RecentRepositoryPaths = new LinkedList<string>();
-		public LinkedList<TabInfo> LastTabInfos = new LinkedList<TabInfo>();
+		public LinkedList<string> RecentRepositoryPaths { get; set; } = new LinkedList<string>();
+		public LinkedList<TabInfo> LastTabInfos { get; set; } = new LinkedList<TabInfo>();
 
-		public void AddRecentRepository(string repository_path)
+		public void AddRecentRepository(string repositoryPath)
 		{
-			RecentRepositoryPaths.Remove(repository_path);
-			RecentRepositoryPaths.AddFirst(repository_path);
+			RecentRepositoryPaths.Remove(repositoryPath);
+			RecentRepositoryPaths.AddFirst(repositoryPath);
 		}
 
 		public void CollectTabInfo(ItemCollection tabItems)
 		{
 			LastTabInfos.Clear();
 
-			bool has_focused = false;
-			foreach (TabItem tab_item in tabItems)
+			bool hasFocused = false;
+			foreach (TabItem tabItem in tabItems)
 			{
-				if (tab_item.Header is UserControls.RepositoryTabHeader == false)
+				if (!(tabItem.Header is UserControls.RepositoryTabHeader header))
 				{
 					continue;
 				}
-				var header = (UserControls.RepositoryTabHeader)tab_item.Header;
-				if (string.IsNullOrEmpty((string)(header.Path.Content)))
+				if (string.IsNullOrEmpty((string)header.Path.Content))
 				{
 					continue;
 				}
-				TabInfo tab_info = new TabInfo();
-				tab_info.IsFocused = tab_item.IsSelected;
-				tab_info.Directory = (string)header.Path.Content;
-
-				if (tab_info.IsFocused)
+				TabInfo tabInfo = new TabInfo
 				{
-					has_focused = true;
+					IsFocused = tabItem.IsSelected,
+					Directory = (string)header.Path.Content
+				};
+
+				if (tabInfo.IsFocused)
+				{
+					hasFocused = true;
 				}
 
-				LastTabInfos.AddLast(tab_info);
+				LastTabInfos.AddLast(tabInfo);
 			}
 
-			if (has_focused == false && LastTabInfos.Count > 0)
+			if (hasFocused == false && LastTabInfos.Count > 0)
 			{
 				LastTabInfos.Last.Value.IsFocused = true;
 			}

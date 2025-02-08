@@ -8,7 +8,7 @@ namespace WimyGit.Config
 	{
 		public static void Save(Model model)
 		{
-			XmlDocument document = new System.Xml.XmlDocument();
+			XmlDocument document = new XmlDocument();
 			XmlElement root = document.CreateElement("wimygit_config");
 			document.AppendChild(root);
 
@@ -38,14 +38,14 @@ namespace WimyGit.Config
 			}
 			root.AppendChild(lastTabs);
 
-            string saveFilePath = GetSaveFilePath();
-            if (File.Exists(saveFilePath) == false)
-            {
-                string directoryName = Path.GetDirectoryName(saveFilePath);
-                Directory.CreateDirectory(directoryName);
-            }
+			string saveFilePath = GetSaveFilePath();
+			if (File.Exists(saveFilePath) == false)
+			{
+				string directoryName = Path.GetDirectoryName(saveFilePath);
+				Directory.CreateDirectory(directoryName);
+			}
 
-            document.Save(saveFilePath);
+			document.Save(saveFilePath);
 		}
 
 		public static Model Load()
@@ -63,34 +63,35 @@ namespace WimyGit.Config
 				model.RecentRepositoryPaths.AddLast(node.InnerText);
 			}
 
-            bool existsFocused = false;
+			bool existsFocused = false;
 			foreach (XmlNode node in document.GetElementsByTagName("last_tab"))
 			{
-				TabInfo tabInfo = new TabInfo() {
+				TabInfo tabInfo = new TabInfo
+				{
 					Directory = node.SelectSingleNode("directory").InnerText,
 					IsFocused = bool.Parse(node.SelectSingleNode("is_focused").InnerText)
 				};
-                if (Directory.Exists(tabInfo.Directory) == false)
-                {
-                    continue;
-                }
+				if (Directory.Exists(tabInfo.Directory) == false)
+				{
+					continue;
+				}
 				model.LastTabInfos.AddLast(tabInfo);
-                if (tabInfo.IsFocused)
-                {
-                    existsFocused = true;
-                }
+				if (tabInfo.IsFocused)
+				{
+					existsFocused = true;
+				}
 			}
-            if (existsFocused == false && model.LastTabInfos.Count > 0)
-            {
-                model.LastTabInfos.Last.Value.IsFocused = true;
-            }
+			if (existsFocused == false && model.LastTabInfos.Count > 0)
+			{
+				model.LastTabInfos.Last.Value.IsFocused = true;
+			}
 			return model;
 		}
 
-        public static string GetConfigDirectoryPath()
-        {
-            return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "WimyGit");
-        }
+		public static string GetConfigDirectoryPath()
+		{
+			return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "WimyGit");
+		}
 
 		private static string GetSaveFilePath()
 		{
