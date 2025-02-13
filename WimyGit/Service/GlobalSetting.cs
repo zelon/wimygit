@@ -1,20 +1,22 @@
 ﻿using System;
+using System.Diagnostics;
 
 namespace WimyGit
 {
-	class GlobalSetting
+	public class GlobalSetting
 	{
 		public Config.Model ConfigModel { get; }
-		private static GlobalSetting instance_ = null;
-		private MainWindow window_ = null;
-        static private string signature_;
+		private static readonly GlobalSetting instance_;
+		private MainWindow window_;
+		private static string signature_;
 
-        public static GlobalSetting GetInstance()
+		static GlobalSetting()
 		{
-			if (instance_ == null)
-			{
-				instance_ = new GlobalSetting();
-			}
+			instance_ = new GlobalSetting();
+		}
+
+		public static GlobalSetting GetInstance()
+		{
 			return instance_;
 		}
 
@@ -25,29 +27,35 @@ namespace WimyGit
 
 		public void SetWindow(MainWindow window)
 		{
-			window_ = window;
+            Debug.Assert(window != null, "Window should be initialized before use");
+            window_ = window ?? throw new ArgumentNullException(nameof(window));
 		}
 
 		public MainWindow GetWindow()
 		{
+			Debug.Assert(window_ != null, "Window should be initialized before use");
 			return window_;
 		}
 
 		public void ViewFile(string filename)
 		{
-			string cmd = String.Format("-d {0}.untracked {0}", filename);
-			RunExternal runner = new RunExternal("gvim.exe", ".");
+			string editorPath = ConfigModel.ExternalEditor ?? "gvim.exe";
+			Debug.Assert(!string.IsNullOrEmpty(editorPath), "Editor path must not be empty");
+			
+			string cmd = $"-d {filename}.untracked {filename}";
+			RunExternal runner = new RunExternal(editorPath, ".");
 			runner.RunWithoutWaiting(cmd);
 		}
 
-        public string GetSignature()
-        {
-            if (string.IsNullOrEmpty(signature_) == false)
-            {
-                return signature_;
-            }
-            signature_ = GitWrapper.GetSignature();
-            return signature_;
-        }
+		public string GetSignature()
+		{
+			if (string.IsNullOrEmpty(signature_) == false)
+			{
+				return signature_;
+			}
+			signature_ = GitWrapper.GetSignature();
+			Debug.Assert(!string.IsNullOrEmpty(signature_), "Git signature must not be empty");
+			return signature_;
+		}
 	}
 }

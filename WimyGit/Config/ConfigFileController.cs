@@ -38,6 +38,10 @@ namespace WimyGit.Config
 			}
 			root.AppendChild(lastTabs);
 
+			XmlElement externalEditor = document.CreateElement("external_editor");
+			externalEditor.InnerText = model.ExternalEditor;
+			root.AppendChild(externalEditor);
+
 			string saveFilePath = GetSaveFilePath();
 			if (File.Exists(saveFilePath) == false)
 			{
@@ -85,6 +89,13 @@ namespace WimyGit.Config
 			{
 				model.LastTabInfos.Last.Value.IsFocused = true;
 			}
+
+			XmlNode externalEditorNode = document.SelectSingleNode("//external_editor");
+			if (externalEditorNode != null)
+			{
+				model.ExternalEditor = externalEditorNode.InnerText;
+			}
+
 			return model;
 		}
 
