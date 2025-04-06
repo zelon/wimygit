@@ -5,14 +5,26 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:WimyGit.View"
              mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="800"
-             >
+             d:DesignHeight="450" d:DesignWidth="800">
     <Grid>
-        <TreeView x:Name="treeView" ItemsSource="{Binding TreeItems}" SelectedValuePath="Path" SelectedItemChanged="OnTreeViewSelectedItemChanged" FontFamily="Consolas">
+        <TreeView x:Name="treeView" 
+                  ItemsSource="{Binding TreeItems}" 
+                  SelectedValuePath="Path" 
+                  SelectedItemChanged="OnTreeViewSelectedItemChanged" 
+                  FontFamily="Consolas">
             <TreeView.ItemContainerStyle>
-                <Style TargetType="{x:Type TreeViewItem}">
+                <Style TargetType="{x:Type TreeViewItem}" BasedOn="{StaticResource {x:Type TreeViewItem}}">
                     <Setter Property="IsExpanded" Value="{Binding IsExpanded,Mode=TwoWay}" />
                     <Setter Property="IsSelected" Value="{Binding IsSelected,Mode=TwoWay}" />
+                    <Setter Property="Tag" Value="{Binding DataContext, RelativeSource={RelativeSource AncestorType={x:Type TreeView}}}"/>
+                    <Setter Property="ContextMenu">
+                        <Setter.Value>
+                            <ContextMenu>
+                                <MenuItem Header="Show in Explorer" Command="{Binding PlacementTarget.Tag.ShowInExplorerCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="{Binding}"/>
+                                <MenuItem Header="Open Terminal" Command="{Binding PlacementTarget.Tag.OpenTerminalCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="{Binding}"/>
+                            </ContextMenu>
+                        </Setter.Value>
+                    </Setter>
                 </Style>
             </TreeView.ItemContainerStyle>
             <TreeView.ItemTemplate>

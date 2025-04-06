@@ -1,12 +1,16 @@
 ﻿using System;
 using System.IO;
 using System.Collections.ObjectModel;
+using System.Windows.Input;
 
 namespace WimyGit.ViewModels
 {
     public class DirectoryTreeViewModel : NotifyBase
     {
         ObservableCollection<TreeData> TreeItems_ = new ObservableCollection<TreeData>();
+        public ICommand ShowInExplorerCommand { get; private set; }
+        public ICommand OpenTerminalCommand { get; private set; }
+
         public ObservableCollection<TreeData> TreeItems {
             get { return TreeItems_; }
             set {
@@ -19,8 +23,61 @@ namespace WimyGit.ViewModels
 
         public DirectoryTreeViewModel(RepositoryViewModel repositoryViewModel)
         {
+            ShowInExplorerCommand = new DelegateCommand(OnShowInExplorerCommand);
+            OpenTerminalCommand = new DelegateCommand(OnOpenTerminalCommand);
             repositoryViewModel_ = repositoryViewModel;
         }
+
+        public void OnShowInExplorerCommand(object sender)
+        {
+            var treeData = (DirectoryTreeViewModel.TreeData)sender;
+            if (treeData == null)
+            {
+                return;
+            }
+            var path = treeData.Path;
+            if (File.Exists(path))
+            {
+                // 윈도우 파일 탐색기에서 해당 파일을 선택한 채로 탐색기 열기
+                System.Diagnostics.Process.Start("explorer.exe", $"/select, \"{path}\"");
+            }
+            else if (Directory.Exists(path))
+            {
+                // 윈도우 파일 탐색기에서 해당 폴더 열기
+                System.Diagnostics.Process.Start("explorer.exe", path);
+            }
+            else
+            {
+                // 경로가 유효하지 않은 경우 처리
+                System.Windows.MessageBox.Show("Invalid path: " + path);
+            }
+        }
+
+        public void OnOpenTerminalCommand(object sender)
+        {
+            var treeData = (DirectoryTreeViewModel.TreeData)sender;
+            if (treeData == null)
+            {
+                return;
+            }
+            string path = treeData.Path;
+            if (File.Exists(path))
+            {
+                path = Path.GetDirectoryName(path);
+            }
+            if (Directory.Exists(path))
+            {
+                // cmd.exe 에서 해당 폴더 열기
+                System.Diagnostics.Process.Start("cmd.exe", $"/K cd \"{path}\"");
+            }
+            else
+            {
+                // 경로가 유효하지 않은 경우 처리
+                System.Windows.MessageBox.Show("Invalid path: " + path);
+            }
+        }
+
+
 
         public void SetTreeViewRootPath(string directory)
         {
