@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Interop;
 using WimyGitLib;
 
 namespace WimyGit.UserControls
@@ -27,6 +28,7 @@ namespace WimyGit.UserControls
         public ICommand OpenSelectedFileCommand { get; private set; }
         public ICommand MergeToolCommand { get; private set; }
         public ICommand AddToGitIgnoreCommand { get; private set; }
+        public ICommand DeleteLocalFileCommand { get; private set; }
 
         public Action OnSelectAllCallbackViewSide;
 
@@ -57,6 +59,7 @@ namespace WimyGit.UserControls
             OpenSelectedFileCommand = new DelegateCommand(OnOpenSelectedFileCommand);
             MergeToolCommand = new DelegateCommand(OnMergeToolCommand);
             AddToGitIgnoreCommand = new DelegateCommand(OnAddToGitIgnoreCommand);
+            DeleteLocalFileCommand = new DelegateCommand(OnDeleteLocalFileCommand);
 
             SelectAllCommand = new DelegateCommand(OnSelectAllCommand);
 
@@ -412,6 +415,26 @@ namespace WimyGit.UserControls
 
                 runner.Run(cmd);
             }
+            await gitRepository.Refresh();
+        }
+
+        public async void OnDeleteLocalFileCommand(object parameter)
+        {
+            if (_gitRepository.TryGetTarget(out IGitRepository gitRepository) == false)
+            {
+                return;
+            }
+            FileStatus fileStatus = (FileStatus)parameter;
+            if (fileStatus == null)
+            {
+                return;
+            }
+            string fullPath = gitRepository.GetFullPath(fileStatus.FilePath);
+            if (MessageBox.Show($"Delete local file: {fullPath}?", "Delete Local File", MessageBoxButton.OKCancel, MessageBoxImage.Warning) == System.Windows.MessageBoxResult.Cancel)
+            {
+                return;
+            }
+            File.Delete(fullPath);
             await gitRepository.Refresh();
         }
 

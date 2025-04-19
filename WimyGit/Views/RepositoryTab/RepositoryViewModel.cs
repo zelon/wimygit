@@ -109,6 +109,11 @@ namespace WimyGit.ViewModels
             return Directory;
         }
 
+        public string GetFullPath(string relativePath)
+        {
+            return System.IO.Path.Combine(Directory, relativePath);
+        }
+
         public GitWrapper GetGitWrapper()
         {
             return git_;
