@@ -12,6 +12,11 @@ namespace WimyGit.UserControls
 {
     public class PendingTabViewModel : NotifyBase
     {
+        public IGitRepository GetGitRepository()
+        {
+            return _gitRepository.TryGetTarget(out IGitRepository gitRepository) ? gitRepository : null;
+        }
+
         public ObservableCollection<FileStatus> ModifiedList { get; set; }
         public ObservableCollection<FileStatus> StagedList { get; set; }
 
@@ -27,7 +32,6 @@ namespace WimyGit.UserControls
         public ICommand OpenExplorerSelectedFileCommand { get; private set; }
         public ICommand OpenSelectedFileCommand { get; private set; }
         public ICommand MergeToolCommand { get; private set; }
-        public ICommand AddToGitIgnoreCommand { get; private set; }
         public ICommand DeleteLocalFileCommand { get; private set; }
 
         public Action OnSelectAllCallbackViewSide;
@@ -58,7 +62,6 @@ namespace WimyGit.UserControls
             OpenExplorerSelectedFileCommand = new DelegateCommand(OnOpenExplorerSelectedFileCommand);
             OpenSelectedFileCommand = new DelegateCommand(OnOpenSelectedFileCommand);
             MergeToolCommand = new DelegateCommand(OnMergeToolCommand);
-            AddToGitIgnoreCommand = new DelegateCommand(OnAddToGitIgnoreCommand);
             DeleteLocalFileCommand = new DelegateCommand(OnDeleteLocalFileCommand);
 
             SelectAllCommand = new DelegateCommand(OnSelectAllCommand);
@@ -399,23 +402,6 @@ namespace WimyGit.UserControls
             {
                 gitRepository.GetGitWrapper().MergeTool(item);
             }
-        }
-
-        public async void OnAddToGitIgnoreCommand(object parameter)
-        {
-            if (_gitRepository.TryGetTarget(out IGitRepository gitRepository) == false)
-            {
-                return;
-            }
-            foreach (var item in SelectedModifiedFilePathList)
-            {
-                string cmd = $"diff";
-                string directory = gitRepository.GetRepositoryDirectory();
-                RunExternal runner = new RunExternal("git.exe", directory);
-
-                runner.Run(cmd);
-            }
-            await gitRepository.Refresh();
         }
 
         public async void OnDeleteLocalFileCommand(object parameter)
