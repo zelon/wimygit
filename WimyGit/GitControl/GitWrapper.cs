@@ -75,16 +75,21 @@ namespace WimyGit
 			return true;
 		}
 
-        public async Task<List<StashedFileInfo>> GetStashedFileInfosAsync(string stashName)
+        public List<StashedFileInfo> GetStashedFileInfos(string stashName)
         {
             List<StashedFileInfo> outputs = new List<StashedFileInfo>();
             {
                 string cmd = GitCommandCreator.StashModifiedFileList(stashName);
-                List<string> lines = await CreateGitRunner().RunAsync(cmd);
+                Debug.WriteLine($"here1,stashName:{stashName}");
+                List<string> lines = CreateGitRunner().Run(cmd);
+                Debug.WriteLine($"here2,stashName:{stashName}");
                 foreach (string line in lines)
                 {
                     var splitted = line.Split("\t");
-                    Debug.Assert(splitted.Length >= 2);
+                    if (splitted.Length < 2)
+                    {
+                        return outputs;
+                    }
                     StashedFileInfo stashedFileInfo = new StashedFileInfo();
                     stashedFileInfo.FileType = StashedFileInfo.StashedFileType.kModified;
                     stashedFileInfo.Status = splitted[0];
@@ -95,7 +100,11 @@ namespace WimyGit
             }
             {
                 string cmd = GitCommandCreator.StashUntrackedFileListWithCommitId(stashName);
-                List<string> lines = await CreateGitRunner().RunAsync(cmd);
+                List<string> lines = CreateGitRunner().Run(cmd);
+                if (lines.Count == 0)
+                {
+                    return outputs;
+                }
                 lines.RemoveAt(0); // skip commit id
                 foreach (string line in lines)
                 {
@@ -110,13 +119,6 @@ namespace WimyGit
                 }
             }
             return outputs;
-        }
-
-        public List<StashedFileInfo> GetStashedFileInfos(string stashName)
-        {
-            var task = Task.Run(async () => await GetStashedFileInfosAsync(stashName));
-            task.Wait();
-            return task.Result;
         }
 
         public async Task<List<string>> GetGitStatusPorcelainAllAsync()
