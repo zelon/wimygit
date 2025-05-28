@@ -549,7 +549,7 @@ namespace WimyGit.UserControls
 
         public void OnTestCommand(object parameter)
         {
-            UIService.ShowMessage("hello. tester");
+            UIService.ShowMessage("TEST");
         }
     }
 }
