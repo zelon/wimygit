@@ -29,8 +29,21 @@ namespace WimyGit.UserControls
         public ICommand MergeToolCommand { get; private set; }
         public ICommand AddToGitIgnoreCommand { get; private set; }
         public ICommand DeleteLocalFileCommand { get; private set; }
+        public ICommand TestCommand { get; private set; }
 
         public Action OnSelectAllCallbackViewSide;
+        
+        public bool IsDebugBuild
+        {
+            get
+            {
+#if DEBUG
+                return true;
+#else
+                return false;
+#endif
+            }
+        }
 
         private WeakReference<IGitRepository> _gitRepository;
         private bool noCommitsYet_ = false;
@@ -60,6 +73,7 @@ namespace WimyGit.UserControls
             MergeToolCommand = new DelegateCommand(OnMergeToolCommand);
             AddToGitIgnoreCommand = new DelegateCommand(OnAddToGitIgnoreCommand);
             DeleteLocalFileCommand = new DelegateCommand(OnDeleteLocalFileCommand);
+            TestCommand = new DelegateCommand(OnTestCommand);
 
             SelectAllCommand = new DelegateCommand(OnSelectAllCommand);
 
@@ -531,6 +545,11 @@ namespace WimyGit.UserControls
                 }
             }
             return null;
+        }
+
+        public void OnTestCommand(object parameter)
+        {
+            UIService.ShowMessage("hello. tester");
         }
     }
 }
