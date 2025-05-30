@@ -12,7 +12,7 @@ namespace WimyGit
             InitializeComponent();
         }
 
-        private void AddTab(string path, bool is_focused)
+        private void RestoreTab(string path, bool is_focused)
         {
             Thickness zeroThickness = new Thickness(0, 0, 0, 0);
             TabItem tab_item = new TabItem();
@@ -45,7 +45,7 @@ namespace WimyGit
             {
                 foreach (var tab_info in tab_infos)
                 {
-                    AddTab(tab_info.Directory, tab_info.IsFocused);
+                    RestoreTab(tab_info.Directory, tab_info.IsFocused);
                 }
             }
         }
@@ -128,8 +128,7 @@ namespace WimyGit
 
         private void Window_Closed(object sender, System.EventArgs e)
         {
-            GlobalSetting.GetInstance().ConfigModel.CollectTabInfo(tab_control_.Items);
-            Config.ConfigFileController.Save(GlobalSetting.GetInstance().ConfigModel);
+            GlobalSetting.GetInstance().ConfigModel.CollectTabInfoAndSave(tab_control_.Items);
         }
 
         private void AddNewTab()

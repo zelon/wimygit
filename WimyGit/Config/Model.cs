@@ -15,7 +15,7 @@ namespace WimyGit.Config
 			RecentRepositoryPaths.AddFirst(repositoryPath);
 		}
 
-		public void CollectTabInfo(ItemCollection tabItems)
+		public void CollectTabInfoAndSave(ItemCollection tabItems)
 		{
 			LastTabInfos.Clear();
 
@@ -48,8 +48,9 @@ namespace WimyGit.Config
 			{
 				LastTabInfos.Last.Value.IsFocused = true;
 			}
-		}
-	}
+            ConfigFileController.Save(this);
+        }
+    }
 
 	public class TabInfo
 	{

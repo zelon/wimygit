@@ -35,6 +35,8 @@ namespace WimyGit
                     Debug.Assert(Util.IsValidGitDirectory(repo_path));
                     new_tab_item.Content = new RepositoryTab(repo_path);
                     tab_header.SetRepositoryPath(repo_path);
+
+                    GlobalSetting.GetInstance().ConfigModel.CollectTabInfoAndSave(tabControl_.Items);
                 });
             }
             else

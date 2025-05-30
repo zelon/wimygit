@@ -48,6 +48,9 @@ namespace WimyGit.UserControls
 				if (tab_item.Header == this)
 				{
 					tab_control_.Items.Remove(tab_item);
+
+                    GlobalSetting.GetInstance().ConfigModel.CollectTabInfoAndSave(tab_control_.Items);
+
 					return;
 				}
 			}
