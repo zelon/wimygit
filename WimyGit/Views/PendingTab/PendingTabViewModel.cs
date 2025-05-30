@@ -25,6 +25,7 @@ namespace WimyGit.UserControls
         public DelegateCommand StageSelectedPartialCommand { get; private set; }
         public ICommand AmendClickedCommand { get; private set; }
         public ICommand CommitCommand { get; private set; }
+        public ICommand GetCommitMessageFromAICommand { get; private set; }
         public ICommand ModifiedDiffCommand { get; private set; }
         public ICommand StagedDiffCommand { get; private set; }
         public ICommand UnstageCommand { get; private set; }
@@ -58,6 +59,7 @@ namespace WimyGit.UserControls
             UnstageCommand = new DelegateCommand(OnUnstageCommand);
             AmendClickedCommand = new DelegateCommand(OnAmendClickedCommand);
             CommitCommand = new DelegateCommand(OnCommitCommand);
+            GetCommitMessageFromAICommand = new DelegateCommand(OnGetCommitMessageFromAICommand);
             RevertCommand = new DelegateCommand(OnRevertCommand);
             OpenExplorerSelectedFileCommand = new DelegateCommand(OnOpenExplorerSelectedFileCommand);
             OpenSelectedFileCommand = new DelegateCommand(OnOpenSelectedFileCommand);
@@ -219,14 +221,37 @@ namespace WimyGit.UserControls
             {
                 return;
             }
+            if (StagedList.Count == 0)
+            {
+                UIService.ShowMessage("No staged file");
+                return;
+            }
             if (String.IsNullOrEmpty(CommitMessage))
             {
                 UIService.ShowMessage("Empty commit message");
                 return;
             }
+            gitRepository.GetGitWrapper().Commit(CommitMessage, IsAmendCommit);
+            CommitMessage = "";
+            IsAmendCommit = false;
+            NotifyPropertyChanged("IsAmendCommit");
+            await gitRepository.Refresh();
+        }
+
+        public async void OnGetCommitMessageFromAICommand(object parameter)
+        {
+            if (_gitRepository.TryGetTarget(out IGitRepository gitRepository) == false)
+            {
+                return;
+            }
             if (StagedList.Count == 0)
             {
                 UIService.ShowMessage("No staged file");
+                return;
+            }
+            if (String.IsNullOrEmpty(CommitMessage) == false)
+            {
+                UIService.ShowMessage("NOT Empty commit message. Clear commit message at first");
                 return;
             }
             gitRepository.GetGitWrapper().Commit(CommitMessage, IsAmendCommit);
