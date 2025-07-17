@@ -95,6 +95,12 @@ namespace WimyGit
             runner.RunWithoutWaiting(wimygitDirectory);
         }
 
+        private void ShowWimyGitConfigFileInExplorer(object sender, RoutedEventArgs e)
+        {
+            RunExternal runner = new RunExternal("explorer.exe", Config.ConfigFileController.GetConfigDirectoryPath());
+            runner.RunWithoutWaiting(Config.ConfigFileController.GetConfigDirectoryPath());
+        }
+
         private void CloseWindow(object sender, RoutedEventArgs e)
         {
             Close();
