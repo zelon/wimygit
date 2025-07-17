@@ -42,6 +42,12 @@
                     </StackPanel>
                 </Button>
                 <Separator />
+                <Button Width="75" Command="{Binding TestCommand}" Visibility="{Binding IsDebugBuild, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <StackPanel Orientation="Vertical">
+                        <Image Source="..\..\Images\Test.png" Style="{StaticResource ToolbarImage}"/>
+                        <TextBlock HorizontalAlignment="Center"><Run Text="Test"/></TextBlock>
+                    </StackPanel>
+                </Button>
                 <Button Width="75" Command="{Binding ViewTimelapseCommand}">
                     <StackPanel Orientation="Vertical">
                         <Image Source="..\..\Images\TimeLapse.png" Style="{StaticResource ToolbarImage}"/>

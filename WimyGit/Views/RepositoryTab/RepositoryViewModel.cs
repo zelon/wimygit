@@ -57,6 +57,7 @@ namespace WimyGit.ViewModels
             OpenPendingTabCommand = new DelegateCommand(OnOpenPendingTabCommand);
             OpenHistoryTabCommand = new DelegateCommand(OnOpenHistoryTabCommand);
             RefreshCommand = new DelegateCommand(async (object parameter) => await Refresh());
+            TestCommand = new DelegateCommand((object parameter) => OnTestCommand());
             ViewTimelapseCommand = new DelegateCommand((object parameter) => OnViewTimeLapseCommand());
             FetchAllCommand = new DelegateCommand(async (object parameter) => await OnFetchAllCommand());
             PullCommand = new DelegateCommand(async (object parameter) => await OnPullCommand());
@@ -96,6 +97,8 @@ namespace WimyGit.ViewModels
         public ICommand OpenPendingTabCommand { get; private set; }
         public ICommand OpenHistoryTabCommand { get; private set; }
 
+        public ICommand TestCommand { get; private set; }
+
         public string Directory { get; set; }
         public string Log { get; set; }
         public string Branch { get; set; }
@@ -103,6 +106,18 @@ namespace WimyGit.ViewModels
         public string DisplayAuthor { get; set; }
 
         public string SelectedPath { get; set; }
+
+        public bool IsDebugBuild
+        {
+            get
+            {
+#if DEBUG
+                return true;
+#else
+                return false;
+#endif
+            }
+        }
 
         public string GetRepositoryDirectory()
         {
@@ -137,6 +152,11 @@ namespace WimyGit.ViewModels
                 return;
             }
             git_.ViewTimeLapse(SelectedPath);
+        }
+
+        public void OnTestCommand()
+        {
+            AddLog("Test button clicked");
         }
 
         public async Task OnFetchAllCommand()
