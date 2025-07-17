@@ -3,9 +3,12 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Interop;
+using TestCSharp;
+using WimyGit.Service;
 using WimyGitLib;
 
 namespace WimyGit.UserControls
@@ -47,6 +50,14 @@ namespace WimyGit.UserControls
 #else
                 return false;
 #endif
+            }
+        }
+
+        public bool ShowAICommitMessageButton
+        {
+            get
+            {
+                return String.IsNullOrEmpty(GlobalSetting.GetInstance().ConfigModel.GoogleGeminiApiKey) == false;
             }
         }
 
@@ -130,7 +141,6 @@ namespace WimyGit.UserControls
             }
         }
 
-
         void AddModifiedList(WimyGitLib.GitFileStatus.Pair git_file_status, SelectionRecover backup_selection,
                              ObservableCollection<FileStatus> to)
         {
@@ -186,7 +196,6 @@ namespace WimyGit.UserControls
             }
             return false;
         }
-
 
         public void OnSelectAllCommand(object parameter)
         {
@@ -254,6 +263,12 @@ namespace WimyGit.UserControls
 
         public async void OnGetCommitMessageFromAICommand(object parameter)
         {
+            var googleGeminiApiKey = GlobalSetting.GetInstance().ConfigModel.GoogleGeminiApiKey;
+            if (string.IsNullOrEmpty(googleGeminiApiKey))
+            {
+                UIService.ShowMessage("Google Gemini API key is not set. Please set it in the settings.");
+                return;
+            }
             if (_gitRepository.TryGetTarget(out IGitRepository gitRepository) == false)
             {
                 return;
@@ -268,11 +283,17 @@ namespace WimyGit.UserControls
                 UIService.ShowMessage("NOT Empty commit message. Clear commit message at first");
                 return;
             }
-            gitRepository.GetGitWrapper().Commit(CommitMessage, IsAmendCommit);
-            CommitMessage = "";
-            IsAmendCommit = false;
-            NotifyPropertyChanged("IsAmendCommit");
-            await gitRepository.Refresh();
+
+            List<string> outputs = await GitDiffCollector.CollectStageDiffAsync(gitRepository.GetRepositoryDirectory());
+            GeminiAI geminiAI = new GeminiAI(googleGeminiApiKey, "You are a super senior programmer.");
+            StringBuilder promptBuilder = new StringBuilder();
+            promptBuilder.AppendLine("Recommend a git commit message. Below is the git diff.");
+            foreach (string output in outputs)
+            {
+                promptBuilder.AppendLine(output);
+            }
+            CommitMessage = await geminiAI.GetGeminiAIResponse(promptBuilder.ToString());
+            NotifyPropertyChanged("CommitMessage");
         }
 
         void OnStageSelectedPartialCommand(object parameter)

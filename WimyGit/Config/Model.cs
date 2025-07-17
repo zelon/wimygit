@@ -8,8 +8,9 @@ namespace WimyGit.Config
 		public LinkedList<string> RecentRepositoryPaths { get; set; } = new LinkedList<string>();
 		public LinkedList<TabInfo> LastTabInfos { get; set; } = new LinkedList<TabInfo>();
 		public string ExternalEditor { get; set; } = "gvim.exe";
+        public string GoogleGeminiApiKey { get; set; } = "";
 
-		public void AddRecentRepository(string repositoryPath)
+        public void AddRecentRepository(string repositoryPath)
 		{
 			RecentRepositoryPaths.Remove(repositoryPath);
 			RecentRepositoryPaths.AddFirst(repositoryPath);

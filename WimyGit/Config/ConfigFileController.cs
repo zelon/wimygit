@@ -12,7 +12,11 @@ namespace WimyGit.Config
 			XmlElement root = document.CreateElement("wimygit_config");
 			document.AppendChild(root);
 
-			XmlElement recentRepositories = document.CreateElement("recent_repositories");
+            XmlElement googleGeminiApiKey = document.CreateElement("google_gemini_api_key");
+            googleGeminiApiKey.InnerText = model.GoogleGeminiApiKey;
+            root.AppendChild(googleGeminiApiKey);
+
+            XmlElement recentRepositories = document.CreateElement("recent_repositories");
 			foreach (string recentRepository in model.RecentRepositoryPaths)
 			{
 				XmlElement element = document.CreateElement("recent_repository");
@@ -62,7 +66,13 @@ namespace WimyGit.Config
 			XmlDocument document = new XmlDocument();
 			document.Load(GetSaveFilePath());
 
-			foreach (XmlNode node in document.GetElementsByTagName("recent_repository"))
+            var googleGeminiApiKeyElement = document.SelectSingleNode("//google_gemini_api_key");
+            if (googleGeminiApiKeyElement != null)
+            {
+                model.GoogleGeminiApiKey = googleGeminiApiKeyElement.InnerText;
+            }
+
+            foreach (XmlNode node in document.GetElementsByTagName("recent_repository"))
 			{
 				model.RecentRepositoryPaths.AddLast(node.InnerText);
 			}
