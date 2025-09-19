@@ -53,7 +53,7 @@ namespace WimyGitLib
 
 			if (mark == "??")
 			{
-				status.SetModified(filename, "Untracked");
+				status.SetModified(filename, Constants.Untracked);
 				return status;
 			}
 			if (mark == "!!")

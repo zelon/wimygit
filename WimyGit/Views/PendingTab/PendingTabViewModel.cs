@@ -314,7 +314,7 @@ namespace WimyGit.UserControls
                 {
                     continue;
                 }
-                if (file_status.Status == "Untracked")
+                if (file_status.Status == Constants.Untracked)
                 {
                     string filename = System.IO.Path.Combine(gitRepository.GetGitWrapper().GetPath(), filepath);
                     GlobalSetting.GetInstance().ViewFile(filename);
@@ -390,7 +390,7 @@ namespace WimyGit.UserControls
             List<string> filesToCheckout = new List<string>();
             foreach (var fileStatus in file_list)
             {
-                if (fileStatus.Status == "Untracked")
+                if (fileStatus.Status == Constants.Untracked)
                 {
                     string fullPath = gitRepository.GetFullPath(fileStatus.FilePath);
                     try
@@ -495,7 +495,7 @@ namespace WimyGit.UserControls
                 return;
             }
             List<string> lines;
-            if (fileStatus.Status == "Untracked" // ModifiedList
+            if (fileStatus.Status == Constants.Untracked // ModifiedList
                 || fileStatus.Status == "Added in stage") // StagedList
             {
                 string filename = Path.Combine(gitRepository.GetGitWrapper().GetPath(), item);
