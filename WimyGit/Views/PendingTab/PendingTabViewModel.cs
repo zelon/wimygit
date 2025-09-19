@@ -363,20 +363,21 @@ namespace WimyGit.UserControls
                 return;
             }
             int kMinimumShowFilenameCount = 20;
-            List<string> file_list = new List<string>();
+            var file_list = ModifiedList.Where(o => o.IsSelected).ToList();
             string msg = "Revert below:\n\n";
-            foreach (var item in SelectedModifiedFilePathList)
+            for (int i = 0; i < file_list.Count; ++i)
             {
-                file_list.Add(item);
-                if (file_list.Count < kMinimumShowFilenameCount)
+                if (i < kMinimumShowFilenameCount)
                 {
-                    msg += string.Format("{0}\n", item);
+                    msg += $"{file_list[i].FilePath}\n";
                 }
-                else if (file_list.Count == 30)
+                else if (i == kMinimumShowFilenameCount)
                 {
                     msg += "...";
+                    break;
                 }
             }
+
             if (file_list.Count == 0)
             {
                 return;
@@ -386,22 +387,32 @@ namespace WimyGit.UserControls
                 return;
             }
             List<string> logs = new List<string>();
-            List<string> collectedFilenames = new List<string>();
-            foreach (string item in file_list)
+            List<string> filesToCheckout = new List<string>();
+            foreach (var fileStatus in file_list)
             {
-                logs.Add("Revert: " + item);
-                collectedFilenames.Add(item);
-                if (collectedFilenames.Count > 50)
+                if (fileStatus.Status == "Untracked")
                 {
-                    string command = gitRepository.GetGitWrapper().P4Revert(collectedFilenames);
-                    logs.Add($"Command: {command}");
-
-                    collectedFilenames.Clear();
+                    string fullPath = gitRepository.GetFullPath(fileStatus.FilePath);
+                    try
+                    {
+                        File.Delete(fullPath);
+                        logs.Add("Deleted: " + fileStatus.FilePath);
+                    }
+                    catch (Exception ex)
+                    {
+                        logs.Add($"Failed to delete {fileStatus.FilePath}: {ex.Message}");
+                        UIService.ShowMessage($"Failed to delete {fileStatus.FilePath}: {ex.Message}");
+                    }
+                }
+                else
+                {
+                    filesToCheckout.Add(fileStatus.FilePath);
                 }
             }
-            if (collectedFilenames.Count > 0)
+
+            if (filesToCheckout.Any())
             {
-                string command = gitRepository.GetGitWrapper().P4Revert(collectedFilenames);
+                string command = gitRepository.GetGitWrapper().P4Revert(filesToCheckout);
                 logs.Add($"Command: {command}");
             }
             gitRepository.AddLog(logs);
