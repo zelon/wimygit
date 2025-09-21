@@ -10,6 +10,11 @@ Git client like p4v
 # Screenshot
 ![Screenshot](https://raw.githubusercontent.com/zelon/wimygit/master/ScreenShot.png)
 
+# Install
+ * Download zip file and extract executable and run the .exe
+ * Or 'winget install Wimysoft.wimygit' on windows terminal
+
+
 # Coding Style
  * Following corefx team's way: https://github.com/dotnet/corefx/blob/master/Documentation/coding-guidelines/coding-style.md
  * .editorconfig: https://github.com/dotnet/corefx/blob/master/.editorconfig
