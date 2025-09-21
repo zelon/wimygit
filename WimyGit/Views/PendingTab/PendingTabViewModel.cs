@@ -256,6 +256,7 @@ namespace WimyGit.UserControls
             }
             if (_gitRepository.TryGetTarget(out IGitRepository gitRepository) == false)
             {
+                UIService.ShowMessage("Invalid git repository");
                 return;
             }
             if (StagedList.Count == 0)
@@ -279,6 +280,7 @@ namespace WimyGit.UserControls
             }
             CommitMessage = await geminiAI.GetGeminiAIResponse(promptBuilder.ToString());
             NotifyPropertyChanged("CommitMessage");
+            UIService.ShowMessage("Commit Message has been updated");
         }
 
         void OnStageSelectedPartialCommand(object parameter)
