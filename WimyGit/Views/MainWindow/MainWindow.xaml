@@ -19,10 +19,11 @@
                         <Button Click="OnMenuButtonClick" Name="menuButton" Width="40" Height="40" Margin="0,0,0,0" BorderBrush="Transparent" Background="Transparent">
                             <Button.ContextMenu>
                                 <ContextMenu>
+                                    <MenuItem Header="Plugin..." Click="ShowPluginManager" />
+                                    <Separator />
                                     <MenuItem Header="Help">
                                         <MenuItem Header="How to install a plugin" Click="ShowHelpHowToInstallPlugin" />
                                     </MenuItem>
-                                    <Separator />
                                     <MenuItem Header="Show WimyGit Release page on Github" Click="ShowWimygitReleasePage" />
                                     <MenuItem Header="Show Plugin folder in Explorer" Click="ShowPluginFolderInExplorer" />
                                     <Separator />

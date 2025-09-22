@@ -1,0 +1,33 @@
+<Window x:Class="WimyGit.Views.PluginManager"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:WimyGit.Views"
+        mc:Ignorable="d"
+        Title="Plugin Manager" Height="450" Width="800">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="70" />
+        </Grid.RowDefinitions>
+
+        <ListBox Grid.Row="0" ItemsSource="{Binding PluginUrls}" SelectedItem="{Binding SelectedPluginUrl}">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <Grid Margin="0,2">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="170" />
+                            <ColumnDefinition Width="auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="{Binding Name}" />
+                        <TextBlock Grid.Column="1" Text="{Binding Url}" Width="auto" />
+                    </Grid>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+
+        </ListBox>
+
+        <Button Grid.Row="1" Content="Install" Command="{Binding InstallCommand}" Margin="5" />
+    </Grid>
+</Window>

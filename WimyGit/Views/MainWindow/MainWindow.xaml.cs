@@ -66,6 +66,13 @@ namespace WimyGit
             p.Start();
         }
 
+        private void ShowPluginManager(object sender, RoutedEventArgs e)
+        {
+            WimyGit.Views.PluginManager pluginManager = new WimyGit.Views.PluginManager();
+            pluginManager.Owner = this;
+            pluginManager.ShowDialog();
+        }
+
         private void ShowHelpHowToInstallPlugin(object sender, RoutedEventArgs e)
         {
             OpenUrlLink("https://github.com/zelon/wimygit/wiki/How-to-install-a-plugin");
