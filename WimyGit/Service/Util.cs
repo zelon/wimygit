@@ -64,5 +64,13 @@ namespace WimyGit
 
             return System.Version.Parse(fileVersion);
         }
+
+        public static void OpenUrlLink(string url)
+        {
+            Process p = new Process();
+            p.StartInfo.UseShellExecute = true;
+            p.StartInfo.FileName = url;
+            p.Start();
+        }
     }
 }

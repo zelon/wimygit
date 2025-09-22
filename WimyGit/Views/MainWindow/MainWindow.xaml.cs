@@ -58,14 +58,6 @@ namespace WimyGit
             menuButton.ContextMenu.IsOpen = true;
         }
 
-        private void OpenUrlLink(string url)
-        {
-            Process p = new Process();
-            p.StartInfo.UseShellExecute = true;
-            p.StartInfo.FileName = url;
-            p.Start();
-        }
-
         private void ShowPluginManager(object sender, RoutedEventArgs e)
         {
             WimyGit.Views.PluginManager pluginManager = new WimyGit.Views.PluginManager();
@@ -73,26 +65,14 @@ namespace WimyGit
             pluginManager.ShowDialog();
         }
 
-        private void ShowHelpHowToInstallPlugin(object sender, RoutedEventArgs e)
-        {
-            OpenUrlLink("https://github.com/zelon/wimygit/wiki/How-to-install-a-plugin");
-        }
-
         private void ShowWimygitReleasePage(object sender, RoutedEventArgs e)
         {
-            OpenUrlLink("https://github.com/zelon/wimygit/releases");
+            Util.OpenUrlLink("https://github.com/zelon/wimygit/releases");
         }
 
         private async void CheckLatestRelease(object sender, RoutedEventArgs e)
         {
             await LatestVersionController.StartCheck(this);
-        }
-
-        private void ShowPluginFolderInExplorer(object sender, RoutedEventArgs e)
-        {
-            string pluginRootDirectory = Plugin.PluginController.GetPluginRootDirectoryPath();
-            RunExternal runner = new RunExternal("explorer.exe", pluginRootDirectory);
-            runner.RunWithoutWaiting(pluginRootDirectory);
         }
 
         private void ShowWimyGitDirectoryInExplorer(object sender, RoutedEventArgs e)

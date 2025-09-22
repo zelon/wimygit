@@ -1,11 +1,8 @@
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.IO;
 using System.Net.Http;
+using System.Windows;
 using System.Xml;
-using System.Threading.Tasks;
-using WimyGit.Service;
-using System.Collections.Generic;
 
 namespace WimyGit.Views
 {
@@ -15,12 +12,28 @@ namespace WimyGit.Views
         private PluginInfo _selectedPluginUrl;
         private ObservableCollection<PluginInfo> _pluginUrls = [];
 
+        public DelegateCommand OpenPluginManualLinkCommand { get; private set; }
+        public DelegateCommand ShowPluginFolderInExplorerCommand { get; private set; }
         public DelegateCommand InstallCommand { get; private set; }
 
         public PluginManagerViewModel()
         {
             InstallCommand = new DelegateCommand(ExecuteInstall, CanExecuteInstall);
+            OpenPluginManualLinkCommand = new DelegateCommand(ShowHelpHowToInstallPlugin);
+            ShowPluginFolderInExplorerCommand = new DelegateCommand(ShowPluginFolderInExplorer);
             LoadPluginList();
+        }
+
+        private void ShowHelpHowToInstallPlugin(object sender)
+        {
+            Util.OpenUrlLink("https://github.com/zelon/wimygit/wiki/How-to-install-a-plugin");
+        }
+
+        private void ShowPluginFolderInExplorer(object sender)
+        {
+            string pluginRootDirectory = Plugin.PluginController.GetPluginRootDirectoryPath();
+            RunExternal runner = new RunExternal("explorer.exe", pluginRootDirectory);
+            runner.RunWithoutWaiting(pluginRootDirectory);
         }
 
         private bool CanExecuteInstall(object parameter)

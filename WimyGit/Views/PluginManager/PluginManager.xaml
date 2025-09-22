@@ -5,29 +5,31 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WimyGit.Views"
         mc:Ignorable="d"
-        Title="Plugin Manager" Height="450" Width="800">
+        Title="Plugin Manager" Height="450" Width="800" WindowStartupLocation="CenterOwner">
     <Grid>
         <Grid.RowDefinitions>
+            <RowDefinition Height="50" />
             <RowDefinition Height="*" />
             <RowDefinition Height="70" />
         </Grid.RowDefinitions>
 
-        <ListBox Grid.Row="0" ItemsSource="{Binding PluginUrls}" SelectedItem="{Binding SelectedPluginUrl}">
-            <ListBox.ItemTemplate>
-                <DataTemplate>
-                    <Grid Margin="0,2">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="170" />
-                            <ColumnDefinition Width="auto" />
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Text="{Binding Name}" />
-                        <TextBlock Grid.Column="1" Text="{Binding Url}" Width="auto" />
-                    </Grid>
-                </DataTemplate>
-            </ListBox.ItemTemplate>
+        <Grid Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Button Command="{Binding OpenPluginManualLinkCommand}" Content="How to install a plugin manually (Link)" Margin="5" Grid.Column="0" ></Button>
+            <Button Command="{Binding ShowPluginFolderInExplorerCommand}" Content="Open Plugin Folder in Explorer" Margin="5" Grid.Column="1" Width="Auto"></Button>
+        </Grid>
+        <ListView Grid.Row="1" ItemsSource="{Binding PluginUrls}" SelectedItem="{Binding SelectedPluginUrl}">
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn Header="Name" Width="200" DisplayMemberBinding="{Binding Name}" />
+                    <GridViewColumn Header="URL" Width="Auto" DisplayMemberBinding="{Binding Url}" />
+                </GridView>
+            </ListView.View>
+        </ListView>
 
-        </ListBox>
-
-        <Button Grid.Row="1" Content="Install" Command="{Binding InstallCommand}" Margin="5" />
+        <Button Grid.Row="2" Content="Install" Command="{Binding InstallCommand}" Margin="5" />
     </Grid>
 </Window>
