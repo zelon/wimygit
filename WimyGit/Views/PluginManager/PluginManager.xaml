@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:WimyGit.Views"
+        xmlns:local="clr-namespace:WimyGit"
         mc:Ignorable="d"
         Title="Plugin Manager" Height="450" Width="800" WindowStartupLocation="CenterOwner">
     <Grid>
@@ -30,6 +30,19 @@
             </ListView.View>
         </ListView>
 
-        <Button Grid.Row="2" Content="Install" Command="{Binding InstallCommand}" Margin="5" />
+        <Grid Grid.Row="2">
+            <Button Content="No selected plugin" Margin="5" />
+        </Grid>
+        <Grid Grid.Row="2" Visibility="{Binding NeedToShowInstallButtons, Converter={StaticResource BooleanToVisibilityConverter}}">
+            <Button Content="Install" Command="{Binding InstallCommand}" Margin="5" />
+        </Grid>
+        <Grid Grid.Row="2" Visibility="{Binding NeedToShowUpdateAndUninstallButtons, Converter={StaticResource BooleanToVisibilityConverter}}" Background="White">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Button Grid.Column="0" Content="Update" Command="{Binding UpdateCommand}" Margin="5" />
+            <Button Grid.Column="1" Content="Uninstall" Command="{Binding UninstallCommand}" Margin="5" />
+        </Grid>
     </Grid>
 </Window>

@@ -1,7 +1,6 @@
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Net.Http;
-using System.Windows;
 using System.Xml;
 
 namespace WimyGit.Views
@@ -15,13 +14,62 @@ namespace WimyGit.Views
         public DelegateCommand OpenPluginManualLinkCommand { get; private set; }
         public DelegateCommand ShowPluginFolderInExplorerCommand { get; private set; }
         public DelegateCommand InstallCommand { get; private set; }
+        public DelegateCommand UpdateCommand { get; private set; }
+        public DelegateCommand UninstallCommand { get; private set; }
 
         public PluginManagerViewModel()
         {
-            InstallCommand = new DelegateCommand(ExecuteInstall, CanExecuteInstall);
+            InstallCommand = new DelegateCommand(ExecuteInstall);
+            UpdateCommand = new DelegateCommand(ExecuteUpdate);
+            UninstallCommand = new DelegateCommand(ExecuteUninstall);
             OpenPluginManualLinkCommand = new DelegateCommand(ShowHelpHowToInstallPlugin);
             ShowPluginFolderInExplorerCommand = new DelegateCommand(ShowPluginFolderInExplorer);
             LoadPluginList();
+        }
+
+        public bool NeedToShowInstallButtons
+        {
+            get
+            {
+                if (SelectedPluginUrl != null && IsPluginInstalled() == false)
+                {
+                    return true;
+                }
+                return false;
+            }
+        }
+
+        public bool NeedToShowUpdateAndUninstallButtons
+        {
+            get
+            {
+                if (SelectedPluginUrl != null && IsPluginInstalled())
+                {
+                    return true;
+                }
+                return false;
+            }
+        }
+
+        private bool IsPluginInstalled()
+        {
+            if (SelectedPluginUrl == null)
+            {
+                return false;
+            }
+            string pluginDirectoryPath = GetPluginDirectoryPath(SelectedPluginUrl.Url);
+            return Directory.Exists(pluginDirectoryPath);
+        }
+
+        private string GetPluginDirectoryPath(string pluginUrl)
+        {
+            if (string.IsNullOrEmpty(pluginUrl))
+            {
+                return null;
+            }
+            string pluginRootDirectory = Plugin.PluginController.GetPluginRootDirectoryPath();
+            string pluginDirectoryName = Path.GetFileNameWithoutExtension(pluginUrl);
+            return Path.Combine(pluginRootDirectory, pluginDirectoryName);
         }
 
         private void ShowHelpHowToInstallPlugin(object sender)
@@ -36,11 +84,6 @@ namespace WimyGit.Views
             runner.RunWithoutWaiting(pluginRootDirectory);
         }
 
-        private bool CanExecuteInstall(object parameter)
-        {
-            return SelectedPluginUrl != null;
-        }
-
         private void ExecuteInstall(object parameter)
         {
             try
@@ -51,6 +94,11 @@ namespace WimyGit.Views
 
                 RunExternal runner = new RunExternal(git_bin, dest_path);
                 runner.RunInConsoleProgressWindow($"clone {SelectedPluginUrl.Url}");
+
+                UIService.ShowMessage("Plugin has been installed. It will be applied after restarting the wimygit");
+
+                NotifyPropertyChanged("NeedToShowInstallButtons");
+                NotifyPropertyChanged("NeedToShowUpdateAndUninstallButtons");
             }
             catch (FileNotFoundException ex)
             {
@@ -58,15 +106,80 @@ namespace WimyGit.Views
             }
         }
 
+        private void ExecuteUpdate(object parameter)
+        {
+            try
+            {
+                if (SelectedPluginUrl == null)
+                {
+                    UIService.ShowMessage("Plugin is not selected.");
+                    return;
+                }
+                string pluginDir = GetPluginDirectoryPath(SelectedPluginUrl.Url);
+                if (string.IsNullOrEmpty(pluginDir) || Directory.Exists(pluginDir) == false)
+                {
+                    UIService.ShowMessage("Plugin is not installed.");
+                    return;
+                }
+                string git_bin = ProgramPathFinder.GetGitBin();
+                RunExternal runner = new RunExternal(git_bin, pluginDir);
+                runner.RunInConsoleProgressWindow($"pull");
+            }
+            catch (FileNotFoundException ex)
+            {
+                UIService.ShowMessage(ex.Message);
+            }
+        }
+
+        private void ExecuteUninstall(object parameter)
+        {
+            try
+            {
+                if (SelectedPluginUrl == null)
+                {
+                    UIService.ShowMessage("Plugin is not selected.");
+                    return;
+                }
+                string pluginDir = GetPluginDirectoryPath(SelectedPluginUrl.Url);
+                if (string.IsNullOrEmpty(pluginDir) || Directory.Exists(pluginDir) == false)
+                {
+                    UIService.ShowMessage("Plugin is not installed.");
+                    return;
+                }
+                DeleteDirectoryForce(pluginDir);
+                UIService.ShowMessage("Plugin has been uninstalled. It will be applied after restarting the wimygit");
+                NotifyPropertyChanged("NeedToShowInstallButtons");
+                NotifyPropertyChanged("NeedToShowUpdateAndUninstallButtons");
+            }
+            catch (System.UnauthorizedAccessException ex)
+            {
+                UIService.ShowMessage($"Failed to uninstall plugin: {ex.Message}");
+            }
+            catch (FileNotFoundException ex)
+            {
+                UIService.ShowMessage(ex.Message);
+            }
+        }
+
+        void DeleteDirectoryForce(string targetDir)
+        {
+            foreach (string file in Directory.GetFiles(targetDir, "*", SearchOption.AllDirectories))
+            {
+                File.SetAttributes(file, FileAttributes.Normal);
+            }
+
+            Directory.Delete(targetDir, true);
+        }
+
         private async void LoadPluginList()
         {
             try
             {
-                using (HttpClient client = new HttpClient())
+                using (HttpClient client = new())
                 {
                     string content = await client.GetStringAsync(PluginListUrl);
 
-                    XmlDocument document = new XmlDocument();
+                    XmlDocument document = new();
                     document.LoadXml(content);
 
                     var pluginNodes = document.SelectNodes("//wimygit-plugins/plugin");
@@ -105,6 +218,8 @@ namespace WimyGit.Views
             {
                 _selectedPluginUrl = value;
                 NotifyPropertyChanged("SelectedPluginUrl");
+                NotifyPropertyChanged("NeedToShowInstallButtons");
+                NotifyPropertyChanged("NeedToShowUpdateAndUninstallButtons");
                 InstallCommand.RaiseCanExecuteChanged();
             }
         }
