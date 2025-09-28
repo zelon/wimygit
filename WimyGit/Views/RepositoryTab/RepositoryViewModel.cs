@@ -18,6 +18,8 @@ namespace WimyGit.ViewModels
         private readonly TabItem _workspaceTabItem;
         private readonly TabItem _quickDiffTabItem;
 
+        private Service.QuickDiffBuilder _deferQuickDiffBuilder;
+
         public RepositoryViewModel(string git_repository_path, RepositoryTab repository_tab,
             UserControls.PendingTabViewModel pendingTabViewModel,
             UserControls.StashTabViewModel stashTabViewModel,
@@ -106,6 +108,30 @@ namespace WimyGit.ViewModels
         public string DisplayAuthor { get; set; }
 
         public string SelectedPath { get; set; }
+
+        private int _workspaceTabIndex;
+        public int WorkspaceTabIndex
+        {
+            get => _workspaceTabIndex;
+            set
+            {
+                if (_workspaceTabIndex != value)
+                {
+                    _workspaceTabIndex = value;
+                    NotifyPropertyChanged("WorkspaceTabIndex");
+
+                    // QuickDiffItem tab index is 1
+                    if (_workspaceTabIndex == 1)
+                    {
+                        if (_deferQuickDiffBuilder != null)
+                        {
+                            var (resultDisplayPrefix, lines) = _deferQuickDiffBuilder.Build();
+                            QuickDiffViewModel.SetRichText(resultDisplayPrefix, lines);
+                        }
+                    }
+                }
+            }
+        }
 
         public bool IsDebugBuild
         {
@@ -343,9 +369,14 @@ namespace WimyGit.ViewModels
             return _quickDiffTabItem.IsSelected;
         }
 
-        public void SetQuickDiff(string title, List<string> msgs)
+        public void SetQuickDiffBuilder(Service.QuickDiffBuilder quickDiffBuilder)
         {
-            QuickDiffViewModel.SetRichText(title, msgs);
+            _deferQuickDiffBuilder = quickDiffBuilder;
+            if (IsQuickDiffTabSelected())
+            {
+                var (resultDisplayPrefix, lines) = _deferQuickDiffBuilder.Build();
+                QuickDiffViewModel.SetRichText(resultDisplayPrefix, lines);
+            }
         }
     }
 }

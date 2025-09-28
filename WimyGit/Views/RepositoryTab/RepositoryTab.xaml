@@ -137,7 +137,7 @@
                 <ColumnDefinition Width="80*" />
             </Grid.ColumnDefinitions>
             <Grid>
-                <TabControl>
+                <TabControl SelectedIndex="{Binding WorkspaceTabIndex, Mode=TwoWay}">
                     <TabItem x:Name="WorkspaceItem" Header="Workspace">
                         <local_view:DirectoryTree DataContext="{Binding DirectoryTree}" />
                     </TabItem>

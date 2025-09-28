@@ -11,6 +11,6 @@ namespace WimyGit
         public void AddLog(string message);
         public void AddLog(System.Collections.Generic.List<string> logs);
         public bool IsQuickDiffTabSelected();
-        public void SetQuickDiff(string title, System.Collections.Generic.List<string> content);
+        public void SetQuickDiffBuilder(Service.QuickDiffBuilder quickDiffBuilder);
     }
 }

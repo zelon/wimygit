@@ -488,32 +488,27 @@ namespace WimyGit.UserControls
             {
                 return;
             }
-            if (gitRepository.IsQuickDiffTabSelected() == false)
-            {
-                return;
-            }
             if (fileStatus == null)
             {
                 return;
             }
-            List<string> lines;
+            QuickDiffBuilder quickDiffBuilder;
             if (fileStatus.Status == Constants.Untracked // ModifiedList
                 || fileStatus.Status == "Added in stage") // StagedList
             {
-                string filename = Path.Combine(gitRepository.GetGitWrapper().GetPath(), item);
-                lines = File.ReadAllLines(filename).ToList();
-                displayPrefix += "[NEW FILE]";
+                quickDiffBuilder = new QuickDiffBuilder(gitRepository,
+                    displayPrefix,
+                    Path.Combine(gitRepository.GetGitWrapper().GetPath(), item),
+                    /* diffCommandPrefix= */ null);
             }
             else
             {
-                string cmd = diffCommandPrefix + Util.WrapFilePath(item);
-                RunExternal runner = gitRepository.CreateGitRunner();
-
-                gitRepository.AddLog(cmd);
-                lines = runner.Run(cmd);
-                displayPrefix += "[DIFF]";
+                quickDiffBuilder = new QuickDiffBuilder(gitRepository,
+                    displayPrefix,
+                    /* newFilePath= */ null,
+                    diffCommandPrefix + Util.WrapFilePath(item));
             }
-            gitRepository.SetQuickDiff($"{displayPrefix} {item}", lines);
+            gitRepository.SetQuickDiffBuilder(quickDiffBuilder);
         }
 
         public void OnUnstagedFilesSelectionChanged()
