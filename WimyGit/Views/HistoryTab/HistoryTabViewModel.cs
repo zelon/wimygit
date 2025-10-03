@@ -12,7 +12,38 @@ namespace WimyGit.ViewModels
         public string SelectedRepositoryPath { get; set; }
         public string CurrentBranchName { get; set; }
         public HistoryStatus SelectedHistoryStatus { get; set; }
-        public HistoryFile SelectedHistoryFile { get; set; }
+        private HistoryFile _selectedHistoryFile;
+        public HistoryFile SelectedHistoryFile
+        {
+            get => _selectedHistoryFile;
+            set
+            {
+                _selectedHistoryFile = value;
+                NotifyPropertyChanged("SelectedFile");
+                if (_selectedHistoryFile == null)
+                {
+                    return;
+                }
+                if (_gitRepository.TryGetTarget(out IGitRepository gitRepository))
+                {
+                    string gitCommand = "status";
+                    if (string.IsNullOrEmpty(_selectedHistoryFile.FileName2))
+                    {
+                        gitCommand = gitRepository.GetGitWrapper().GetDiffHistorySelected(_selectedHistoryFile.CommitId, _selectedHistoryFile.FileName);
+                    }
+                    else
+                    {
+                        gitCommand = gitRepository.GetGitWrapper().GetDiffHistorySelectedWithRenameTracking(_selectedHistoryFile.CommitId, _selectedHistoryFile.FileName, _selectedHistoryFile.FileName2);
+                    }
+
+                    Service.QuickDiffBuilder quickDiffBuilder = new Service.QuickDiffBuilder(gitRepository,
+                        displayPrefix: "From History",
+                        newFilePath: null,
+                        diffCommand: gitCommand);
+                    gitRepository.SetQuickDiffBuilder(quickDiffBuilder);
+                }
+            }
+        }
 
         public ICommand CreateBranchCommand { get; private set; }
         public ICommand CreateTagCommand { get; private set; }
@@ -229,11 +260,11 @@ namespace WimyGit.ViewModels
             }
             if (string.IsNullOrEmpty(SelectedHistoryFile.FileName2))
             {
-                gitRepository.GetGitWrapper().DiffHistorySelected(SelectedHistoryFile.CommitId, SelectedHistoryFile.FileName);
+                gitRepository.GetGitWrapper().DiffHistorySelectedWithTool(SelectedHistoryFile.CommitId, SelectedHistoryFile.FileName);
             }
             else
             {
-                gitRepository.GetGitWrapper().DiffHistorySelectedWithRenameTracking(SelectedHistoryFile.CommitId, SelectedHistoryFile.FileName, SelectedHistoryFile.FileName2);
+                gitRepository.GetGitWrapper().DiffHistorySelectedWithRenameTrackingWithTool(SelectedHistoryFile.CommitId, SelectedHistoryFile.FileName, SelectedHistoryFile.FileName2);
             }
         }
 

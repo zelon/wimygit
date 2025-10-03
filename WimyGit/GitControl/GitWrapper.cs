@@ -127,21 +127,25 @@ namespace WimyGit
 			return await CreateGitRunner().RunAsync(cmd);
 		}
 
-        public void DiffHistorySelected(string commit_id, string fileName)
+        public void DiffHistorySelectedWithTool(string commitId, string filename)
 		{
-			string cmd = String.Format("difftool --no-prompt {0}^! -- {1}", commit_id, Util.WrapFilePath(fileName));
-			logger_.AddLog(cmd);
+			string cmd = $"difftool --no-prompt {commitId}^! -- {Util.WrapFilePath(filename)}";
+            logger_.AddLog(cmd);
 			CreateGitRunner().RunWithoutWaiting(cmd);
 		}
 
-		public void DiffHistorySelectedWithRenameTracking(string commit_id, string fileName, string fileName2)
+        public string GetDiffHistorySelected(string commitId, string filename) => $"diff {commitId}^! -- {Util.WrapFilePath(filename)}";
+
+		public void DiffHistorySelectedWithRenameTrackingWithTool(string commitId, string filename, string filename2)
 		{
-			string cmd = String.Format("difftool --no-prompt {0}^! -M -- {1} {2}", commit_id, Util.WrapFilePath(fileName), Util.WrapFilePath(fileName2));
-			logger_.AddLog(cmd);
+			string cmd = $"difftool --no-prompt {commitId}^! -M -- {Util.WrapFilePath(filename)} {Util.WrapFilePath(filename2)}";
+            logger_.AddLog(cmd);
 			CreateGitRunner().RunWithoutWaiting(cmd);
 		}
 
-		public void ViewTimeLapse(string selectedPath)
+        public string GetDiffHistorySelectedWithRenameTracking(string commitId, string filename, string filename2) => $"diff {commitId}^! -M -- {Util.WrapFilePath(filename)} {Util.WrapFilePath(filename2)}";
+
+        public void ViewTimeLapse(string selectedPath)
 		{
 			string cmd = String.Format("gui blame {0}", Util.WrapFilePath(selectedPath));
 			logger_.AddLog(cmd);
