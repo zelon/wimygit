@@ -492,21 +492,68 @@ namespace WimyGit.UserControls
             {
                 return;
             }
+
+            bool isItemDirectory = Directory.Exists(Path.Combine(gitRepository.GetGitWrapper().GetPath(), item));
             QuickDiffBuilder quickDiffBuilder;
-            if (fileStatus.Status == Constants.Untracked // ModifiedList
-                || fileStatus.Status == "Added in stage") // StagedList
+            if (isItemDirectory)
             {
+                bool isModule = Directory.Exists(Path.Combine(gitRepository.GetGitWrapper().GetPath(), item, ".git"));
+                string displayMessage = displayPrefix;
+                List<string> rawBody = null;
+                if (isModule)
+                {
+                    displayMessage += "[MODULE] ";
+                    rawBody = new List<string> { "This is a git submodule. Quick diff for submodules is not supported yet." };
+                }
+                else
+                {
+                    displayMessage += "[DIRECTORY] ";
+                    rawBody = new List<string> { "This is a directory" };
+                }
+                displayMessage += item;
                 quickDiffBuilder = new QuickDiffBuilder(gitRepository,
-                    displayPrefix,
-                    Path.Combine(gitRepository.GetGitWrapper().GetPath(), item),
-                    /* diffCommandPrefix= */ null);
+                    displayMessage,
+                    /* newFilePath= */ null,
+                    diffCommand: null,
+                    rawBody: rawBody);
             }
             else
             {
-                quickDiffBuilder = new QuickDiffBuilder(gitRepository,
-                    displayPrefix,
-                    /* newFilePath= */ null,
-                    diffCommandPrefix + Util.WrapFilePath(item));
+                string filePath = Path.Combine(gitRepository.GetGitWrapper().GetPath(), item);
+
+                const long maxFileSizeInBytes = 10 * 1024 * 1024; // 10 MB
+                long fileSizeInBytes = Util.GetFileLengthSafe(filePath);
+                if (fileSizeInBytes >= maxFileSizeInBytes)
+                {
+                    List<string> rawBody = new List<string>
+                    {
+                        $"File size {fileSizeInBytes / (1024 * 1024)} MB exceeds the maximum limit of {maxFileSizeInBytes / (1024 * 1024)} MB for quick diff.",
+                        "Please use an external diff tool to view the changes."
+                    };
+                    quickDiffBuilder = new QuickDiffBuilder(gitRepository,
+                        displayPrefix + "[TOO_LARGE_FILE] " + item,
+                        /* newFilePath= */ null,
+                        diffCommand: null,
+                        rawBody: rawBody);
+                }
+                else
+                {
+                    if (fileStatus.Status == Constants.Untracked // ModifiedList
+                        || fileStatus.Status == "Added in stage") // StagedList
+                    {
+                        quickDiffBuilder = new QuickDiffBuilder(gitRepository,
+                            displayPrefix,
+                            filePath,
+                            diffCommand: null);
+                    }
+                    else
+                    {
+                        quickDiffBuilder = new QuickDiffBuilder(gitRepository,
+                            displayPrefix,
+                            /* newFilePath= */ null,
+                            diffCommand: diffCommandPrefix + Util.WrapFilePath(item));
+                    }
+                }
             }
             gitRepository.SetQuickDiffBuilder(quickDiffBuilder);
         }

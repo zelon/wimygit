@@ -9,13 +9,16 @@ namespace WimyGit.Service
         private string DisplayPrefix { get; set; }
         private string NewFilePath { get; set; }
         private string DiffCommand { get; set; }
+        private List<string> RawBody { get; set; } = [];
 
-        public QuickDiffBuilder(IGitRepository gitRepository, string displayPrefix, string newFilePath, string diffCommand)
+        public QuickDiffBuilder(IGitRepository gitRepository, string displayPrefix, string newFilePath, string diffCommand,
+            List<string> rawBody = null)
         {
             GitRepository = gitRepository;
             DisplayPrefix = displayPrefix;
             NewFilePath = newFilePath;
             DiffCommand = diffCommand;
+            RawBody = rawBody;
         }
 
         public (string displayPrefix, List<string> lines) Build()
@@ -25,12 +28,16 @@ namespace WimyGit.Service
                 List<string> lines = System.IO.File.ReadAllLines(NewFilePath).ToList();
                 return (DisplayPrefix + "[NEW FILE]", lines);
             }
-            else if (string.IsNullOrEmpty(DiffCommand) == false)
+            if (string.IsNullOrEmpty(DiffCommand) == false)
             {
                 RunExternal runner = GitRepository.CreateGitRunner();
                 GitRepository.AddLog(DiffCommand);
                 List<string> lines = runner.Run(DiffCommand);
                 return (DisplayPrefix + "[DIFF]", lines);
+            }
+            if (RawBody != null)
+            {
+                return (DisplayPrefix, RawBody);
             }
             return (DisplayPrefix, new List<string>());
         }

@@ -72,5 +72,18 @@ namespace WimyGit
             p.StartInfo.FileName = url;
             p.Start();
         }
+
+        public static long GetFileLengthSafe(string filePath)
+        {
+            try
+            {
+                var fileInfo = new FileInfo(filePath);
+                return fileInfo.Length;
+            }
+            catch (Exception)
+            {
+                return -1;
+            }
+        }
     }
 }
