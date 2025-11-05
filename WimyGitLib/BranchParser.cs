@@ -13,23 +13,27 @@ namespace WimyGitLib
 
     public static class BranchParser
     {
+        private static readonly Regex BranchRegex = new Regex(@"([\s\*])\s(\S+)\s+(\S+)\s+(.*)", RegexOptions.Compiled);
+
         public static List<BranchInfo> Parse(List<string> lines)
         {
             List<BranchInfo> output = new List<BranchInfo>();
             foreach (string line in lines)
             {
                 BranchInfo branchInfo = ParseLine(line);
-                output.Add(branchInfo);
+                if (branchInfo != null)
+                {
+                    output.Add(branchInfo);
+                }
             }
             return output;
         }
 
         public static BranchInfo ParseLine(string line)
         {
-            Regex regex = new Regex(@"([\s\*])\s(\S+)\s+(\S+)\s+(.*)");
             BranchInfo branchInfo = new BranchInfo();
 
-            Match match = regex.Match(line);
+            Match match = BranchRegex.Match(line);
             if (match.Success == false)
             {
                 return null;
