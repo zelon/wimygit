@@ -11,13 +11,12 @@ namespace WimyGitLib
 
     public class DownloadParser
     {
+        private static readonly Regex VersionRegex = new Regex(@"http.*wimygit/releases/download/v(\d+\.\d+\.\d+)/(.*)", RegexOptions.Compiled);
 
         public static DownloadParserResult GetVersionFromDownloadUrl(string url)
         {
             // "https://github.com/zelon/wimygit/releases/download/v1.0.0/WimyGit-1.0.0.zip"
-            Regex regex = new Regex(@"http.*wimygit/releases/download/v(\d+\.\d+\.\d+)/(.*)");
-
-            Match match = regex.Match(url);
+            Match match = VersionRegex.Match(url);
             if (match.Success == false)
             {
                 return null;
