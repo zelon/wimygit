@@ -26,6 +26,7 @@
     <Resource Include="**\*.ico" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Backtrace" Version="2.1.11" />
     <PackageReference Include="System.Management" Version="4.6.0" />
   </ItemGroup>
   <ItemGroup>
