@@ -48,12 +48,12 @@ namespace WimyGit.UserControls
         }
 
         private WeakReference<IGitRepository> _gitRepository;
-        private bool noCommitsYet_ = false;
-        private string commit_message_;
+        private bool _noCommitsYet = false;
+        private string _commitMessage;
         public string CommitMessage {
-            get { return commit_message_; }
+            get { return _commitMessage; }
             set {
-                commit_message_ = value;
+                _commitMessage = value;
                 NotifyPropertyChanged("CommitMessage");
             }
         }
@@ -354,7 +354,7 @@ namespace WimyGit.UserControls
             {
                 gitRepository.AddLog("Unstage: " + filepath);
             }
-            gitRepository.GetGitWrapper().Unstage(SelectedStagedFilePathList, noCommitsYet_);
+            gitRepository.GetGitWrapper().Unstage(SelectedStagedFilePathList, _noCommitsYet);
             await gitRepository.Refresh();
         }
 
@@ -592,7 +592,7 @@ namespace WimyGit.UserControls
 
         public void SetNoCommitsYet(bool val)
         {
-            noCommitsYet_ = val;
+            _noCommitsYet = val;
         }
 
         private FileStatus GetStagedStatus(string filepath)
