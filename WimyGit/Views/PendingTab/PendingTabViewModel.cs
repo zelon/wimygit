@@ -364,16 +364,16 @@ namespace WimyGit.UserControls
             {
                 return;
             }
-            int kMinimumShowFilenameCount = 20;
+            const int MaxFilenameDisplayCount = 20;
             var file_list = ModifiedList.Where(o => o.IsSelected).ToList();
             string msg = "Revert below:\n\n";
             for (int i = 0; i < file_list.Count; ++i)
             {
-                if (i < kMinimumShowFilenameCount)
+                if (i < MaxFilenameDisplayCount)
                 {
                     msg += $"{file_list[i].FilePath}\n";
                 }
-                else if (i == kMinimumShowFilenameCount)
+                else if (i == MaxFilenameDisplayCount)
                 {
                     msg += "...";
                     break;
@@ -521,13 +521,13 @@ namespace WimyGit.UserControls
             {
                 string filePath = Path.Combine(gitRepository.GetGitWrapper().GetPath(), item);
 
-                const long maxFileSizeInBytes = 10 * 1024 * 1024; // 10 MB
+                const long MaxQuickDiffFileSizeBytes = 10 * 1024 * 1024; // 10 MB
                 long fileSizeInBytes = Util.GetFileLengthSafe(filePath);
-                if (fileSizeInBytes >= maxFileSizeInBytes)
+                if (fileSizeInBytes >= MaxQuickDiffFileSizeBytes)
                 {
                     List<string> rawBody = new List<string>
                     {
-                        $"File size {fileSizeInBytes / (1024 * 1024)} MB exceeds the maximum limit of {maxFileSizeInBytes / (1024 * 1024)} MB for quick diff.",
+                        $"File size {fileSizeInBytes / (1024 * 1024)} MB exceeds the maximum limit of {MaxQuickDiffFileSizeBytes / (1024 * 1024)} MB for quick diff.",
                         "Please use an external diff tool to view the changes."
                     };
                     quickDiffBuilder = new QuickDiffBuilder(gitRepository,
