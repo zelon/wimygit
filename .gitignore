@@ -12,3 +12,4 @@ WimyGitLib/bin
 WimyGitLib/obj
 .vs/
 *.swp
+.claude/settings.local.json
