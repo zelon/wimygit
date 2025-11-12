@@ -88,7 +88,7 @@ namespace TestCSharp
                 {
                     Console.WriteLine(responseBody);
 
-                    System.Text.Json.Nodes.JsonNode? jsonNode = System.Text.Json.Nodes.JsonNode.Parse(responseBody);
+                    System.Text.Json.Nodes.JsonNode jsonNode = System.Text.Json.Nodes.JsonNode.Parse(responseBody);
                     if (jsonNode == null)
                     {
                         Console.WriteLine("JSON parse error: returning empty");
