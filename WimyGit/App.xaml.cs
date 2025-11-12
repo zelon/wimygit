@@ -14,7 +14,6 @@ namespace WimyGit
             base.OnStartup(e);
 
             // Backtrace 초기화
-            string submissiontoken = "27b04c05a71915cd9a18efa0821f447d46add4f9f8f8d6d3736ff08a82376794";
             var credentials = new BacktraceCredentials(
                 @"https://submit.backtrace.io/wimy/27b04c05a71915cd9a18efa0821f447d46add4f9f8f8d6d3736ff08a82376794/json"
             );
