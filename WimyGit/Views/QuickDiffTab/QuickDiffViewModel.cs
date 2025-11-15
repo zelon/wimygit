@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Windows.Controls;
 using System.Windows.Documents;
+using WimyGit.Service;
 
 namespace WimyGit.ViewModels
 {
@@ -15,20 +16,24 @@ namespace WimyGit.ViewModels
             _richTextBox = richTextBox;
         }
 
-        public void SetRichText(string title, List<string> texts)
+        public void SetRichText(QuickDiffContentInfo quickDiffContentInfo)
         {
-            Title = title;
+            Title = quickDiffContentInfo.Display;
+            if (quickDiffContentInfo.IsUntrackedMode)
+            {
+                Title += "[UNTRACKED]";
+            }
             NotifyPropertyChanged("Title");
 
             var flowDocument = _richTextBox.Document;
             flowDocument.Blocks.Clear();
-            foreach (string line in texts)
+            foreach (string line in quickDiffContentInfo.Lines)
             {
-                flowDocument.Blocks.Add(ConvertToParagraph(line));
+                flowDocument.Blocks.Add(ConvertToParagraph(quickDiffContentInfo.IsUntrackedMode, line));
             }
         }
 
-        private Paragraph ConvertToParagraph(string line)
+        private Paragraph ConvertToParagraph(bool isUntrackedMode, string line)
         {
             var removeBrush = System.Windows.Media.Brushes.Red;
             var addBrush = System.Windows.Media.Brushes.LightGreen;
@@ -36,6 +41,13 @@ namespace WimyGit.ViewModels
             Paragraph paragraph = new Paragraph();
             Run run = new Run(line);
             run.Background = System.Windows.Media.Brushes.Black;
+
+            if (isUntrackedMode)
+            {
+                run.Foreground = System.Windows.Media.Brushes.White;
+                paragraph.Inlines.Add(run);
+                return paragraph;
+            }
 
             if (line.StartsWith("@@ "))
             {

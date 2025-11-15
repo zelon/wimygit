@@ -125,8 +125,7 @@ namespace WimyGit.ViewModels
                     {
                         if (_deferQuickDiffBuilder != null)
                         {
-                            var (resultDisplayPrefix, lines) = _deferQuickDiffBuilder.Build();
-                            QuickDiffViewModel.SetRichText(resultDisplayPrefix, lines);
+                            QuickDiffViewModel.SetRichText(_deferQuickDiffBuilder.Build());
                         }
                     }
                 }
@@ -374,8 +373,7 @@ namespace WimyGit.ViewModels
             _deferQuickDiffBuilder = quickDiffBuilder;
             if (IsQuickDiffTabSelected())
             {
-                var (resultDisplayPrefix, lines) = _deferQuickDiffBuilder.Build();
-                QuickDiffViewModel.SetRichText(resultDisplayPrefix, lines);
+                QuickDiffViewModel.SetRichText(_deferQuickDiffBuilder.Build());
             }
         }
     }

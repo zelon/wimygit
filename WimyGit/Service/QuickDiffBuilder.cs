@@ -3,6 +3,13 @@ using System.Linq;
 
 namespace WimyGit.Service
 {
+    public class QuickDiffContentInfo
+    {
+        public bool IsUntrackedMode { get; set; }
+        public string Display { get; set; }
+        public List<string> Lines { get; set; } = [];
+    }
+
     public class QuickDiffBuilder
     {
         private IGitRepository GitRepository { get; set; }
@@ -21,25 +28,45 @@ namespace WimyGit.Service
             RawBody = rawBody;
         }
 
-        public (string displayPrefix, List<string> lines) Build()
+        public QuickDiffContentInfo Build()
         {
             if (string.IsNullOrEmpty(NewFilePath) == false)
             {
                 List<string> lines = System.IO.File.ReadAllLines(NewFilePath).ToList();
-                return (DisplayPrefix + "[NEW FILE]", lines);
+                return new QuickDiffContentInfo()
+                {
+                    IsUntrackedMode = true,
+                    Display = DisplayPrefix,
+                    Lines = lines
+                };
             }
             if (string.IsNullOrEmpty(DiffCommand) == false)
             {
                 RunExternal runner = GitRepository.CreateGitRunner();
                 GitRepository.AddLog(DiffCommand);
                 List<string> lines = runner.Run(DiffCommand);
-                return (DisplayPrefix + "[DIFF]", lines);
+                return new QuickDiffContentInfo()
+                {
+                    IsUntrackedMode = false,
+                    Display = DisplayPrefix + "[DIFF]",
+                    Lines = lines
+                };
             }
             if (RawBody != null)
             {
-                return (DisplayPrefix, RawBody);
+                return new QuickDiffContentInfo()
+                {
+                    IsUntrackedMode = false,
+                    Display = DisplayPrefix,
+                    Lines = RawBody
+                };
             }
-            return (DisplayPrefix, new List<string>());
+            return new QuickDiffContentInfo()
+            {
+                IsUntrackedMode = false,
+                Display = DisplayPrefix,
+                Lines = new List<string>()
+            };
         }
     }
 }
