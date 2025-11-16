@@ -38,7 +38,7 @@ jobs:
     
   release:
     needs: check_if_need_release
-    if: needs.check.outputs.new_commits == 'true'
+    if: needs.check_if_need_release.outputs.new_commits == 'true'
     runs-on: windows-latest
 
     steps:
