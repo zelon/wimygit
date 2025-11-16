@@ -1,12 +1,18 @@
 # This workflow will build a .NET project
 # For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-net
 
-name: .NET Deploy
+name: .NET Release Nightly
 
 on:
   schedule:
     - cron: "0 21 * * *"  # 한국 시간(KST) 06:00 → UTC 21:00
-
+  # for force run
+  workflow_dispatch:
+    inputs:
+      force:
+        description: "Force run the workflow"
+        required: false
+        default: "false"
 jobs:
   check_if_need_release:
     runs-on: ubuntu-latest
