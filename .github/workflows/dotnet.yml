@@ -26,3 +26,29 @@ jobs:
       run: dotnet build --no-restore
     - name: Test
       run: dotnet test --no-build --verbosity normal
+    - name: Publish
+      run: dotnet publish WimyGit -c Release /p:PublishProfile=ReleasePublishProfile
+    - name: Create tag
+      id: tag
+      run: |
+        $tag = "v-" + (Get-Date -Format "yyyyMMdd-HHmmss")
+        echo "tag=$tag" >> $env:GITHUB_OUTPUT
+        
+        git config user.email "actions@github.com"
+        git config user.name "GitHub Actions"
+        
+        git tag $tag
+        git push origin $tag
+    - name: Zip build folder
+      run: |
+        $zipName = "${{ steps.tag.outputs.tag }}.zip"
+        powershell Compress-Archive -Path WimyGit\bin\Release\publish\* -DestinationPath $zipName -Force
+      shell: pwsh
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: ${{ steps.tag.outputs.tag }}
+        files: ${{ steps.tag.outputs.tag }}.zip
+        generate_release_notes: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
