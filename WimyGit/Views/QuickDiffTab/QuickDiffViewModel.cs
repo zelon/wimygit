@@ -19,7 +19,7 @@ namespace WimyGit.ViewModels
         public void SetRichText(QuickDiffContentInfo quickDiffContentInfo)
         {
             Title = quickDiffContentInfo.Display;
-            if (quickDiffContentInfo.IsUntrackedMode)
+            if (quickDiffContentInfo.IsDiffColorView == false)
             {
                 Title += "[UNTRACKED]";
             }
@@ -29,11 +29,11 @@ namespace WimyGit.ViewModels
             flowDocument.Blocks.Clear();
             foreach (string line in quickDiffContentInfo.Lines)
             {
-                flowDocument.Blocks.Add(ConvertToParagraph(quickDiffContentInfo.IsUntrackedMode, line));
+                flowDocument.Blocks.Add(ConvertToParagraph(quickDiffContentInfo.IsDiffColorView, line));
             }
         }
 
-        private Paragraph ConvertToParagraph(bool isUntrackedMode, string line)
+        private Paragraph ConvertToParagraph(bool isDiffColorView, string line)
         {
             var removeBrush = System.Windows.Media.Brushes.Red;
             var addBrush = System.Windows.Media.Brushes.LightGreen;
@@ -42,7 +42,7 @@ namespace WimyGit.ViewModels
             Run run = new Run(line);
             run.Background = System.Windows.Media.Brushes.Black;
 
-            if (isUntrackedMode)
+            if (isDiffColorView == false)
             {
                 run.Foreground = System.Windows.Media.Brushes.White;
                 paragraph.Inlines.Add(run);

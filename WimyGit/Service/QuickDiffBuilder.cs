@@ -5,7 +5,7 @@ namespace WimyGit.Service
 {
     public class QuickDiffContentInfo
     {
-        public bool IsUntrackedMode { get; set; }
+        public bool IsDiffColorView { get; set; }
         public string Display { get; set; }
         public List<string> Lines { get; set; } = [];
     }
@@ -17,6 +17,7 @@ namespace WimyGit.Service
         private string NewFilePath { get; set; }
         private string DiffCommand { get; set; }
         private List<string> RawBody { get; set; } = [];
+        public bool IsDiffColorView { get; set; } = true;
 
         public QuickDiffBuilder(IGitRepository gitRepository, string displayPrefix, string newFilePath, string diffCommand,
             List<string> rawBody = null)
@@ -35,7 +36,7 @@ namespace WimyGit.Service
                 List<string> lines = System.IO.File.ReadAllLines(NewFilePath).ToList();
                 return new QuickDiffContentInfo()
                 {
-                    IsUntrackedMode = true,
+                    IsDiffColorView = false,
                     Display = DisplayPrefix,
                     Lines = lines
                 };
@@ -47,7 +48,7 @@ namespace WimyGit.Service
                 List<string> lines = runner.Run(DiffCommand);
                 return new QuickDiffContentInfo()
                 {
-                    IsUntrackedMode = false,
+                    IsDiffColorView = IsDiffColorView,
                     Display = DisplayPrefix + "[DIFF]",
                     Lines = lines
                 };
@@ -56,14 +57,14 @@ namespace WimyGit.Service
             {
                 return new QuickDiffContentInfo()
                 {
-                    IsUntrackedMode = false,
+                    IsDiffColorView = true,
                     Display = DisplayPrefix,
                     Lines = RawBody
                 };
             }
             return new QuickDiffContentInfo()
             {
-                IsUntrackedMode = false,
+                IsDiffColorView = true,
                 Display = DisplayPrefix,
                 Lines = new List<string>()
             };

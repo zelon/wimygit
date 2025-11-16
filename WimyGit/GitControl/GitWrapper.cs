@@ -134,6 +134,8 @@ namespace WimyGit
 			CreateGitRunner().RunWithoutWaiting(cmd);
 		}
 
+        public string GetFileContentOfCommit(string commitId, string filename) => $"show {commitId}:{Util.WrapFilePath(filename)}";
+
         public string GetDiffHistorySelected(string commitId, string filename) => $"diff {commitId}^! -- {Util.WrapFilePath(filename)}";
 
 		public void DiffHistorySelectedWithRenameTrackingWithTool(string commitId, string filename, string filename2)

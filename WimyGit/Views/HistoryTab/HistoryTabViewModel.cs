@@ -27,19 +27,35 @@ namespace WimyGit.ViewModels
                 if (_gitRepository.TryGetTarget(out IGitRepository gitRepository))
                 {
                     string gitCommand = "status";
+                    Service.QuickDiffBuilder quickDiffBuilder = null;
                     if (string.IsNullOrEmpty(_selectedHistoryFile.FileName2))
                     {
-                        gitCommand = gitRepository.GetGitWrapper().GetDiffHistorySelected(_selectedHistoryFile.CommitId, _selectedHistoryFile.FileName);
+                        if (_selectedHistoryFile.Status == "A") // Added file(Untracked file)
+                        {
+                            gitCommand = gitRepository.GetGitWrapper().GetFileContentOfCommit(_selectedHistoryFile.CommitId, _selectedHistoryFile.FileName);
+                            quickDiffBuilder = new Service.QuickDiffBuilder(gitRepository,
+                                displayPrefix: "From History",
+                                newFilePath: null,
+                                diffCommand: gitCommand);
+                            quickDiffBuilder.IsDiffColorView = false;
+                        }
+                        else
+                        {
+                            gitCommand = gitRepository.GetGitWrapper().GetDiffHistorySelected(_selectedHistoryFile.CommitId, _selectedHistoryFile.FileName);
+                            quickDiffBuilder = new Service.QuickDiffBuilder(gitRepository,
+                                displayPrefix: "From History",
+                                newFilePath: null,
+                                diffCommand: gitCommand);
+                        }
                     }
                     else
                     {
                         gitCommand = gitRepository.GetGitWrapper().GetDiffHistorySelectedWithRenameTracking(_selectedHistoryFile.CommitId, _selectedHistoryFile.FileName, _selectedHistoryFile.FileName2);
+                        quickDiffBuilder = new Service.QuickDiffBuilder(gitRepository,
+                            displayPrefix: "From History",
+                            newFilePath: null,
+                            diffCommand: gitCommand);
                     }
-
-                    Service.QuickDiffBuilder quickDiffBuilder = new Service.QuickDiffBuilder(gitRepository,
-                        displayPrefix: "From History",
-                        newFilePath: null,
-                        diffCommand: gitCommand);
                     gitRepository.SetQuickDiffBuilder(quickDiffBuilder);
                 }
             }
@@ -303,7 +319,7 @@ namespace WimyGit.ViewModels
             }
             NotifyPropertyChanged("SelectedRepositoryPath");
 
-            AddHistoryFrom(HistorySelectedPath, skip_count:0);
+            AddHistoryFrom(HistorySelectedPath, skip_count: 0);
         }
 
         private async void AddHistoryFrom(string selected_path, int skip_count)
