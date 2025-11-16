@@ -65,7 +65,7 @@ jobs:
         git config user.name "GitHub Actions"
         
         git tag $tag --force
-        git push origin $tag
+        git push origin $tag --force
     - name: Zip build folder
       run: |
         $zipName = "${{ steps.tag.outputs.tag }}.zip"
