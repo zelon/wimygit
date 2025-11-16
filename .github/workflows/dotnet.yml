@@ -31,13 +31,13 @@ jobs:
     - name: Create tag
       id: tag
       run: |
-        $tag = "v-" + (Get-Date -Format "yyyyMMdd-HHmmss")
+        $tag = "nightly"
         echo "tag=$tag" >> $env:GITHUB_OUTPUT
         
         git config user.email "actions@github.com"
         git config user.name "GitHub Actions"
         
-        git tag $tag
+        git tag $tag --force
         git push origin $tag
     - name: Zip build folder
       run: |
@@ -50,5 +50,6 @@ jobs:
         tag_name: ${{ steps.tag.outputs.tag }}
         files: ${{ steps.tag.outputs.tag }}.zip
         generate_release_notes: true
+        prerelease: true
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
