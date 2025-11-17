@@ -58,7 +58,7 @@ jobs:
     - name: Create tag
       id: tag
       run: |
-        $tag = "nightly"
+        $tag = "wimygit-nightly"
         echo "tag=$tag" >> $env:GITHUB_OUTPUT
         
         git config user.email "actions@github.com"
