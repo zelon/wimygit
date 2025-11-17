@@ -68,6 +68,7 @@ jobs:
         git push origin $tag --force
     - name: Zip build folder
       run: |
+        powershell Move-Item WimyGit\bin\Release\publish\WimyGit.exe WimyGit\bin\Release\publish\WimyGitN.exe
         $zipName = "${{ steps.tag.outputs.tag }}.zip"
         powershell Compress-Archive -Path WimyGit\bin\Release\publish\* -DestinationPath $zipName -Force
       shell: pwsh
