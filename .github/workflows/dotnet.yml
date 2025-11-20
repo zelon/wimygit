@@ -12,7 +12,7 @@ on:
       force:
         description: "Force run the workflow"
         required: false
-        default: "false"
+        default: "true"
 jobs:
   check_if_need_release:
     runs-on: ubuntu-latest
