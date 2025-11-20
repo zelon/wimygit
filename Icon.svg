@@ -2,24 +2,23 @@
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
 
 <svg
-   xmlns:a="http://ns.adobe.com/AdobeSVGViewerExtensions/3.0/"
-   xmlns:i="http://ns.adobe.com/AdobeIllustrator/10.0/"
-   xmlns:dc="http://purl.org/dc/elements/1.1/"
-   xmlns:cc="http://creativecommons.org/ns#"
-   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-   xmlns:svg="http://www.w3.org/2000/svg"
-   xmlns="http://www.w3.org/2000/svg"
-   xmlns:xlink="http://www.w3.org/1999/xlink"
-   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
-   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    width="744.09448819"
    height="1052.3622047"
    id="svg2"
    sodipodi:version="0.32"
-   inkscape:version="0.91 r13725"
+   inkscape:version="1.4.2 (f4327f4, 2025-05-13)"
    sodipodi:docname="Icon.svg"
    inkscape:output_extension="org.inkscape.output.svg.inkscape"
-   version="1.1">
+   version="1.1"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:a="http://ns.adobe.com/AdobeSVGViewerExtensions/3.0/">
   <defs
      id="defs4">
     <linearGradient
@@ -1047,11 +1046,7 @@
        width="1"
        x="0"
        y="0"
-       id="foreignObject64">
-      <i:pgfRef
-         xlink:href="#adobe_illustrator_pgf"
-         id="pgfRef66" />
-    </foreignObject>
+       id="foreignObject64" />
     <linearGradient
        id="linearGradient3552">
       <stop
@@ -6916,23 +6911,32 @@
      objecttolerance="10"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.50000001"
-     inkscape:cx="667.42575"
-     inkscape:cy="918.14509"
+     inkscape:zoom="8.0000001"
+     inkscape:cx="554.24999"
+     inkscape:cy="236.3125"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
-     inkscape:window-width="1680"
-     inkscape:window-height="987"
-     inkscape:window-x="1272"
-     inkscape:window-y="-8"
+     inkscape:window-width="3840"
+     inkscape:window-height="2054"
+     inkscape:window-x="-11"
+     inkscape:window-y="-11"
      showguides="true"
      inkscape:guide-bbox="true"
-     inkscape:window-maximized="1">
+     inkscape:window-maximized="1"
+     inkscape:showpageshadow="2"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1">
     <sodipodi:guide
        orientation="1,0"
        position="-128.35251,1157.7295"
-       id="guide3167" />
+       id="guide3167"
+       inkscape:locked="false" />
+    <sodipodi:guide
+       position="572.74999,843.48719"
+       orientation="1,0"
+       id="guide6"
+       inkscape:locked="false" />
   </sodipodi:namedview>
   <metadata
      id="metadata7">
@@ -6980,7 +6984,7 @@
        inkscape:export-ydpi="1686.3695" />
     <text
        xml:space="preserve"
-       style="font-size:14.4289484px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       style="font-style:normal;font-weight:normal;line-height:0%;font-family:'Bitstream Vera Sans';fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
        x="587.27588"
        y="364.27533"
        id="text3168"
@@ -6990,7 +6994,8 @@
          sodipodi:role="line"
          id="tspan3170"
          x="587.27588"
-         y="364.27533">JPEG</tspan></text>
+         y="364.27533"
+         style="font-size:14.4289px;line-height:1.25">JPEG</tspan></text>
     <rect
        style="opacity:1;fill:#ffffff;fill-opacity:1;stroke:#a4c739;stroke-width:5.05364037;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        id="rect2383"
@@ -7003,14 +7008,15 @@
        transform="matrix(0,-1,1,0,0,0)" />
     <text
        xml:space="preserve"
-       style="font-size:14.4289484px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       style="font-style:normal;font-weight:normal;line-height:0%;font-family:'Bitstream Vera Sans';fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
        x="676.32227"
        y="362.78741"
        id="text2385"><tspan
          sodipodi:role="line"
          id="tspan2387"
          x="676.32227"
-         y="362.78741">JPEG</tspan></text>
+         y="362.78741"
+         style="font-size:14.4289px;line-height:1.25">JPEG</tspan></text>
     <g
        id="g3171"
        transform="translate(845.84389,456.25318)">
@@ -7047,12 +7053,13 @@
          id="text2459"
          y="-7.9356656"
          x="-304.67795"
-         style="font-size:14.4289484px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+         style="font-style:normal;font-weight:normal;line-height:0%;font-family:'Bitstream Vera Sans';fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
          xml:space="preserve"><tspan
            y="-7.9356656"
            x="-304.67795"
            id="tspan2461"
-           sodipodi:role="line">JPEG</tspan></text>
+           sodipodi:role="line"
+           style="font-size:14.4289px;line-height:1.25">JPEG</tspan></text>
     </g>
     <g
        id="g6903"
@@ -7072,7 +7079,7 @@
     </g>
     <text
        xml:space="preserve"
-       style="font-size:35.58653259px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       style="font-style:normal;font-weight:normal;line-height:0%;font-family:'Bitstream Vera Sans';fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
        x="243.79196"
        y="93.222656"
        id="text6919"
@@ -7082,7 +7089,8 @@
          sodipodi:role="line"
          id="tspan6921"
          x="243.79196"
-         y="93.222656">JPG</tspan></text>
+         y="93.222656"
+         style="font-size:35.5865px;line-height:1.25">JPG</tspan></text>
     <g
        id="g4969"
        inkscape:export-filename="D:\eclipseGanymedeWorkspaceForCpp\ZViewer\ZViewerIcons\Source\zviewer.png"
@@ -7101,18 +7109,19 @@
     </g>
     <text
        xml:space="preserve"
-       style="font-size:103.2325058px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       style="font-style:normal;font-weight:normal;line-height:0%;font-family:'Bitstream Vera Sans';fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
        x="456.74603"
        y="162.95187"
        id="text4975"
        inkscape:export-filename="D:\eclipseGanymedeWorkspaceForCpp\ZViewer\ZViewerIcons\Source\zviewer.png"
        inkscape:export-xdpi="1315.4447"
        inkscape:export-ydpi="1315.4447"
-       transform="matrix(0.9963587,-8.5261001e-2,8.5261001e-2,0.9963587,0,0)"><tspan
+       transform="rotate(-4.8910334)"><tspan
          sodipodi:role="line"
          id="tspan4977"
          x="456.74603"
-         y="162.95187">Z</tspan></text>
+         y="162.95187"
+         style="font-size:103.233px;line-height:1.25">Z</tspan></text>
     <g
        id="g4979"
        inkscape:export-filename="C:\Documents and Settings\zelon\바탕 화면\gif.png"
@@ -7131,7 +7140,7 @@
     </g>
     <text
        xml:space="preserve"
-       style="font-size:35.58653259px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       style="font-style:normal;font-weight:normal;line-height:0%;font-family:'Bitstream Vera Sans';fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
        x="256.15521"
        y="238.98358"
        id="text4985"
@@ -7141,7 +7150,8 @@
          sodipodi:role="line"
          id="tspan4987"
          x="256.15521"
-         y="238.98358">GIF</tspan></text>
+         y="238.98358"
+         style="font-size:35.5865px;line-height:1.25">GIF</tspan></text>
     <g
        id="g4989"
        inkscape:export-filename="C:\Documents and Settings\zelon\바탕 화면\png.png"
@@ -7160,7 +7170,7 @@
     </g>
     <text
        xml:space="preserve"
-       style="font-size:35.58653259px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       style="font-style:normal;font-weight:normal;line-height:0%;font-family:'Bitstream Vera Sans';fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
        x="88.470467"
        y="357.7775"
        id="text4995"
@@ -7170,7 +7180,8 @@
          sodipodi:role="line"
          id="tspan4997"
          x="88.470467"
-         y="357.7775">PNG</tspan></text>
+         y="357.7775"
+         style="font-size:35.5865px;line-height:1.25">PNG</tspan></text>
     <g
        id="g4999"
        inkscape:export-filename="C:\Documents and Settings\zelon\바탕 화면\ico.png"
@@ -7189,7 +7200,7 @@
     </g>
     <text
        xml:space="preserve"
-       style="font-size:35.58653259px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       style="font-style:normal;font-weight:normal;line-height:0%;font-family:'Bitstream Vera Sans';fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
        x="269.00455"
        y="395.25415"
        id="text5005"
@@ -7199,7 +7210,8 @@
          sodipodi:role="line"
          id="tspan5007"
          x="269.00455"
-         y="395.25415">ICO</tspan></text>
+         y="395.25415"
+         style="font-size:35.5865px;line-height:1.25">ICO</tspan></text>
     <g
        id="g5009"
        inkscape:export-filename="C:\Documents and Settings\zelon\바탕 화면\etc.png"
@@ -7218,7 +7230,7 @@
     </g>
     <text
        xml:space="preserve"
-       style="font-size:35.58653259px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       style="font-style:normal;font-weight:normal;line-height:0%;font-family:'Bitstream Vera Sans';fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
        x="95.427383"
        y="522.07141"
        id="text5015"
@@ -7228,7 +7240,8 @@
          sodipodi:role="line"
          id="tspan5017"
          x="95.427383"
-         y="522.07141">etc.</tspan></text>
+         y="522.07141"
+         style="font-size:35.5865px;line-height:1.25">etc.</tspan></text>
     <g
        id="g5019"
        inkscape:export-filename="C:\Documents and Settings\zelon\바탕 화면\psd.png"
@@ -7247,7 +7260,7 @@
     </g>
     <text
        xml:space="preserve"
-       style="font-size:35.58653259px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       style="font-style:normal;font-weight:normal;line-height:0%;font-family:'Bitstream Vera Sans';fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
        x="259.86288"
        y="553.02026"
        id="text5025"
@@ -7257,7 +7270,8 @@
          sodipodi:role="line"
          id="tspan5027"
          x="259.86288"
-         y="553.02026">PSD</tspan></text>
+         y="553.02026"
+         style="font-size:35.5865px;line-height:1.25">PSD</tspan></text>
     <g
        id="g5029"
        inkscape:export-filename="C:\Documents and Settings\zelon\바탕 화면\bmp.png"
@@ -7276,7 +7290,7 @@
     </g>
     <text
        xml:space="preserve"
-       style="font-size:35.58653259px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       style="font-style:normal;font-weight:normal;line-height:0%;font-family:'Bitstream Vera Sans';fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
        x="72.362885"
        y="658.52026"
        id="text5035"
@@ -7286,7 +7300,8 @@
          sodipodi:role="line"
          id="tspan5037"
          x="72.362885"
-         y="658.52026">BMP</tspan></text>
+         y="658.52026"
+         style="font-size:35.5865px;line-height:1.25">BMP</tspan></text>
     <rect
        style="opacity:1;fill:#ff0000;fill-opacity:1;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        id="rect5051"
@@ -7296,7 +7311,7 @@
        y="728.86218" />
     <text
        xml:space="preserve"
-       style="font-size:35.58653259px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       style="font-style:normal;font-weight:normal;line-height:0%;font-family:'Bitstream Vera Sans';fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
        x="419.36288"
        y="763.52026"
        id="text5045"
@@ -7306,7 +7321,8 @@
          sodipodi:role="line"
          id="tspan5047"
          x="419.36288"
-         y="763.52026">BMP</tspan></text>
+         y="763.52026"
+         style="font-size:35.5865px;line-height:1.25">BMP</tspan></text>
     <g
        id="g5823"
        inkscape:export-filename="C:\Documents and Settings\zelon\바탕 화면\bmp.png"
@@ -7332,7 +7348,7 @@
        y="707.07837" />
     <text
        xml:space="preserve"
-       style="font-size:35.58653259px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       style="font-style:normal;font-weight:normal;line-height:0%;font-family:'Bitstream Vera Sans';fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
        x="581.78864"
        y="741.73645"
        id="text5831"
@@ -7342,7 +7358,8 @@
          sodipodi:role="line"
          id="tspan5833"
          x="581.78864"
-         y="741.73645">BMP</tspan></text>
+         y="741.73645"
+         style="font-size:35.5865px;line-height:1.25">BMP</tspan></text>
     <rect
        style="opacity:1;fill:#ff0000;fill-opacity:0.48743717;stroke:#ff0000;stroke-width:0;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        id="rect5835"
@@ -7382,12 +7399,13 @@
          id="text5843"
          y="436.59897"
          x="1410.3773"
-         style="font-size:35.58653259px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+         style="font-style:normal;font-weight:normal;line-height:0%;font-family:'Bitstream Vera Sans';fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
          xml:space="preserve"><tspan
            y="436.59897"
            x="1410.3773"
            id="tspan5845"
-           sodipodi:role="line">BMP</tspan></text>
+           sodipodi:role="line"
+           style="font-size:35.5865px;line-height:1.25">BMP</tspan></text>
     </g>
     <g
        id="g4555"
@@ -7414,7 +7432,7 @@
        y="853.62836" />
     <text
        xml:space="preserve"
-       style="font-size:35.58653259px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       style="font-style:normal;font-weight:normal;line-height:0%;font-family:'Bitstream Vera Sans';fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
        x="174.63705"
        y="888.32935"
        id="text4561"
@@ -7424,7 +7442,8 @@
          sodipodi:role="line"
          id="tspan4563"
          x="174.63705"
-         y="888.32935">BMP</tspan></text>
+         y="888.32935"
+         style="font-size:35.5865px;line-height:1.25">BMP</tspan></text>
     <g
        transform="translate(2453.7881,-70.195957)"
        inkscape:export-ydpi="190.17999"
@@ -7496,5 +7515,94 @@
        transform="matrix(0.70710678,-0.70710678,0.70710678,0.70710678,0,0)"
        inkscape:export-xdpi="190.17999"
        inkscape:export-ydpi="190.17999" />
+    <g
+       transform="translate(2294.7881,82.55404)"
+       inkscape:export-ydpi="190.17999"
+       inkscape:export-xdpi="190.17999"
+       inkscape:export-filename="D:\eclipseGanymedeWorkspaceForCpp\ZViewer\ZViewerIcons\Source\zviewer.png"
+       id="g2">
+      <path
+         style="fill:#ffffff;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:0.4385px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+         d="m -1848.6729,119.55194 86.5461,-10.03935 17.6554,101.08579 -93.4698,14.88593 z"
+         id="path1"
+         inkscape:connector-curvature="0" />
+      <path
+         d="m -1845.8321,121.98125 c 2.7184,-0.12186 78.2175,-9.18627 81.4197,-10.09273 l 15.5578,95.5964 -84.9061,11.66959 z m -5.8388,-5.33696 c 2.7183,-0.1219 94.0132,-9.93347 92.0638,-10.15417 l 18.1364,105.70812 -98.474,15.44064 z"
+         style="font-size:12px;fill:#311900;fill-opacity:1;fill-rule:evenodd;stroke-width:10"
+         id="path2"
+         sodipodi:nodetypes="cccccccccc"
+         inkscape:connector-curvature="0" />
+    </g>
+    <circle
+       style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:0.609375px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       id="circle2"
+       cx="525.89642"
+       cy="260.21576"
+       r="9.4453125"
+       inkscape:export-xdpi="190.17999"
+       inkscape:export-ydpi="190.17999" />
+    <circle
+       r="9.4453125"
+       cy="218.3622"
+       cx="481.75"
+       id="circle3"
+       style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:0.609375px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       inkscape:export-xdpi="190.17999"
+       inkscape:export-ydpi="190.17999" />
+    <circle
+       style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:0.609375px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       id="circle4"
+       cx="481.75"
+       cy="280.36218"
+       r="9.4453125"
+       inkscape:export-xdpi="190.17999"
+       inkscape:export-ydpi="190.17999" />
+    <rect
+       style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       id="rect4"
+       width="5"
+       height="63.5"
+       x="479.5"
+       y="216.61221"
+       inkscape:export-xdpi="190.17999"
+       inkscape:export-ydpi="190.17999" />
+    <rect
+       y="496.93958"
+       x="173.72353"
+       height="63.5"
+       width="5"
+       id="rect5"
+       style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       transform="rotate(-46.185837)"
+       inkscape:export-xdpi="190.17999"
+       inkscape:export-ydpi="190.17999" />
+    <rect
+       y="469.43082"
+       x="183.12456"
+       height="19.250002"
+       width="5"
+       id="rect6"
+       style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       transform="rotate(-45)"
+       inkscape:export-xdpi="190.17999"
+       inkscape:export-ydpi="190.17999" />
+    <rect
+       style="opacity:1;fill:#ff0000;fill-opacity:0.487437;stroke:#ff0000;stroke-width:0;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect1"
+       width="101.86537"
+       height="23.528927"
+       x="447.68665"
+       y="265.86859" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;line-height:0%;font-family:'Bitstream Vera Sans';fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       x="492.69443"
+       y="282.78418"
+       id="text6"><tspan
+         sodipodi:role="line"
+         id="tspan6"
+         x="492.69443"
+         y="282.78418"
+         style="font-size:14.4289px;line-height:1.25">Nightly</tspan></text>
   </g>
 </svg>
