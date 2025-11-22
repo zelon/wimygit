@@ -47,6 +47,12 @@ jobs:
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 10.0.x
+
+    - name: Configure Git
+      run: |
+        git config --global user.name 'GitHub Action'
+        git config --global user.email 'action@github.com'
+
     - name: Run IncreaseNightly Version and push
       run: |
         powershell ./IncreaseNightlyVersion.ps1
@@ -56,14 +62,19 @@ jobs:
         
     - name: Set Nightly Version
       run: powershell ./SetNightlyVersion.ps1
+
     - name: Restore dependencies
       run: dotnet restore
+
     - name: Build
       run: dotnet build --no-restore
+
     - name: Test
       run: dotnet test --no-build --verbosity normal
+
     - name: Publish
       run: dotnet publish WimyGit -c Release /p:PublishProfile=ReleasePublishProfile
+
     - name: Create tag
       id: tag
       run: |
@@ -75,12 +86,14 @@ jobs:
         
         git tag $tag --force
         git push origin $tag --force
+
     - name: Zip build folder
       run: |
         powershell Move-Item WimyGit\bin\Release\publish\WimyGit.exe WimyGit\bin\Release\publish\WimyGitN.exe
         $zipName = "${{ steps.tag.outputs.tag }}.zip"
         powershell Compress-Archive -Path WimyGit\bin\Release\publish\* -DestinationPath $zipName -Force
       shell: pwsh
+
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v2
       with:
@@ -90,3 +103,26 @@ jobs:
         prerelease: true
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  create-pull-request:
+    runs-on: ubuntu-latest
+    needs: release
+    steps:
+      - name: Checkout zelon/winget-pkgs
+        uses: actions/checkout@v4
+        with:
+          repository: zelon/winget-pkgs
+          path: zelon-winget-pkgs
+      - name: Config Git
+        run: |
+          git config user.email "actions@github.com"
+          git config user.name "GitHub Actions"
+          
+      - name: Sync to microsoft/winget-pkgs
+        run: |
+          git remote add upstream https://github.com/microsoft/winget-pkgs.git
+          git fetch upstream
+          git merge upstream/master --no-edit
+          git push origin master
+        
+          
