@@ -1,7 +1,7 @@
-# Update Version String
+﻿# Update Version String
 $versionFilePath = "WimyGit\Properties\AssemblyInfo.cs"
 $content = Get-Content $versionFilePath -Raw
-$content = $content -replace 'AssemblyInformationalVersion\(".*?"\)', 'AssemblyInformationalVersion("1.50.1")'
+$content = $content -replace 'AssemblyInformationalVersion\(".*?"\)', 'AssemblyInformationalVersion("1.50.2")'
 Set-Content $versionFilePath $content -Encoding UTF8
 
 # Update Icon
