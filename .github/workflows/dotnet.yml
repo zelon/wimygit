@@ -47,6 +47,13 @@ jobs:
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 10.0.x
+    - name: Run IncreaseNightly Version and push
+      run: |
+        powershell ./IncreaseNightlyVersion.ps1
+        git add ./SetNightlyVersion.ps1
+        git commit -m "Update Nightly Version"
+        git push
+        
     - name: Set Nightly Version
       run: powershell ./SetNightlyVersion.ps1
     - name: Restore dependencies
