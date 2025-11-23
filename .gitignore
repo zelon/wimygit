@@ -13,3 +13,5 @@ WimyGitLib/obj
 .vs/
 *.swp
 .claude/settings.local.json
+manifests/w/Wimysoft/WimyGit
+wingetcreate.exe
