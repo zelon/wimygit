@@ -45,7 +45,7 @@ jobs:
     - name: Test
       run: dotnet test --no-build --verbosity normal
 
-    - name: Publish
+    - name: DotNet Publish
       run: dotnet publish WimyGit -c Release /p:PublishProfile=ReleasePublishProfile
 
     - name: Create tag
@@ -83,4 +83,4 @@ jobs:
         $packageIdentifier = "Wimysoft.WimyGit.Nightly"
         $newVersion = "${{ steps.newVersion.outputs.newVersion }}"
         $newDownloadUrl = "https://github.com/zelon/wimygit/releases/download/$tag/$tag.zip"
-        powershell .\cicd\CreateWingetPullRequet.ps1 -packageIdentifier $packageIdentifier -newVersion $newVersion -newDownloadUrl $newDownloadUrl
+        powershell .\cicd\CreateWingetPullRequet.ps1 submit -packageIdentifier $packageIdentifier -newVersion $newVersion -newDownloadUrl $newDownloadUrl
