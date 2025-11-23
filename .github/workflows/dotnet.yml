@@ -51,7 +51,7 @@ jobs:
     - name: Create tag
       id: tag
       run: |
-        $tag = "wimygit-nightly-v{{ steps.newVersion.outputs.newVersion }}"
+        $tag = "wimygit-nightly-v${{ steps.newVersion.outputs.newVersion }}"
         echo "tag=$tag" >> $env:GITHUB_OUTPUT
         
         git config user.email "actions@github.com"
