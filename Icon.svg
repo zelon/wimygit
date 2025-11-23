@@ -6912,8 +6912,8 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="8.0000001"
-     inkscape:cx="554.24999"
-     inkscape:cy="236.3125"
+     inkscape:cx="598.49999"
+     inkscape:cy="219.9375"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -7534,19 +7534,11 @@
          inkscape:connector-curvature="0" />
     </g>
     <circle
-       style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:0.609375px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       style="fill:#ff0000;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:0.609375px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
        id="circle2"
        cx="525.89642"
        cy="260.21576"
        r="9.4453125"
-       inkscape:export-xdpi="190.17999"
-       inkscape:export-ydpi="190.17999" />
-    <circle
-       r="9.4453125"
-       cy="218.3622"
-       cx="481.75"
-       id="circle3"
-       style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:0.609375px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
        inkscape:export-xdpi="190.17999"
        inkscape:export-ydpi="190.17999" />
     <circle
@@ -7572,7 +7564,7 @@
        height="63.5"
        width="5"
        id="rect5"
-       style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       style="fill:#ff0000;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
        transform="rotate(-46.185837)"
        inkscape:export-xdpi="190.17999"
        inkscape:export-ydpi="190.17999" />
@@ -7604,5 +7596,84 @@
          x="492.69443"
          y="282.78418"
          style="font-size:14.4289px;line-height:1.25">Nightly</tspan></text>
+    <circle
+       r="9.4453125"
+       cy="218.3622"
+       cx="481.75"
+       id="circle3"
+       style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:0.609375px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       inkscape:export-xdpi="190.17999"
+       inkscape:export-ydpi="190.17999" />
+    <g
+       transform="translate(2451.4131,78.05404)"
+       inkscape:export-ydpi="522.68512"
+       inkscape:export-xdpi="522.68512"
+       inkscape:export-filename="..\..\tmp\tmp.png"
+       id="g11">
+      <path
+         style="fill:#ffffff;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:0.4385px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+         d="m -1848.6729,119.55194 86.5461,-10.03935 17.6554,101.08579 -93.4698,14.88593 z"
+         id="path10"
+         inkscape:connector-curvature="0" />
+      <path
+         d="m -1845.8321,121.98125 c 2.7184,-0.12186 78.2175,-9.18627 81.4197,-10.09273 l 15.5578,95.5964 -84.9061,11.66959 z m -5.8388,-5.33696 c 2.7183,-0.1219 94.0132,-9.93347 92.0638,-10.15417 l 18.1364,105.70812 -98.474,15.44064 z"
+         style="font-size:12px;fill:#311900;fill-opacity:1;fill-rule:evenodd;stroke-width:10"
+         id="path11"
+         sodipodi:nodetypes="cccccccccc"
+         inkscape:connector-curvature="0" />
+    </g>
+    <circle
+       style="fill:#ff0000;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:0.609375px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       id="circle11"
+       cx="682.52142"
+       cy="255.71576"
+       r="9.4453125"
+       inkscape:export-xdpi="190.17999"
+       inkscape:export-ydpi="190.17999" />
+    <circle
+       style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:0.609375px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       id="circle12"
+       cx="638.375"
+       cy="275.86218"
+       r="9.4453125"
+       inkscape:export-xdpi="190.17999"
+       inkscape:export-ydpi="190.17999" />
+    <rect
+       style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       id="rect12"
+       width="5"
+       height="63.5"
+       x="636.125"
+       y="212.11221"
+       inkscape:export-xdpi="190.17999"
+       inkscape:export-ydpi="190.17999" />
+    <rect
+       y="606.84302"
+       x="285.40555"
+       height="63.5"
+       width="5"
+       id="rect13"
+       style="fill:#ff0000;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       transform="rotate(-46.185837)"
+       inkscape:export-xdpi="190.17999"
+       inkscape:export-ydpi="190.17999" />
+    <rect
+       y="576.99945"
+       x="297.05713"
+       height="19.250002"
+       width="5"
+       id="rect14"
+       style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       transform="rotate(-45)"
+       inkscape:export-xdpi="190.17999"
+       inkscape:export-ydpi="190.17999" />
+    <circle
+       r="9.4453125"
+       cy="213.8622"
+       cx="638.375"
+       id="circle15"
+       style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:0.609375px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       inkscape:export-xdpi="190.17999"
+       inkscape:export-ydpi="190.17999" />
   </g>
 </svg>
