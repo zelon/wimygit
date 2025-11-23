@@ -28,9 +28,10 @@ jobs:
 
     - name: Run IncreaseNightly Version and push
       run: |
-        powershell ./IncreaseNightlyVersion.ps1
-        git add ./SetNightlyVersion.ps1
-        git commit -m "Update Nightly Version"
+        powershell ./cicd/SetNewNightlyVersion.ps1
+        $newVersion = Get-Content .\cicd\NightlyVersion.txt
+        git add .cicd/NightlyVersion.txt
+        git commit -m "Update Nightly Version to $newVersion"
         git push
         
     - name: Set Nightly Version
@@ -51,7 +52,7 @@ jobs:
     - name: Create tag
       id: tag
       run: |
-        $tag = "wimygit-nightly"
+        $tag = "wimygit-nightly-$newVersion"
         echo "tag=$tag" >> $env:GITHUB_OUTPUT
         
         git config user.email "actions@github.com"
