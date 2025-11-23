@@ -26,17 +26,16 @@ jobs:
         git config --global user.name 'GitHub Action'
         git config --global user.email 'action@github.com'
 
-    - name: Run IncreaseNightly Version and push
+    - name: Set New Nightly Version and Git Push
+      id: newVersion
       run: |
         powershell ./cicd/SetNewNightlyVersion.ps1
         $newVersion = Get-Content .\cicd\NightlyVersion.txt
+        echo "newVersion=$newVersion" >> $env:GITHUB_OUTPUT
         git add ./cicd/NightlyVersion.txt
         git commit -m "Update Nightly Version to $newVersion"
         git push
         
-    - name: Set Nightly Version
-      run: powershell ./SetNightlyVersion.ps1
-
     - name: Restore dependencies
       run: dotnet restore
 
@@ -52,7 +51,7 @@ jobs:
     - name: Create tag
       id: tag
       run: |
-        $tag = "wimygit-nightly-$newVersion"
+        $tag = "wimygit-nightly-v{{ steps.newVersion.outputs.newVersion }}"
         echo "tag=$tag" >> $env:GITHUB_OUTPUT
         
         git config user.email "actions@github.com"
@@ -77,3 +76,11 @@ jobs:
         prerelease: true
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Winget Publish
+      run: |
+        $tag = "${{ steps.tag.outputs.tag }}"
+        $packageIdentifier = "Wimysoft.WimyGit.Nightly"
+        $newVersion = "${{ steps.newVersion.outputs.newVersion }}"
+        $newDownloadUrl = "https://github.com/zelon/wimygit/releases/download/$tag/$tag.zip"
+        powershell .\cicd\CreateWingetPullRequet.ps1 -packageIdentifier $packageIdentifier -newVersion $newVersion -newDownloadUrl $newDownloadUrl
