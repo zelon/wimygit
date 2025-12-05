@@ -80,7 +80,7 @@ namespace WimyGit.Views
         private void ShowPluginFolderInExplorer(object sender)
         {
             string pluginRootDirectory = Plugin.PluginController.GetPluginRootDirectoryPath();
-            RunExternal runner = new RunExternal("explorer.exe", pluginRootDirectory);
+            var runner = new WimyGitLib.RunExternal("explorer.exe", pluginRootDirectory);
             runner.RunWithoutWaiting(pluginRootDirectory);
         }
 
@@ -92,8 +92,8 @@ namespace WimyGit.Views
                 string dest_path = Plugin.PluginController.GetPluginRootDirectoryPath();
                 Directory.CreateDirectory(dest_path);
 
-                RunExternal runner = new RunExternal(git_bin, dest_path);
-                runner.RunInConsoleProgressWindow($"clone {SelectedPluginUrl.Url}");
+                var runner = new WimyGitLib.RunExternal(git_bin, dest_path);
+                UIService.RunInConsoleProgressWindow(runner, $"clone {SelectedPluginUrl.Url}");
 
                 UIService.ShowMessage("Plugin has been installed. It will be applied after restarting the wimygit");
 
@@ -122,8 +122,8 @@ namespace WimyGit.Views
                     return;
                 }
                 string git_bin = ProgramPathFinder.GetGitBin();
-                RunExternal runner = new RunExternal(git_bin, pluginDir);
-                runner.RunInConsoleProgressWindow($"pull");
+                var runner = new WimyGitLib.RunExternal(git_bin, pluginDir);
+                UIService.RunInConsoleProgressWindow(runner, $"pull");
             }
             catch (FileNotFoundException ex)
             {

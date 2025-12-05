@@ -43,7 +43,7 @@ namespace WimyGit
 			Debug.Assert(!string.IsNullOrEmpty(editorPath), "Editor path must not be empty");
 			
 			string cmd = $"-d {filename}.untracked {filename}";
-			RunExternal runner = new RunExternal(editorPath, ".");
+            WimyGitLib.RunExternal runner = new WimyGitLib.RunExternal(editorPath, ".");
 			runner.RunWithoutWaiting(cmd);
 		}
 

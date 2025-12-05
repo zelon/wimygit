@@ -61,5 +61,12 @@ namespace WimyGit
 
             return true;
         }
+
+        public static void RunInConsoleProgressWindow(WimyGitLib.RunExternal runExternal, string arguments)
+        {
+            var console_progress_window = new ConsoleProgressWindow(runExternal.WorkingDirectory, runExternal.ExecuteFileName, arguments);
+            console_progress_window.Owner = GlobalSetting.GetInstance().GetWindow();
+            console_progress_window.ShowDialog();
+        }
     }
 }

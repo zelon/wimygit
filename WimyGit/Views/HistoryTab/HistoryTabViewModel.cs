@@ -176,7 +176,7 @@ namespace WimyGit.ViewModels
                 return;
             }
             string gitCommand = $"rebase {SelectedHistoryStatus.CommitId}";
-            gitRepository.CreateGitRunner().RunInConsoleProgressWindow(gitCommand);
+            UIService.RunInConsoleProgressWindow(gitRepository.CreateGitRunner(), gitCommand);
             gitRepository.Refresh();
         }
 
@@ -191,7 +191,7 @@ namespace WimyGit.ViewModels
                 return;
             }
             string gitCommand = GitCommandCreator.Checkout(SelectedHistoryStatus.CommitId);
-            gitRepository.CreateGitRunner().RunInConsoleProgressWindow(gitCommand);
+            UIService.RunInConsoleProgressWindow(gitRepository.CreateGitRunner(), gitCommand);
             gitRepository.Refresh();
         }
 
@@ -206,7 +206,7 @@ namespace WimyGit.ViewModels
                 return;
             }
             string gitCommand = GitCommandCreator.ResetSoft(SelectedHistoryStatus.CommitId);
-            gitRepository.CreateGitRunner().RunInConsoleProgressWindow(gitCommand);
+            UIService.RunInConsoleProgressWindow(gitRepository.CreateGitRunner(), gitCommand);
             gitRepository.Refresh();
         }
 
@@ -221,7 +221,7 @@ namespace WimyGit.ViewModels
                 return;
             }
             string gitCommand = GitCommandCreator.ResetMixed(SelectedHistoryStatus.CommitId);
-            gitRepository.CreateGitRunner().RunInConsoleProgressWindow(gitCommand);
+            UIService.RunInConsoleProgressWindow(gitRepository.CreateGitRunner(), gitCommand);
             gitRepository.Refresh();
         }
 
@@ -241,7 +241,7 @@ namespace WimyGit.ViewModels
                 return;
             }
             string gitCommand = GitCommandCreator.ResetHard(SelectedHistoryStatus.CommitId);
-            gitRepository.CreateGitRunner().RunInConsoleProgressWindow(gitCommand);
+            UIService.RunInConsoleProgressWindow(gitRepository.CreateGitRunner(), gitCommand);
             gitRepository.Refresh();
         }
 

@@ -66,7 +66,7 @@ namespace WimyGit
 			process_.StartInfo.CreateNoWindow = true;
 			process_.StartInfo.WorkingDirectory = repository_path_;
 
-			StringArrayOutput output = new StringArrayOutput();
+			var output = new WimyGitLib.StringArrayOutput();
 			process_.OutputDataReceived += (object _, DataReceivedEventArgs console_output) => {
 				if (console_output.Data == null)
 				{

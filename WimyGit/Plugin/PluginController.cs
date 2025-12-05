@@ -108,7 +108,7 @@ namespace WimyGit.Plugin
                 {
                     case ExecutionType.WithoutShellAndNoWaiting:
                         {
-                            RunExternal runner = new RunExternal(pluginData.Command, workingDirectory);
+                            WimyGitLib.RunExternal runner = new WimyGitLib.RunExternal(pluginData.Command, workingDirectory);
                             try
                             {
                                 runner.RunWithoutWaiting(arguments);
@@ -121,10 +121,10 @@ namespace WimyGit.Plugin
                         }
                     case ExecutionType.WimyGitInnerShellAndRefreshRepositoryStatus:
                         {
-                            RunExternal runner = new RunExternal(pluginData.Command, workingDirectory);
+                            WimyGitLib.RunExternal runner = new WimyGitLib.RunExternal(pluginData.Command, workingDirectory);
                             try
                             {
-                                runner.RunInConsoleProgressWindow(arguments);
+                                UIService.RunInConsoleProgressWindow(runner, arguments);
                                 await gitRepository.Refresh();
                             }
                             catch (System.Exception exception)

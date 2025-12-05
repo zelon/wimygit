@@ -78,13 +78,13 @@ namespace WimyGit
         private void ShowWimyGitDirectoryInExplorer(object sender, RoutedEventArgs e)
         {
             string wimygitDirectory = System.IO.Path.GetDirectoryName(Environment.ProcessPath);
-            RunExternal runner = new RunExternal("explorer.exe", wimygitDirectory);
+            var runner = new WimyGitLib.RunExternal("explorer.exe", wimygitDirectory);
             runner.RunWithoutWaiting(wimygitDirectory);
         }
 
         private void ShowWimyGitConfigFileInExplorer(object sender, RoutedEventArgs e)
         {
-            RunExternal runner = new RunExternal("explorer.exe", Config.ConfigFileController.GetConfigDirectoryPath());
+            var runner = new WimyGitLib.RunExternal("explorer.exe", Config.ConfigFileController.GetConfigDirectoryPath());
             runner.RunWithoutWaiting(Config.ConfigFileController.GetConfigDirectoryPath());
         }
 

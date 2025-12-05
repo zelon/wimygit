@@ -12,7 +12,7 @@ namespace WimyGit.Service
             {
                 // Execute the git diff command
                 string command = $"diff --staged";
-                var runExternal = new RunExternal(ProgramPathFinder.GetGitBin(), gitRepositoryPath);
+                var runExternal = new WimyGitLib.RunExternal(ProgramPathFinder.GetGitBin(), gitRepositoryPath);
                 List<string> output = await runExternal.RunAsync(command);
                 return output;
             }

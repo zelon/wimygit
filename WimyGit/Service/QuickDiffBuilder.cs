@@ -43,7 +43,7 @@ namespace WimyGit.Service
             }
             if (string.IsNullOrEmpty(DiffCommand) == false)
             {
-                RunExternal runner = GitRepository.CreateGitRunner();
+                WimyGitLib.RunExternal runner = GitRepository.CreateGitRunner();
                 GitRepository.AddLog(DiffCommand);
                 List<string> lines = runner.Run(DiffCommand);
                 return new QuickDiffContentInfo()

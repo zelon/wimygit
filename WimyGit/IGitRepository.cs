@@ -7,7 +7,7 @@ namespace WimyGit
         public string GetFullPath(string filename);
         public GitWrapper GetGitWrapper();
         public System.Threading.Tasks.Task<bool> Refresh();
-        public RunExternal CreateGitRunner();
+        public WimyGitLib.RunExternal CreateGitRunner();
         public void AddLog(string message);
         public void AddLog(System.Collections.Generic.List<string> logs);
         public bool IsQuickDiffTabSelected();

@@ -66,13 +66,13 @@ namespace WimyGit.ViewModels
             GitCleanDryCommand = new DelegateCommand(async (object parameter) =>
             {
                 string cmd = "clean -f -d -n";
-                CreateGitRunner().RunInConsoleProgressWindow(cmd);
+                UIService.RunInConsoleProgressWindow(CreateGitRunner(), cmd);
                 await Refresh();
             });
             GitCleanCommand = new DelegateCommand(async (object parameter) =>
             {
                 string cmd = "clean -f -d";
-                CreateGitRunner().RunInConsoleProgressWindow(cmd);
+                UIService.RunInConsoleProgressWindow(CreateGitRunner(), cmd);
                 await Refresh();
             });
         }
@@ -164,9 +164,9 @@ namespace WimyGit.ViewModels
             return Refresh();
         }
 
-        public RunExternal CreateGitRunner()
+        public WimyGitLib.RunExternal CreateGitRunner()
         {
-            return new RunExternal(ProgramPathFinder.GetGitBin(), Directory);
+            return new WimyGitLib.RunExternal(ProgramPathFinder.GetGitBin(), Directory);
         }
 
         public void OnViewTimeLapseCommand()
@@ -187,19 +187,19 @@ namespace WimyGit.ViewModels
         public async Task OnFetchAllCommand()
         {
             string cmd = "fetch --all";
-            CreateGitRunner().RunInConsoleProgressWindow(cmd);
+            UIService.RunInConsoleProgressWindow(CreateGitRunner(), cmd);
             await Refresh();
         }
 
         private void OnOpenExplorerCommand(object sender)
         {
-            RunExternal runner = new RunExternal("explorer.exe", Directory);
+            var runner = new WimyGitLib.RunExternal("explorer.exe", Directory);
             runner.RunWithoutWaiting(Directory);
         }
 
         private void OnOpenGitBashCommand(object sender)
         {
-            RunExternal runner = new RunExternal(ProgramPathFinder.GetGitShell(), Directory);
+            var runner = new WimyGitLib.RunExternal(ProgramPathFinder.GetGitShell(), Directory);
             runner.RunInShell("--login -i");
         }
 
@@ -235,21 +235,21 @@ namespace WimyGit.ViewModels
         private async Task OnPullCommand()
         {
             string cmd = "pull";
-            CreateGitRunner().RunInConsoleProgressWindow(cmd);
+            UIService.RunInConsoleProgressWindow(CreateGitRunner(), cmd);
             await Refresh();
         }
 
         private async void OnPushCommand()
         {
             string cmd = "push";
-            CreateGitRunner().RunInConsoleProgressWindow(cmd);
+            UIService.RunInConsoleProgressWindow(CreateGitRunner(), cmd);
             await Refresh();
         }
 
         private async void OnPushTagCommand()
         {
             string cmd = "push --tags";
-            CreateGitRunner().RunInConsoleProgressWindow(cmd);
+            UIService.RunInConsoleProgressWindow(CreateGitRunner(), cmd);
             await Refresh();
         }
 

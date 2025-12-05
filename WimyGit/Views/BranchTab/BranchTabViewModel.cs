@@ -57,7 +57,7 @@ namespace WimyGit.UserControls
             }
             string branchName = SelectedBranch.Name;
             string cmd = GitCommandCreator.SwitchBranch(branchName);
-            gitRepository.CreateGitRunner().RunInConsoleProgressWindow(cmd);
+            UIService.RunInConsoleProgressWindow(gitRepository.CreateGitRunner(), cmd);
 
             gitRepository.Refresh();
         }
@@ -75,7 +75,7 @@ namespace WimyGit.UserControls
             }
             string branchName = SelectedBranch.Name;
             string cmd = GitCommandCreator.DeleteBranch(branchName);
-            gitRepository.CreateGitRunner().RunInConsoleProgressWindow(cmd);
+            UIService.RunInConsoleProgressWindow(gitRepository.CreateGitRunner(), cmd);
 
             gitRepository.Refresh();
         }

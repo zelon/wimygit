@@ -50,7 +50,7 @@ namespace WimyGit
                     {
                         return;
                     }
-                    RunExternal runner = new RunExternal("explorer.exe", processDirectory);
+                    var runner = new WimyGitLib.RunExternal("explorer.exe", processDirectory);
                     runner.RunWithoutWaiting(processDirectory);
                 }
                 else

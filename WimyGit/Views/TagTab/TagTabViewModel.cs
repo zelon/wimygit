@@ -56,7 +56,7 @@ namespace WimyGit.UserControls
             }
             string tagName = SelectedTag.Name;
             string cmd = GitCommandCreator.DeleteTag(tagName);
-            gitRepository.CreateGitRunner().RunInConsoleProgressWindow(cmd);
+            UIService.RunInConsoleProgressWindow(gitRepository.CreateGitRunner(), cmd);
 
             gitRepository.Refresh();
         }
