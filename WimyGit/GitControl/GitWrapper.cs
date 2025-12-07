@@ -387,7 +387,7 @@ namespace WimyGit
             {
                 checkPath = $"\"{checkPath}\"";
             }
-			string cmd = string.Format("log --all --encoding=UTF-8 --skip={0} --max-count={1} --graph --format=\"`%ai`%H`%an`%d`%s\" -- {2}", skip_count, max_count, checkPath);
+			string cmd = string.Format("log --all --encoding=UTF-8 --skip={0} --max-count={1} --graph --color=always --format=\"`%ai`%H`%an`%d`%s\" -- {2}", skip_count, max_count, checkPath);
 			logger_.AddLog(cmd);
 			List<string> result = await CreateGitRunner().RunAsync(cmd);
 			return Parse(result);

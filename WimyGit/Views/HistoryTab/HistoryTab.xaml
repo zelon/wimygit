@@ -9,6 +9,7 @@
              d:DesignHeight="450" d:DesignWidth="800">
     <UserControl.Resources>
         <WimyGit:CommitIdToFileListConverter x:Key="commitIdToFileListConverter"/>
+        <WimyGit:AnsiStringToTextBlockConverter x:Key="AnsiStringToTextBlockConverter"/>
     </UserControl.Resources>
     <Grid Background="#FFF9F9F9">
         <Grid.RowDefinitions>
@@ -49,7 +50,14 @@
                     <GridView>
                         <GridViewColumn Header="DateTime" DisplayMemberBinding="{Binding LocalDateTime}"/>
                         <GridViewColumn Header="CommitId" DisplayMemberBinding="{Binding CommitId}" />
-                        <GridViewColumn Header="Graph" DisplayMemberBinding="{Binding Graph}" />
+                        <GridViewColumn Header="Graph">
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <ContentControl Content="{Binding Graph, Converter={StaticResource AnsiStringToTextBlockConverter}}">
+                                    </ContentControl>
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
                         <GridViewColumn Header="Author" DisplayMemberBinding="{Binding Author}" />
                         <GridViewColumn Header="Message" Width="Auto">
                             <GridViewColumn.CellTemplate>

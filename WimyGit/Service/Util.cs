@@ -1,6 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Windows;
+using System.Windows.Documents;
+using WimyGitLib;
 
 namespace WimyGit
 {
@@ -84,6 +88,47 @@ namespace WimyGit
             {
                 return -1;
             }
+        }
+
+        public static void AppendAnsiToTextBlockWithToneDown(List<AnsiToken> ansiTokens, System.Windows.Controls.TextBlock textBlock)
+        {
+            foreach (AnsiToken ansiToken in ansiTokens)
+            {
+                var run = new Run(ansiToken.Text);
+
+                if (ansiToken.Color.HasValue)
+                {
+                    var toneDownedColor = ConvertColorToneDown(ansiToken.Color.Value);
+                    // 흰색 배경 기준이라서 RGB 를 뒤집는다
+                    var mediaColor = System.Windows.Media.Color.FromArgb(toneDownedColor.A,
+                        toneDownedColor.R, toneDownedColor.G, toneDownedColor.B);
+                    run.Foreground = new System.Windows.Media.SolidColorBrush(mediaColor);
+                }
+                textBlock.Inlines.Add(run);
+            }
+        }
+
+        public static System.Drawing.Color ConvertColorToneDown(System.Drawing.Color fromColor)
+        {
+            byte r = fromColor.R;
+            byte g = fromColor.G;
+            byte b = fromColor.B;
+
+            const byte BrightnessThreshold = 128;
+            const byte BrightnessDownAmount = 40;
+            if (r > BrightnessThreshold)
+            {
+                r -= BrightnessDownAmount;
+            }
+            if (g > BrightnessThreshold)
+            {
+                g -= BrightnessDownAmount;
+            }
+            if (b > BrightnessThreshold)
+            {
+                b -= BrightnessDownAmount;
+            }
+            return System.Drawing.Color.FromArgb(fromColor.A, r, g, b);
         }
     }
 }
