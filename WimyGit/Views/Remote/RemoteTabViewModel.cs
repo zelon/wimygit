@@ -2,17 +2,22 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
+using System.Windows.Input;
 using WimyGitLib;
 
 namespace WimyGit.UserControls
 {
     public class RemoteTabViewModel : NotifyBase
     {
+        public ICommand DeleteRemoteCommand { get; private set; }
+
         private WeakReference<IGitRepository> _gitRepository;
 
         public RemoteTabViewModel()
         {
             RemoteInfos = new ObservableCollection<RemoteInfo>();
+
+            DeleteRemoteCommand = new DelegateCommand(OnDeleteRemoteCommand);
         }
 
         public ObservableCollection<RemoteInfo> RemoteInfos { get; set; }
@@ -42,6 +47,25 @@ namespace WimyGit.UserControls
                 RemoteInfos.Add(remoteInfo);
             }
             NotifyPropertyChanged("RemoteInfos");
+        }
+
+        async void OnDeleteRemoteCommand(object parameter)
+        {
+            if (_gitRepository.TryGetTarget(out IGitRepository gitRepository) == false)
+            {
+                return;
+            }
+            if (SelectedRemoteInfo == null)
+            {
+                return;
+            }
+            string remoteName = SelectedRemoteInfo.Name;
+            if (UIService.ShowMessageWithOKCancel($"Are you sure you want to delete the remote '{remoteName}'?") != System.Windows.MessageBoxResult.OK)
+            {
+                return;
+            }
+            gitRepository.CreateGitRunner().Run($"remote remove {remoteName}");
+            await gitRepository.Refresh();
         }
     }
 }
