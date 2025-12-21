@@ -110,25 +110,21 @@ namespace WimyGit
 
         public static System.Drawing.Color ConvertColorToneDown(System.Drawing.Color fromColor)
         {
-            byte r = fromColor.R;
-            byte g = fromColor.G;
-            byte b = fromColor.B;
+            // 밝기 계산 (perceived brightness)
+            float brightness = (fromColor.R * 0.299f + fromColor.G * 0.587f + fromColor.B * 0.114f) / 255f;
 
-            const byte BrightnessThreshold = 128;
-            const byte BrightnessDownAmount = 40;
-            if (r > BrightnessThreshold)
+            if (brightness > 0.6f) // 너무 밝으면
             {
-                r -= BrightnessDownAmount;
+                // 어둡게 조정 (약 30% 정도로)
+                float factor = 0.3f / brightness;
+                return System.Drawing.Color.FromArgb(
+                    (int)(fromColor.R * factor),
+                    (int)(fromColor.G * factor),
+                    (int)(fromColor.B * factor)
+                );
             }
-            if (g > BrightnessThreshold)
-            {
-                g -= BrightnessDownAmount;
-            }
-            if (b > BrightnessThreshold)
-            {
-                b -= BrightnessDownAmount;
-            }
-            return System.Drawing.Color.FromArgb(fromColor.A, r, g, b);
+
+            return fromColor;
         }
     }
 }
