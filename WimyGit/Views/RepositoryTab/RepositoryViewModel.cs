@@ -257,27 +257,27 @@ namespace WimyGit.ViewModels
         {
             DateTime start = DateTime.Now;
             AddLog("Refreshing Directory: " + Directory);
-            repository_tab_.EnterLoadingScreen();
 
-            if (RefreshBranch() == false)
-            {// invalid repository
-                repository_tab_.LeaveLoadingScreen();
-                repository_tab_.EnterFailedScreen();
-                git_ = null;
+            if (git_ == null)
+            {
                 return false;
             }
 
+            repository_tab_.EnterLoadingScreen();
+
             DirectoryTree.ReloadTreeView();
 
+            var refreshBranchTask = RefreshBranchAsync();
             Task<List<string>> git_porcelain_result = git_.GetGitStatusPorcelainAllAsync();
             Task<int> stashTabResult = _stashTabViewModel.RefreshAndGetStashCount();
             Task branchTabResult = _branchTabViewModel.Refresh();
             Task tagTabResult = _tagTabViewModel.Refresh();
             Task remoteTabResult = _remoteTabViewModel.Refresh();
 
-            _pendingTabViewModel.RefreshPending(await git_porcelain_result);
+            await Task.WhenAll(refreshBranchTask, git_porcelain_result, stashTabResult, branchTabResult, tagTabResult, remoteTabResult);
+            _pendingTabViewModel.RefreshPending(git_porcelain_result.Result);
 
-            int stashListCount = await stashTabResult;
+            int stashListCount = stashTabResult.Result;
             if (stashListCount > 0)
             {
                 StashTabHeader = $"Stash [{stashListCount}]";
@@ -287,9 +287,6 @@ namespace WimyGit.ViewModels
                 StashTabHeader = "Stash";
             }
             NotifyPropertyChanged("StashTabHeader");
-            await branchTabResult;
-            await remoteTabResult;
-            await tagTabResult;
 
             repository_tab_.LeaveLoadingScreen();
 
@@ -298,13 +295,10 @@ namespace WimyGit.ViewModels
             return true;
         }
 
-        private bool RefreshBranch()
+        private async Task<bool> RefreshBranchAsync()
         {
-            if (git_ == null)
-            {
-                return false;
-            }
-            GitRepositoryStatus gitRepositoryStatus = git_.GetRepositoryStatus();
+            System.Diagnostics.Debug.Assert(git_ != null);
+            GitRepositoryStatus gitRepositoryStatus = await git_.GetRepositoryStatusAsync();
             if (gitRepositoryStatus == null)
             {
                 return false;

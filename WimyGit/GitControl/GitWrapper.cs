@@ -393,10 +393,10 @@ namespace WimyGit
 			return Parse(result);
 		}
 
-		public GitRepositoryStatus GetRepositoryStatus()
+		public async Task<GitRepositoryStatus> GetRepositoryStatusAsync()
 		{
 			string cmd = "status";
-			List<string> results = CreateGitRunner().Run(cmd);
+			List<string> results = await CreateGitRunner().RunAsync(cmd);
             GitRepositoryStatus gitRepositoryStatus = GitStatusParser.Parse(results);
             return gitRepositoryStatus;
 		}
