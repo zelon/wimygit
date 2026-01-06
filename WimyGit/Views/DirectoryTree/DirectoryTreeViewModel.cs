@@ -10,6 +10,7 @@ namespace WimyGit.ViewModels
         ObservableCollection<TreeData> TreeItems_ = new ObservableCollection<TreeData>();
         public ICommand ShowInExplorerCommand { get; private set; }
         public ICommand OpenTerminalCommand { get; private set; }
+        private string lastSelectedPath_ = null;
 
         public ObservableCollection<TreeData> TreeItems {
             get { return TreeItems_; }
@@ -215,7 +216,13 @@ namespace WimyGit.ViewModels
                 return;
             }
             repositoryViewModel_.SelectedPath = path;
-            repositoryViewModel_.HistoryTabMember.RefreshHistory(path);
+
+            // Only refresh history if the path actually changed
+            if (lastSelectedPath_ != path)
+            {
+                lastSelectedPath_ = path;
+                repositoryViewModel_.HistoryTabMember.RefreshHistory(path);
+            }
         }
 
         public class TreeData : NotifyBase
