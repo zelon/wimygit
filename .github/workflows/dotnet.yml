@@ -78,6 +78,8 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Winget Publish
+      env:
+        GITHUB_TOKEN: ${{ secrets.MY_PAT }}
       run: |
         $tag = "${{ steps.tag.outputs.tag }}"
         $packageIdentifier = "Wimysoft.WimyGit.Nightly"
