@@ -86,4 +86,4 @@ jobs:
         $packageIdentifier = "Wimysoft.WimyGit.Nightly"
         $newVersion = "${{ steps.newVersion.outputs.newVersion }}"
         $newDownloadUrl = "https://github.com/zelon/wimygit/releases/download/$tag/$tag.zip"
-        powershell .\cicd\CreateWingetPullRequet.ps1 submit -packageIdentifier $packageIdentifier -newVersion $newVersion -newDownloadUrl $newDownloadUrl
+        powershell .\cicd\CreateWingetPullRequet.ps1 submit -packageIdentifier $packageIdentifier -newVersion $newVersion -newDownloadUrl $newDownloadUrl -token $env:GITHUB_TOKEN

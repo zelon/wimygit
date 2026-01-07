@@ -1,15 +1,17 @@
 
 param(
-    [Parameter(Mandatory)]    
+    [Parameter(Mandatory)]
     [string]$packageIdentifier,
 
-    [Parameter(Mandatory)]    
+    [Parameter(Mandatory)]
     [string]$newVersion,
 
-    [Parameter(Mandatory)]    
+    [Parameter(Mandatory)]
     [string]$newDownloadUrl,
 
-    [string]$method
+    [string]$method,
+
+    [string]$token
 )
 
 if (-not $method) {
@@ -44,7 +46,11 @@ if (-not (Test-Path $exeFilename)) {
 # using wingetcreate.exe, update version
 Write-Host Starting wingetcreate.exe...
 if ($method -eq "submit") {
-    .\wingetcreate.exe update --submit --urls $newDownloadUrl --version $newVersion $packageIdentifier
+    if ($token) {
+        .\wingetcreate.exe update --submit --token $token --urls $newDownloadUrl --version $newVersion $packageIdentifier
+    } else {
+        .\wingetcreate.exe update --submit --urls $newDownloadUrl --version $newVersion $packageIdentifier
+    }
 } else {
     .\wingetcreate.exe update --urls $newDownloadUrl --version $newVersion $packageIdentifier
 }
