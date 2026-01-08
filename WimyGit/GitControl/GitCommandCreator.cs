@@ -72,27 +72,27 @@ namespace WimyGit
 
         public static string StashDiffToolAgainstWorkingFileModified(string stashName, string filename)
         {
-            return $"difftool {stashName} -- \"{filename}\"";
+            return $"difftool --no-prompt {stashName} -- \"{filename}\"";
         }
 
         public static string StashDiffToolAgainstWorkingFileUntracked(string stashName, string filename)
         {
-            return $"difftool {stashName}^3 -- \"{filename}\"";
+            return $"difftool --no-prompt {stashName}^3 -- \"{filename}\"";
         }
 
         public static string StashDiffToolAgainstParentModified(string stashName, string filename)
         {
-            return $"difftool {stashName}^ {stashName} -- {filename}";
+            return $"difftool --no-prompt {stashName}^ {stashName} -- {filename}";
         }
 
         public static string StashDiffToolAgainstParentUntracked(string stashName, string filename)
         {
-            return $"difftool {kEmptyTreeCommitId} {stashName}^3 -- \"{filename}\"";
+            return $"difftool --no-prompt {kEmptyTreeCommitId} {stashName}^3 -- \"{filename}\"";
         }
 
         public static string StashDiffToolAgainstHEAD(string stashName, string filename)
         {
-            return $"difftool HEAD {stashName} -- \"{filename}\"";
+            return $"difftool --no-prompt HEAD {stashName} -- \"{filename}\"";
         }
 
         public static string ApplyStash(string stashName)
