@@ -110,6 +110,10 @@ namespace WimyGit
                 foreach (string line in lines)
                 {
                     var splitted = line.Split("\t");
+                    if (splitted.Length < 2)
+                    {
+                        continue;
+                    }
                     Debug.Assert(splitted.Length >= 2);
                     StashedFileInfo stashedFileInfo = new StashedFileInfo();
                     stashedFileInfo.FileType = StashedFileInfo.StashedFileType.kUntracked;
