@@ -28,6 +28,50 @@ namespace WimyGit
             // 전역 예외 처리 설정
             AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
             DispatcherUnhandledException += OnDispatcherUnhandledException;
+
+            // 명령줄 인자 처리
+            if (e.Args.Length > 0)
+            {
+                string directory = e.Args[0];
+
+                // Git 디렉토리 유효성 검사
+                if (Util.IsValidGitDirectory(directory))
+                {
+                    // MainWindow가 완전히 로드된 후 처리
+                    EventHandler loadedHandler = null;
+                    loadedHandler = (sender, args) =>
+                    {
+                        if (Application.Current.MainWindow is Views.MainWindow.MainWindow mainWindow)
+                        {
+                            mainWindow.HandleDirectoryArgument(directory);
+                            Application.Current.MainWindow.Loaded -= loadedHandler;
+                        }
+                    };
+
+                    // MainWindow.Loaded 이벤트에 핸들러 등록
+                    this.Activated += (sender, args) =>
+                    {
+                        if (Application.Current.MainWindow != null)
+                        {
+                            Application.Current.MainWindow.Loaded += loadedHandler;
+                        }
+                    };
+                }
+                else
+                {
+                    // 유효하지 않은 디렉토리 경고
+                    this.Activated += (sender, args) =>
+                    {
+                        MessageBox.Show(
+                            $"'{directory}' is not a valid Git repository.",
+                            "WimyGit",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Warning
+                        );
+                        this.Activated -= (EventHandler)sender;
+                    };
+                }
+            }
         }
 
         private void OnUnhandledException(object sender, UnhandledExceptionEventArgs e)

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -152,6 +153,35 @@ namespace WimyGit
                 }
             }
             new NewRepositoryController(tab_control_).OpenRepository(repository_path);
+        }
+
+        public void HandleDirectoryArgument(string directory)
+        {
+            // 경로 정규화
+            string normalizedPath = Path.GetFullPath(directory).TrimEnd('\\', '/');
+
+            // 기존 탭에서 찾기
+            foreach (TabItem tabItem in tab_control_.Items)
+            {
+                if (tabItem.Header is UserControls.RepositoryTabHeader header)
+                {
+                    string tabPath = (string)header.Path.Content;
+                    if (!string.IsNullOrEmpty(tabPath))
+                    {
+                        string normalizedTabPath = Path.GetFullPath(tabPath).TrimEnd('\\', '/');
+                        if (normalizedTabPath.Equals(normalizedPath, StringComparison.OrdinalIgnoreCase))
+                        {
+                            // 찾았다! → 포커스
+                            tabItem.IsSelected = true;
+                            tabItem.Focus();
+                            return;
+                        }
+                    }
+                }
+            }
+
+            // 못 찾았다 → 새 탭 추가
+            new NewRepositoryController(tab_control_).OpenRepository(directory);
         }
     }
 }
