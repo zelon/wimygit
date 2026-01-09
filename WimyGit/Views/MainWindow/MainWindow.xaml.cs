@@ -104,6 +104,12 @@ namespace WimyGit
             GlobalSetting.GetInstance().SetWindow(this);
             SetTitleToGitVersion();
             RestoreTabs();
+
+            // 명령줄 인자로 전달된 디렉토리 처리
+            if (!string.IsNullOrEmpty(App.CommandLineDirectory))
+            {
+                HandleDirectoryArgument(App.CommandLineDirectory);
+            }
         }
 
         private void SetTitleToGitVersion()
