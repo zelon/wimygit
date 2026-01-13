@@ -106,9 +106,14 @@ namespace WimyGit
             RestoreTabs();
 
             // 명령줄 인자로 전달된 디렉토리 처리
-            if (!string.IsNullOrEmpty(App.CommandLineDirectory))
+            string[] args = Environment.GetCommandLineArgs();
+            if (args.Length > 1) // args[0]은 실행 파일 경로, args[1]부터 실제 인자
             {
-                HandleDirectoryArgument(App.CommandLineDirectory);
+                string directory = args[1];
+                if (Util.IsValidGitDirectory(directory))
+                {
+                    HandleDirectoryArgument(directory);
+                }
             }
         }
 
