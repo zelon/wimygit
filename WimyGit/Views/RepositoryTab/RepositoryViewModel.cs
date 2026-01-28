@@ -267,6 +267,10 @@ namespace WimyGit.ViewModels
 
             DirectoryTree.ReloadTreeView();
 
+            if (DirectoryTree.LastSelectedPath != null)
+            {
+                HistoryTabMember.RefreshHistory(DirectoryTree.LastSelectedPath);
+            }
             var refreshBranchTask = RefreshBranchAsync();
             Task<List<string>> git_porcelain_result = git_.GetGitStatusPorcelainAllAsync();
             Task<int> stashTabResult = _stashTabViewModel.RefreshAndGetStashCount();
