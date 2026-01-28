@@ -8,7 +8,6 @@ namespace WimyGit
     public partial class App : Application
     {
         private BacktraceClient backtraceClient;
-        internal static string CommandLineDirectory { get; private set; }
 
         protected override void OnStartup(StartupEventArgs e)
         {
@@ -29,27 +28,6 @@ namespace WimyGit
             // 전역 예외 처리 설정
             AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
             DispatcherUnhandledException += OnDispatcherUnhandledException;
-
-            // 명령줄 인자 처리
-            if (e.Args.Length > 0)
-            {
-                string directory = e.Args[0];
-
-                // Git 디렉토리 유효성 검사
-                if (Util.IsValidGitDirectory(directory))
-                {
-                    CommandLineDirectory = directory;
-                }
-                else
-                {
-                    MessageBox.Show(
-                        $"'{directory}' is not a valid Git repository.",
-                        "WimyGit",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Warning
-                    );
-                }
-            }
         }
 
         private void OnUnhandledException(object sender, UnhandledExceptionEventArgs e)

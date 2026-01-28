@@ -106,9 +106,10 @@ namespace WimyGit
             RestoreTabs();
 
             // 명령줄 인자로 전달된 디렉토리 처리
-            if (!string.IsNullOrEmpty(App.CommandLineDirectory))
+            if (Environment.GetCommandLineArgs().Length > 1)
             {
-                HandleDirectoryArgument(App.CommandLineDirectory);
+                string directoryArgument = Environment.GetCommandLineArgs()[1];
+                HandleDirectoryArgument(directoryArgument);
             }
         }
 
@@ -151,14 +152,19 @@ namespace WimyGit
                 return;
             }
             string repository_path = paths[0];
-            if (Util.IsValidGitDirectory(repository_path) == false)
+            AddNewPath(repository_path);
+        }
+
+        private void AddNewPath(string path)
+        {
+            if (Util.IsValidGitDirectory(path) == false)
             {
-                if (UIService.AskAndGitInit(repository_path) == false)
+                if (UIService.AskAndGitInit(path) == false)
                 {
                     return;
                 }
             }
-            new NewRepositoryController(tab_control_).OpenRepository(repository_path);
+            new NewRepositoryController(tab_control_).OpenRepository(path);
         }
 
         public void HandleDirectoryArgument(string directory)
@@ -185,9 +191,7 @@ namespace WimyGit
                     }
                 }
             }
-
-            // 못 찾았다 → 새 탭 추가
-            new NewRepositoryController(tab_control_).OpenRepository(directory);
+            AddNewPath(normalizedPath);
         }
     }
 }
