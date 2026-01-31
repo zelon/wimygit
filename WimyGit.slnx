@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+  </Folder>
+  <Project Path="WimyGit/WimyGit.csproj" />
+  <Project Path="WimyGitLib/WimyGitLib.csproj" />
+  <Project Path="xUnitTest/xUnitTest.csproj" />
+</Solution>
