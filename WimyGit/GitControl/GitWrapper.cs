@@ -134,23 +134,23 @@ namespace WimyGit
 
         public void DiffHistorySelectedWithTool(string commitId, string filename)
 		{
-			string cmd = $"difftool --no-prompt {commitId}^! -- {Util.WrapFilePath(filename)}";
+			string cmd = $"difftool --no-prompt \"{commitId}^!\" -- {Util.WrapFilePath(filename)}";
             logger_.AddLog(cmd);
 			CreateGitRunner().RunWithoutWaiting(cmd);
 		}
 
         public string GetFileContentOfCommit(string commitId, string filename) => $"show {commitId}:{Util.WrapFilePath(filename)}";
 
-        public string GetDiffHistorySelected(string commitId, string filename) => $"diff {commitId}^! -- {Util.WrapFilePath(filename)}";
+        public string GetDiffHistorySelected(string commitId, string filename) => $"diff \"{commitId}^!\" -- {Util.WrapFilePath(filename)}";
 
 		public void DiffHistorySelectedWithRenameTrackingWithTool(string commitId, string filename, string filename2)
 		{
-			string cmd = $"difftool --no-prompt {commitId}^! -M -- {Util.WrapFilePath(filename)} {Util.WrapFilePath(filename2)}";
+			string cmd = $"difftool --no-prompt \"{commitId}^!\" -M -- {Util.WrapFilePath(filename)} {Util.WrapFilePath(filename2)}";
             logger_.AddLog(cmd);
 			CreateGitRunner().RunWithoutWaiting(cmd);
 		}
 
-        public string GetDiffHistorySelectedWithRenameTracking(string commitId, string filename, string filename2) => $"diff {commitId}^! -M -- {Util.WrapFilePath(filename)} {Util.WrapFilePath(filename2)}";
+        public string GetDiffHistorySelectedWithRenameTracking(string commitId, string filename, string filename2) => $"diff \"{commitId}^!\" -M -- {Util.WrapFilePath(filename)} {Util.WrapFilePath(filename2)}";
 
         public void ViewTimeLapse(string selectedPath)
 		{

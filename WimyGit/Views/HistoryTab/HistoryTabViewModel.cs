@@ -34,6 +34,8 @@ namespace WimyGit.ViewModels
                         {
                             gitCommand = gitRepository.GetGitWrapper().GetFileContentOfCommit(_selectedHistoryFile.CommitId, _selectedHistoryFile.FileName);
                             quickDiffBuilder = new Service.QuickDiffBuilder(gitRepository,
+                                _selectedHistoryFile.FileName,
+                                _selectedHistoryFile.CommitId,
                                 displayPrefix: "From History",
                                 newFilePath: null,
                                 diffCommand: gitCommand);
@@ -43,6 +45,8 @@ namespace WimyGit.ViewModels
                         {
                             gitCommand = gitRepository.GetGitWrapper().GetDiffHistorySelected(_selectedHistoryFile.CommitId, _selectedHistoryFile.FileName);
                             quickDiffBuilder = new Service.QuickDiffBuilder(gitRepository,
+                                _selectedHistoryFile.FileName,
+                                _selectedHistoryFile.CommitId,
                                 displayPrefix: "From History",
                                 newFilePath: null,
                                 diffCommand: gitCommand);
@@ -52,6 +56,8 @@ namespace WimyGit.ViewModels
                     {
                         gitCommand = gitRepository.GetGitWrapper().GetDiffHistorySelectedWithRenameTracking(_selectedHistoryFile.CommitId, _selectedHistoryFile.FileName, _selectedHistoryFile.FileName2);
                         quickDiffBuilder = new Service.QuickDiffBuilder(gitRepository,
+                            _selectedHistoryFile.FileName,
+                            _selectedHistoryFile.CommitId,
                             displayPrefix: "From History",
                             newFilePath: null,
                             diffCommand: gitCommand);

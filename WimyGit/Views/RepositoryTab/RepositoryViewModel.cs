@@ -17,6 +17,7 @@ namespace WimyGit.ViewModels
         private readonly RepositoryTab repository_tab_;
         private readonly TabItem _workspaceTabItem;
         private readonly TabItem _quickDiffTabItem;
+        private readonly TabControl _quickDiffUnitTabControl;
 
         private Service.QuickDiffBuilder _deferQuickDiffBuilder;
 
@@ -26,7 +27,7 @@ namespace WimyGit.ViewModels
             UserControls.BranchTabViewModel branchTabViewModel,
             UserControls.TagTabViewModel tagTabViewModel,
             UserControls.RemoteTabViewModel remoteTabViewModel,
-            TabItem workspaceTabItem, TabItem quickDiffTabItem, RichTextBox quickDiffRichTextBox)
+            TabItem workspaceTabItem, TabItem quickDiffTabItem, TabControl quickDiffUnitTabControl)
         {
             DisplayAuthor = GlobalSetting.GetInstance().GetSignature();
             Directory = git_repository_path;
@@ -35,9 +36,10 @@ namespace WimyGit.ViewModels
 
 
             DirectoryTree = new DirectoryTreeViewModel(this);
-            QuickDiffViewModel = new QuickDiffViewModel(quickDiffRichTextBox);
+            QuickDiffViewModel = new QuickDiffViewModel();
             _workspaceTabItem = workspaceTabItem;
             _quickDiffTabItem = quickDiffTabItem;
+            _quickDiffUnitTabControl = quickDiffUnitTabControl;
 
             HistoryTabMember = new HistoryTabViewModel(this);
             _pendingTabViewModel = pendingTabViewModel;
@@ -125,7 +127,7 @@ namespace WimyGit.ViewModels
                     {
                         if (_deferQuickDiffBuilder != null)
                         {
-                            QuickDiffViewModel.SetRichText(_deferQuickDiffBuilder.Build());
+                            QuickDiffViewModel.SetContentBuilder(_quickDiffUnitTabControl, _deferQuickDiffBuilder);
                         }
                     }
                 }
@@ -371,7 +373,7 @@ namespace WimyGit.ViewModels
             _deferQuickDiffBuilder = quickDiffBuilder;
             if (IsQuickDiffTabSelected())
             {
-                QuickDiffViewModel.SetRichText(_deferQuickDiffBuilder.Build());
+                QuickDiffViewModel.SetContentBuilder(_quickDiffUnitTabControl, _deferQuickDiffBuilder);
             }
         }
     }

@@ -512,6 +512,8 @@ namespace WimyGit.UserControls
                 }
                 displayMessage += item;
                 quickDiffBuilder = new QuickDiffBuilder(gitRepository,
+                    filePath: "",
+                    currentCommitId: "",
                     displayMessage,
                     /* newFilePath= */ null,
                     diffCommand: null,
@@ -531,6 +533,8 @@ namespace WimyGit.UserControls
                         "Please use an external diff tool to view the changes."
                     };
                     quickDiffBuilder = new QuickDiffBuilder(gitRepository,
+                        filePath: filePath,
+                        currentCommitId: "",
                         displayPrefix + "[TOO_LARGE_FILE] " + item,
                         /* newFilePath= */ null,
                         diffCommand: null,
@@ -542,6 +546,8 @@ namespace WimyGit.UserControls
                         || fileStatus.Status == "Added in stage") // StagedList
                     {
                         quickDiffBuilder = new QuickDiffBuilder(gitRepository,
+                            filePath,
+                            currentCommitId: "",
                             displayPrefix,
                             filePath,
                             diffCommand: null);
@@ -549,6 +555,8 @@ namespace WimyGit.UserControls
                     else
                     {
                         quickDiffBuilder = new QuickDiffBuilder(gitRepository,
+                            filePath,
+                            currentCommitId: "",
                             displayPrefix,
                             /* newFilePath= */ null,
                             diffCommand: diffCommandPrefix + Util.WrapFilePath(item));
