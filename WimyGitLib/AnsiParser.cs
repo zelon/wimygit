@@ -60,7 +60,7 @@ namespace WimyGitLib
             {
                 "30" => Color.Black,
                 "31" => Color.Red,
-                "32" => Color.Green,
+                "32" => Color.LimeGreen,
                 "33" => Color.Yellow,
                 "34" => Color.Blue,
                 "35" => Color.Magenta,
