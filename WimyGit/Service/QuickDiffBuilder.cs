@@ -29,6 +29,10 @@ namespace WimyGit.Service
             FilePath = filePath;
             DisplayPrefix = displayPrefix;
             NewFilePath = newFilePath;
+            if (diffCommand.StartsWith("diff "))
+            {
+                diffCommand = "diff --color=always" + diffCommand.Substring(4);
+            }
             DiffCommand = diffCommand;
             RawBody = rawBody;
         }
@@ -65,7 +69,7 @@ namespace WimyGit.Service
                     {
                         foreach (string parentCommitId in parentCommitIds)
                         {
-                            string subDiffCommand = $"diff {parentCommitId} {CurrentCommitId} -- \"{FilePath}\" ";
+                            string subDiffCommand = $"diff --color=always {parentCommitId} {CurrentCommitId} -- \"{FilePath}\" ";
                             GitRepository.AddLog(subDiffCommand);
                             List<string> subDiffLines = runner.Run(subDiffCommand);
                             output.Add(new QuickDiffContentInfo()

@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+﻿using System.Drawing;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using WimyGit.Service;
@@ -29,62 +29,25 @@ namespace WimyGit.Views.QuickDiffTab
             flowDocument.Blocks.Clear();
             foreach (string line in quickDiffContentInfo.Lines)
             {
-                flowDocument.Blocks.Add(ConvertToParagraph(quickDiffContentInfo.IsDiffColorView, line));
+                flowDocument.Blocks.Add(ConvertToParagraph(line));
             }
         }
 
-        private Paragraph ConvertToParagraph(bool isDiffColorView, string line)
+        private Paragraph ConvertToParagraph(string line)
         {
-            var removeBrush = System.Windows.Media.Brushes.Red;
-            var addBrush = System.Windows.Media.Brushes.LightGreen;
-
             Paragraph paragraph = new Paragraph();
-            Run run = new Run(line);
-            run.Background = System.Windows.Media.Brushes.Black;
-
-            if (isDiffColorView == false)
+            foreach(var ansiToken in WimyGitLib.AnsiParser.Parse(line))
             {
-                run.Foreground = System.Windows.Media.Brushes.White;
-                paragraph.Inlines.Add(run);
-                return paragraph;
-            }
-
-            if (line.StartsWith("@@ "))
-            {
-                var reg = new System.Text.RegularExpressions.Regex("@@( .* )@@(.*)");
-                var match = reg.Match(line);
-                if (match.Success)
+                Run run = new Run(ansiToken.Text);
+                run.Background = System.Windows.Media.Brushes.Black;
+                if (ansiToken.Color == null)
                 {
-                    var range = match.Groups[1].Value;
-                    var remaining = match.Groups[2].Value;
-
-                    paragraph.Inlines.Add(new Run($"@@{range}@@") { Foreground = System.Windows.Media.Brushes.SkyBlue });
-                    paragraph.Inlines.Add(new Run(remaining));
-
                     run.Foreground = System.Windows.Media.Brushes.White;
                 }
                 else
                 {
-                    paragraph.Inlines.Add(run);
-                }
-            }
-            else
-            {
-                if (line.StartsWith("diff") || line.StartsWith("index"))
-                {
-                    run.Foreground = System.Windows.Media.Brushes.White;
-                }
-                else if (line.StartsWith("---") || line.StartsWith("+++"))
-                {
-                    run.Foreground = System.Windows.Media.Brushes.White;
-                }
-                else if (line.StartsWith('+'))
-                {
-                    run.Foreground = addBrush;
-                }
-                else if (line.StartsWith('-'))
-                {
-                    run.Foreground = removeBrush;
+                    Color color = ansiToken.Color.Value;
+                    run.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(color.R, color.G, color.B));
                 }
                 paragraph.Inlines.Add(run);
             }
