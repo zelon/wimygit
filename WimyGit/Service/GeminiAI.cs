@@ -11,7 +11,7 @@ namespace TestCSharp
     public class GeminiAI
     {
         private static readonly HttpClient httpClient = new HttpClient();
-        private const string ModelId = "gemini-2.0-flash-lite";
+        private const string ModelId = "gemini-2.5-flash-lite";
         private const string GenerateContentApi = "streamGenerateContent"; // or "generateContent" (not streaming)
 
         private readonly string _apiKey;
