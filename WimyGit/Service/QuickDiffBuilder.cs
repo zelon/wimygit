@@ -29,7 +29,7 @@ namespace WimyGit.Service
             FilePath = filePath;
             DisplayPrefix = displayPrefix;
             NewFilePath = newFilePath;
-            if (diffCommand.StartsWith("diff "))
+            if (string.IsNullOrEmpty(diffCommand) == false && diffCommand.StartsWith("diff "))
             {
                 diffCommand = "diff --color=always" + diffCommand.Substring(4);
             }
