@@ -273,7 +273,7 @@ namespace WimyGit.UserControls
             List<string> outputs = await GitDiffCollector.CollectStageDiffAsync(gitRepository.GetRepositoryDirectory());
             GeminiAI geminiAI = new GeminiAI(googleGeminiApiKey, "You are a super senior programmer.");
             StringBuilder promptBuilder = new StringBuilder();
-            promptBuilder.AppendLine("Recommend a git commit message. Below is the git diff.");
+            promptBuilder.AppendLine("Generate a concise Conventional Commit message for the following changes.\r\nOutput only the commit message line. No explanations or additional text.");
             foreach (string output in outputs)
             {
                 promptBuilder.AppendLine(output);
