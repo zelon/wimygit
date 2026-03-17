@@ -1,0 +1,90 @@
+# This workflow will build a .NET project
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-net
+
+name: Official Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      target-branch:
+        description: "The target branch"
+        required: true
+        default: "v0.0.0"
+jobs:
+  release:
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        ref: ${{ inputs.target-branch }}
+        dotnet-version: 10.0.x
+
+    - name: Configure Git
+      run: |
+        git config --global user.name 'GitHub Action'
+        git config --global user.email 'action@github.com'
+
+    - name: Set Official Version
+      id: newVersion
+      run: |
+        powershell ./cicd/SetVersion.ps1 -NewVersion ${{ inputs.target-branch }}
+        $vVersion = "${{ github.event.inputs.target-branch }}"
+        $newVersion = $vVersion -replace "v", ""
+        echo "newVersion=$newVersion" >> $env:GITHUB_OUTPUT
+        git add .
+        git commit -m "Update Version to $newVersion"
+        git push origin ${{ inputs.target-branch }}
+        
+    - name: Restore dependencies
+      run: dotnet restore
+
+    - name: Build
+      run: dotnet build --no-restore
+
+    - name: Test
+      run: dotnet test --no-build --verbosity normal
+
+    - name: DotNet Publish
+      run: dotnet publish WimyGit -c Release /p:PublishProfile=ReleasePublishProfile
+
+    - name: Create tag
+      id: tag
+      run: |
+        $tag = "${{ inputs.target-branch }}"
+        echo "tag=$tag" >> $env:GITHUB_OUTPUT
+        
+        git config user.email "actions@github.com"
+        git config user.name "GitHub Actions"
+        
+        git tag $tag --force
+        git push origin $tag --force
+
+    - name: Zip build folder
+      run: |
+        powershell Move-Item WimyGit\bin\Release\publish\WimyGit.exe WimyGit\bin\Release\publish\WimyGitN.exe
+        $zipName = "wimygit-${{ inputs.target-branch }}.zip"
+        powershell Compress-Archive -Path WimyGit\bin\Release\publish\* -DestinationPath $zipName -Force
+      shell: pwsh
+
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: ${{ steps.tag.outputs.tag }}
+        files: ${{ steps.tag.outputs.tag }}.zip
+        generate_release_notes: true
+        prerelease: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Winget Publish
+      env:
+        GITHUB_TOKEN: ${{ secrets.MY_PAT }}
+      run: |
+        $tag = "${{ steps.tag.outputs.tag }}"
+        $packageIdentifier = "Wimysoft.WimyGit.Nightly"
+        $newVersion = "${{ steps.newVersion.outputs.newVersion }}"
+        $newDownloadUrl = "https://github.com/zelon/wimygit/releases/download/$tag/$tag.zip"
+        powershell .\cicd\CreateWingetPullRequet.ps1 submit -packageIdentifier $packageIdentifier -newVersion $newVersion -newDownloadUrl $newDownloadUrl -token $env:GITHUB_TOKEN
