@@ -79,6 +79,7 @@ jobs:
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v2
       with:
+        name: "WimyGit ${{ steps.config.outputs.tag }}"
         tag_name: ${{ steps.config.outputs.tag }}
         files: ${{ steps.config.outputs.zipFileName }}
         generate_release_notes: true
