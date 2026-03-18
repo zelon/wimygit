@@ -1,7 +1,7 @@
 # This workflow will build a .NET project
 # For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-net
 
-name: Official Release
+name: Stable Release
 
 on:
   workflow_dispatch:
@@ -94,5 +94,6 @@ jobs:
         $packageIdentifier = "Wimysoft.WimyGit"
         $newVersion = "${{ steps.config.outputs.version }}"
         $newDownloadUrl = "https://github.com/zelon/wimygit/releases/download/${{ steps.config.outputs.tag }}/${{ steps.config.outputs.zipFileName }}"
-        #powershell .\cicd\CreateWingetPullRequet.ps1 submit -packageIdentifier $packageIdentifier -newVersion $newVersion -newDownloadUrl $newDownloadUrl -token $env:GITHUB_TOKEN
         Write-Host "-packageIdentifier $packageIdentifier -newVersion $newVersion -newDownloadUrl $newDownloadUrl"
+        powershell .\cicd\CreateWingetPullRequest.ps1 submit -packageIdentifier $packageIdentifier -newVersion $newVersion -newDownloadUrl $newDownloadUrl -token $env:GITHUB_TOKEN
+        

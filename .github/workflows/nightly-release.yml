@@ -1,15 +1,11 @@
 # This workflow will build a .NET project
 # For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-net
 
-name: .NET Release Nightly
+name: Nightly Release
 
 on:
   workflow_dispatch:
-    inputs:
-      force:
-        description: "Force run the workflow"
-        required: false
-        default: "true"
+
 jobs:
   release:
     runs-on: windows-latest
@@ -85,4 +81,4 @@ jobs:
         $packageIdentifier = "Wimysoft.WimyGit.Nightly"
         $newVersion = "${{ steps.newVersion.outputs.newVersion }}"
         $newDownloadUrl = "https://github.com/zelon/wimygit/releases/download/$tag/$tag.zip"
-        powershell .\cicd\CreateWingetPullRequet.ps1 submit -packageIdentifier $packageIdentifier -newVersion $newVersion -newDownloadUrl $newDownloadUrl -token $env:GITHUB_TOKEN
+        powershell .\cicd\CreateWingetPullRequest.ps1 submit -packageIdentifier $packageIdentifier -newVersion $newVersion -newDownloadUrl $newDownloadUrl -token $env:GITHUB_TOKEN
