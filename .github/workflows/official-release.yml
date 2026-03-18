@@ -21,11 +21,17 @@ jobs:
           exit 1
         }
         $version = $branchName.Replace("release/", "")
+        Write-Host "version=$version"
         echo "version=$version" >> $env:GITHUB_OUTPUT
+
         $tag = "v$version"
+        Write-Host "tag=$tag"
         echo "tag=$tag" >> $env:GITHUB_OUTPUT
+
         $zipFileName = "wimygit-$tag.zip"
+        Write-Host "zipFileName=$zipFileName"
         echo "zipFileName=$zipFileName" >> $env:GITHUB_OUTPUT
+
     - uses: actions/checkout@v4
       with:
         ref: ${{ github.ref_name }}
