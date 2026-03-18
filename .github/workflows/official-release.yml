@@ -5,24 +5,35 @@ name: Official Release
 
 on:
   workflow_dispatch:
-    inputs:
-      target-branch:
-        description: "The target branch"
-        required: true
-        default: "v0.0.0"
+  
 jobs:
   release:
     runs-on: windows-latest
 
     steps:
+    - name: Validate branch name
+      id: config
+      shell: pwsh
+      run: |
+        $branchName = "${{ github.ref_name }}"
+        if ($branchName -notmatch "release/v(\d)\.(\d).(\d)") {
+          Write-Host "Invalid branch name: ${{ github.ref_name }}. Use like release/1.2.3"
+          exit 1
+        }
+        $version = $branchName.Replace("release/v", "")
+        echo "version=$version" >> $env:GITHUB_OUTPUT
+        $tag = "v$version"
+        echo "tag=$tag" >> $env:GITHUB_OUTPUT
+        $zipFileName = "wimygit-$tag.zip"
+        echo "zipFileName=$zipFileName" >> $env:GITHUB_OUTPUT
     - uses: actions/checkout@v4
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
-        ref: ${{ inputs.target-branch }}
+        ref: ${{ github.ref_name }}
         dotnet-version: 10.0.x
 
-    - name: Configure Git
+    - name: Configure Git User
       run: |
         git config --global user.name 'GitHub Action'
         git config --global user.email 'action@github.com'
@@ -30,13 +41,10 @@ jobs:
     - name: Set Official Version
       id: newVersion
       run: |
-        powershell ./cicd/SetVersion.ps1 -NewVersion ${{ inputs.target-branch }}
-        $vVersion = "${{ github.event.inputs.target-branch }}"
-        $newVersion = $vVersion -replace "v", ""
-        echo "newVersion=$newVersion" >> $env:GITHUB_OUTPUT
+        powershell ./cicd/SetVersion.ps1 -NewVersion ${{ steps.config.outputs.version }}
         git add .
-        git commit -m "Update Version to $newVersion"
-        git push origin ${{ inputs.target-branch }}
+        git commit -m "Update Version to ${{ steps.config.outputs.version }}"
+        git push origin ${{ github.ref_name }}
         
     - name: Restore dependencies
       run: dotnet restore
@@ -53,27 +61,19 @@ jobs:
     - name: Create tag
       id: tag
       run: |
-        $tag = "${{ inputs.target-branch }}"
-        echo "tag=$tag" >> $env:GITHUB_OUTPUT
-        
-        git config user.email "actions@github.com"
-        git config user.name "GitHub Actions"
-        
-        git tag $tag --force
-        git push origin $tag --force
+        git tag ${{ steps.config.outputs.tag }} $tag --force
+        git push origin ${{ steps.config.outputs.tag }} --force
 
     - name: Zip build folder
-      run: |
-        powershell Move-Item WimyGit\bin\Release\publish\WimyGit.exe WimyGit\bin\Release\publish\WimyGitN.exe
-        $zipName = "wimygit-${{ inputs.target-branch }}.zip"
-        powershell Compress-Archive -Path WimyGit\bin\Release\publish\* -DestinationPath $zipName -Force
       shell: pwsh
+      run: |
+        powershell Compress-Archive -Path WimyGit\bin\Release\publish\* -DestinationPath ${{ steps.config.outputs.zipFileName }} -Force
 
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v2
       with:
-        tag_name: ${{ steps.tag.outputs.tag }}
-        files: ${{ steps.tag.outputs.tag }}.zip
+        tag_name: ${{ steps.config.outputs.tag }}
+        files: ${{ steps.config.outputs.zipFileName }}
         generate_release_notes: true
         prerelease: true
       env:
@@ -83,8 +83,8 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.MY_PAT }}
       run: |
-        $tag = "${{ steps.tag.outputs.tag }}"
-        $packageIdentifier = "Wimysoft.WimyGit.Nightly"
-        $newVersion = "${{ steps.newVersion.outputs.newVersion }}"
-        $newDownloadUrl = "https://github.com/zelon/wimygit/releases/download/$tag/$tag.zip"
-        powershell .\cicd\CreateWingetPullRequet.ps1 submit -packageIdentifier $packageIdentifier -newVersion $newVersion -newDownloadUrl $newDownloadUrl -token $env:GITHUB_TOKEN
+        $packageIdentifier = "Wimysoft.WimyGit"
+        $newVersion = "${{ steps.config.outputs.version }}"
+        $newDownloadUrl = "https://github.com/zelon/wimygit/releases/download/${{ steps.config.outputs.tag }}/${{ steps.config.outputs.zipFileName }}"
+        #powershell .\cicd\CreateWingetPullRequet.ps1 submit -packageIdentifier $packageIdentifier -newVersion $newVersion -newDownloadUrl $newDownloadUrl -token $env:GITHUB_TOKEN
+        Write-Host "-packageIdentifier $packageIdentifier -newVersion $newVersion -newDownloadUrl $newDownloadUrl"
