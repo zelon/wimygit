@@ -16,7 +16,7 @@ jobs:
       shell: pwsh
       run: |
         $branchName = "${{ github.ref_name }}"
-        if ($branchName -notmatch "release/v(\d)\.(\d).(\d)") {
+        if ($branchName -notmatch "release/(\d+)\.(\d+)\.(\d+)") {
           Write-Host "Invalid branch name: ${{ github.ref_name }}. Use like release/1.2.3"
           exit 1
         }
@@ -27,10 +27,11 @@ jobs:
         $zipFileName = "wimygit-$tag.zip"
         echo "zipFileName=$zipFileName" >> $env:GITHUB_OUTPUT
     - uses: actions/checkout@v4
+      with:
+        ref: ${{ github.ref_name }}
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
-        ref: ${{ github.ref_name }}
         dotnet-version: 10.0.x
 
     - name: Configure Git User
@@ -61,7 +62,7 @@ jobs:
     - name: Create tag
       id: tag
       run: |
-        git tag ${{ steps.config.outputs.tag }} $tag --force
+        git tag ${{ steps.config.outputs.tag }} --force
         git push origin ${{ steps.config.outputs.tag }} --force
 
     - name: Zip build folder
@@ -82,6 +83,7 @@ jobs:
     - name: Winget Publish
       env:
         GITHUB_TOKEN: ${{ secrets.MY_PAT }}
+      shell: pwsh
       run: |
         $packageIdentifier = "Wimysoft.WimyGit"
         $newVersion = "${{ steps.config.outputs.version }}"
