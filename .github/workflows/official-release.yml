@@ -20,7 +20,7 @@ jobs:
           Write-Host "Invalid branch name: ${{ github.ref_name }}. Use like release/1.2.3"
           exit 1
         }
-        $version = $branchName.Replace("release/v", "")
+        $version = $branchName.Replace("release/", "")
         echo "version=$version" >> $env:GITHUB_OUTPUT
         $tag = "v$version"
         echo "tag=$tag" >> $env:GITHUB_OUTPUT
