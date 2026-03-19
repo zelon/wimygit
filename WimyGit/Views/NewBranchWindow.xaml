@@ -5,7 +5,8 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WimyGit.Views"
         mc:Ignorable="d"
-        Title="NewBranchWindow" Height="200" Width="370">
+        Title="NewBranchWindow" Height="200" Width="370"
+        WindowStartupLocation="CenterOwner">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition />
