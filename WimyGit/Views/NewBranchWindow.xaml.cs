@@ -6,11 +6,12 @@ namespace WimyGit.Views
     {
         public MessageBoxResult Result { get; set; }
 
-        public static MessageBoxResult NewWinddow(string commitId, out string branchName, out bool checkout)
+        public static MessageBoxResult NewWinddow(string commitId, string commitMessage, out string branchName, out bool checkout)
         {
             NewBranchWindow newBranchWindow = new NewBranchWindow();
             newBranchWindow.Owner = GlobalSetting.GetInstance().GetWindow();
             newBranchWindow.CommitId.Text = commitId;
+            newBranchWindow.CommitMessage.Text = commitMessage;
             newBranchWindow.ShowDialog();
 
             branchName = newBranchWindow.BranchName.Text;

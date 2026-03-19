@@ -133,7 +133,7 @@ namespace WimyGit.ViewModels
             {
                 return;
             }
-            var result = NewBranchWindow.NewWinddow(SelectedHistoryStatus.CommitId, out string newBranchName, out bool checkout);
+            var result = NewBranchWindow.NewWinddow(SelectedHistoryStatus.CommitId, SelectedHistoryStatus.Message, out string newBranchName, out bool checkout);
             if (result == MessageBoxResult.Cancel)
             {
                 return;

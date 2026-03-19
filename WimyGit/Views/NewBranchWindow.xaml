@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WimyGit.Views"
         mc:Ignorable="d"
-        Title="New Branch" Height="280" Width="400"
+        Title="New Branch" Height="315" Width="400"
         WindowStartupLocation="CenterOwner"
         ResizeMode="NoResize"
         Background="#F5F5F5">
@@ -21,7 +21,8 @@
                        Foreground="#1A1A1A" Margin="0,0,0,20"/>
 
             <TextBlock Text="Commit" Style="{StaticResource FieldLabel}"/>
-            <TextBox x:Name="CommitId" Style="{StaticResource ReadonlyField}" Margin="0,0,0,14"/>
+            <TextBox x:Name="CommitId" Style="{StaticResource ReadonlyField}" Margin="0,0,0,4"/>
+            <TextBox x:Name="CommitMessage" Style="{StaticResource ReadonlyField}" Margin="0,0,0,14"/>
 
             <TextBlock Text="Branch Name" Style="{StaticResource FieldLabel}"/>
             <TextBox x:Name="BranchName" Style="{StaticResource InputField}" Margin="0,0,0,14"/>
