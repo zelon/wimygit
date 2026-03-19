@@ -54,6 +54,8 @@ namespace WimyGit.ViewModels
 
             PushCommand = new DelegateCommand((object parameter) => OnPushCommand());
             PushTagCommand = new DelegateCommand((object parameter) => OnPushTagCommand());
+            PushBranchesCommand = new DelegateCommand((object parameter) => OnPushBranchesCommand());
+            PushAllCommand = new DelegateCommand((object parameter) => OnPushAllCommand());
             OpenExplorerCommand = new DelegateCommand(OnOpenExplorerCommand);
             OpenGitBashCommand = new DelegateCommand(OnOpenGitBashCommand);
             SwapFocusWorkspaceAndQuickDiffTabCommand = new DelegateCommand(OnSwapFocusWorkspaceAndQuickDiffTabCommand);
@@ -94,6 +96,8 @@ namespace WimyGit.ViewModels
         public ICommand GitCleanCommand { get; private set; }
         public ICommand PushCommand { get; private set; }
         public ICommand PushTagCommand { get; private set; }
+        public ICommand PushBranchesCommand { get; private set; }
+        public ICommand PushAllCommand { get; private set; }
         public ICommand OpenExplorerCommand { get; private set; }
         public ICommand OpenGitBashCommand { get; private set; }
         public ICommand SwapFocusWorkspaceAndQuickDiffTabCommand { get; private set; }
@@ -251,6 +255,20 @@ namespace WimyGit.ViewModels
         private async void OnPushTagCommand()
         {
             string cmd = "push --tags";
+            UIService.RunInConsoleProgressWindow(CreateGitRunner(), cmd);
+            await Refresh();
+        }
+
+        private async void OnPushBranchesCommand()
+        {
+            string cmd = "push --branches";
+            UIService.RunInConsoleProgressWindow(CreateGitRunner(), cmd);
+            await Refresh();
+        }
+
+        private async void OnPushAllCommand()
+        {
+            string cmd = "push --all";
             UIService.RunInConsoleProgressWindow(CreateGitRunner(), cmd);
             await Refresh();
         }

@@ -76,6 +76,8 @@
                         <ContextMenu Placement="Bottom">
                             <MenuItem Header="git push" Command="{Binding PushCommand}" />
                             <MenuItem Header="git push --tags" Command="{Binding PushTagCommand}" />
+                            <MenuItem Header="git push --branches" Command="{Binding PushBranchesCommand}" />
+                            <MenuItem Header="git push --all" Command="{Binding PushAllCommand}" />
                         </ContextMenu>
                     </Button.ContextMenu>
                 </Button>
