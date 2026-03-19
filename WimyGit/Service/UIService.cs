@@ -34,8 +34,8 @@ namespace WimyGit
         {
             QuestionWindow questionWindow = new QuestionWindow();
             questionWindow.Owner = GlobalSetting.GetInstance().GetWindow();
-            questionWindow.Information.Content = info;
-            questionWindow.Question.Content = questionMessage;
+            questionWindow.Information.Text = info;
+            questionWindow.Question.Text = questionMessage;
             questionWindow.Answer.Text = defaultAnswer ?? "";
             questionWindow.ShowDialog();
             
