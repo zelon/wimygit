@@ -10,7 +10,7 @@ namespace WimyGit.Views
         {
             NewBranchWindow newBranchWindow = new NewBranchWindow();
             newBranchWindow.Owner = GlobalSetting.GetInstance().GetWindow();
-            newBranchWindow.CommitId.Content = commitId;
+            newBranchWindow.CommitId.Text = commitId;
             newBranchWindow.ShowDialog();
 
             branchName = newBranchWindow.BranchName.Text;
