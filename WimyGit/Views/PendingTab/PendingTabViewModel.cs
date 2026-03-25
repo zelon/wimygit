@@ -35,13 +35,13 @@ namespace WimyGit.UserControls
         public ICommand AmendClickedCommand { get; private set; }
         public ICommand CommitCommand { get; private set; }
         public ICommand GetCommitMessageFromAICommand { get; private set; }
-        public ICommand ModifiedDiffCommand { get; private set; }
+        public DelegateCommand ModifiedDiffCommand { get; private set; }
         public ICommand StagedDiffCommand { get; private set; }
         public ICommand UnstageCommand { get; private set; }
-        public ICommand RevertCommand { get; private set; }
+        public DelegateCommand RevertCommand { get; private set; }
         public ICommand OpenExplorerSelectedFileCommand { get; private set; }
         public ICommand OpenSelectedFileCommand { get; private set; }
-        public ICommand MergeToolCommand { get; private set; }
+        public DelegateCommand MergeToolCommand { get; private set; }
         public ICommand DeleteLocalFileCommand { get; private set; }
         public DelegateCommand LfsUnlockCommand { get; private set; }
 
@@ -74,16 +74,16 @@ namespace WimyGit.UserControls
         {
             StageSelectedCommand = new DelegateCommand(OnStageSelectedCommand, CanStageSelected);
             StageSelectedPartialCommand = new DelegateCommand(OnStageSelectedPartialCommand, CanStageSelectedPartial);
-            ModifiedDiffCommand = new DelegateCommand(OnModifiedDiffCommand);
+            ModifiedDiffCommand = new DelegateCommand(OnModifiedDiffCommand, CanExecuteModifiableCommand);
             StagedDiffCommand = new DelegateCommand(OnStagedDiffCommand);
             UnstageCommand = new DelegateCommand(OnUnstageCommand);
             AmendClickedCommand = new DelegateCommand(OnAmendClickedCommand);
             CommitCommand = new DelegateCommand(OnCommitCommand);
             GetCommitMessageFromAICommand = new DelegateCommand(OnGetCommitMessageFromAICommand);
-            RevertCommand = new DelegateCommand(OnRevertCommand);
+            RevertCommand = new DelegateCommand(OnRevertCommand, CanExecuteModifiableCommand);
             OpenExplorerSelectedFileCommand = new DelegateCommand(OnOpenExplorerSelectedFileCommand);
             OpenSelectedFileCommand = new DelegateCommand(OnOpenSelectedFileCommand);
-            MergeToolCommand = new DelegateCommand(OnMergeToolCommand);
+            MergeToolCommand = new DelegateCommand(OnMergeToolCommand, CanExecuteModifiableCommand);
             DeleteLocalFileCommand = new DelegateCommand(OnDeleteLocalFileCommand);
             LfsUnlockCommand = new DelegateCommand(OnLfsUnlockCommand, CanLfsUnlock);
 
@@ -223,13 +223,19 @@ namespace WimyGit.UserControls
             await gitRepository.Refresh();
         }
 
+        private bool HasSelectedNonLockOnlyFiles()
+        {
+            return ModifiedList != null && ModifiedList.Any(o => o.IsSelected && !o.IsOnlyLocked);
+        }
+
+        private bool CanExecuteModifiableCommand(object parameter)
+        {
+            return HasSelectedNonLockOnlyFiles();
+        }
+
         bool CanStageSelected(object parameter)
         {
-            if (SelectedModifiedFilePathList.Count() > 0)
-            {
-                return true;
-            }
-            return false;
+            return HasSelectedNonLockOnlyFiles();
         }
 
         public void OnSelectAllCommand(object parameter)
@@ -349,7 +355,7 @@ namespace WimyGit.UserControls
 
         bool CanStageSelectedPartial(object parameter)
         {
-            return SelectedModifiedFilePathList.Count() == 1;
+            return SelectedModifiedFilePathList.Count() == 1 && HasSelectedNonLockOnlyFiles();
         }
 
         public void OnModifiedDiffCommand(object parameter)

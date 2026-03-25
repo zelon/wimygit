@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Collections.ObjectModel;
+using System.Linq;
+using System.Text.RegularExpressions;
 using System.Windows.Input;
 
 namespace WimyGit.ViewModels
@@ -10,7 +13,21 @@ namespace WimyGit.ViewModels
         ObservableCollection<TreeData> TreeItems_ = new ObservableCollection<TreeData>();
         public ICommand ShowInExplorerCommand { get; private set; }
         public ICommand OpenTerminalCommand { get; private set; }
+        public ICommand LfsLockCommand { get; private set; }
         public string LastSelectedPath { get; set; }
+
+        private HashSet<string> _lfsTrackedExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        private bool _hasLfsLockableExtensions;
+        public bool HasLfsLockableExtensions
+        {
+            get => _hasLfsLockableExtensions;
+            private set
+            {
+                _hasLfsLockableExtensions = value;
+                NotifyPropertyChanged(nameof(HasLfsLockableExtensions));
+            }
+        }
 
         public ObservableCollection<TreeData> TreeItems {
             get { return TreeItems_; }
@@ -26,6 +43,7 @@ namespace WimyGit.ViewModels
         {
             ShowInExplorerCommand = new DelegateCommand(OnShowInExplorerCommand);
             OpenTerminalCommand = new DelegateCommand(OnOpenTerminalCommand);
+            LfsLockCommand = new DelegateCommand(OnLfsLockCommand, CanLfsLock);
             repositoryViewModel_ = repositoryViewModel;
         }
 
@@ -98,6 +116,87 @@ namespace WimyGit.ViewModels
             TreeItems = newTreeItems;
 
             NotifyPropertyChanged("TreeItems");
+
+            LoadLfsExtensions();
+        }
+
+        private void LoadLfsExtensions()
+        {
+            _lfsTrackedExtensions.Clear();
+            string gitAttributesPath = Path.Combine(repositoryViewModel_.Directory, ".gitattributes");
+            if (!File.Exists(gitAttributesPath)) return;
+            foreach (var line in File.ReadAllLines(gitAttributesPath))
+            {
+                if (!line.Contains("filter=lfs")) continue;
+                if (!line.Contains("lockable")) continue;
+                var parts = line.Trim().Split(new char[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
+                if (parts.Length == 0) continue;
+                string pattern = parts[0];
+                if (pattern.StartsWith("*."))
+                    _lfsTrackedExtensions.Add(pattern.Substring(1)); // e.g. ".psd"
+            }
+            HasLfsLockableExtensions = _lfsTrackedExtensions.Count > 0;
+        }
+
+        private bool CanLfsLock(object parameter)
+        {
+            var treeData = parameter as TreeData;
+            if (treeData == null) return false;
+            if (!File.Exists(treeData.Path)) return false;
+            string ext = Path.GetExtension(treeData.Path);
+            return _lfsTrackedExtensions.Contains(ext);
+        }
+
+        private async void OnLfsLockCommand(object parameter)
+        {
+            var treeData = parameter as TreeData;
+            if (treeData == null) return;
+
+            string relativePath = Path.GetRelativePath(repositoryViewModel_.Directory, treeData.Path);
+            var runner = repositoryViewModel_.CreateGitRunner();
+
+            repositoryViewModel_.AddLog("LFS Lock: " + relativePath);
+            List<string> output = runner.Run(GitCommandCreator.LfsLock(relativePath));
+            string outputText = string.Join("\n", output);
+
+            if (output.Any(line => line.Contains("Locked")))
+            {
+                await repositoryViewModel_.Refresh();
+                return;
+            }
+
+            string owner = TryExtractOwnerFromOutput(outputText);
+            if (string.IsNullOrEmpty(owner))
+            {
+                List<string> locksList = runner.Run(GitCommandCreator.LfsLocksForFile(relativePath));
+                owner = TryExtractOwnerFromLocksList(locksList, relativePath);
+            }
+
+            string errorMsg = string.IsNullOrEmpty(owner)
+                ? $"LFS Lock failed:\n\n{outputText}"
+                : $"LFS Lock failed: {relativePath} is already locked by {owner}";
+
+            UIService.ShowMessage(errorMsg);
+            await repositoryViewModel_.Refresh();
+        }
+
+        private string TryExtractOwnerFromOutput(string outputText)
+        {
+            var match = Regex.Match(outputText, @"already locked by\s+(\S+)");
+            return match.Success ? match.Groups[1].Value : null;
+        }
+
+        private string TryExtractOwnerFromLocksList(List<string> lines, string relativePath)
+        {
+            string filename = Path.GetFileName(relativePath);
+            foreach (var line in lines)
+            {
+                if (!line.Contains(filename)) continue;
+                var parts = Regex.Split(line.Trim(), @"\t|\s{2,}");
+                if (parts.Length >= 2)
+                    return parts[1];
+            }
+            return null;
         }
 
         TreeData CreateRootNode(string path)
@@ -170,6 +269,8 @@ namespace WimyGit.ViewModels
             }
 
             NotifyPropertyChanged("TreeItems");
+
+            LoadLfsExtensions();
         }
 
         private void CompareAndUpdate(ObservableCollection<TreeData> oldTreeDatas, ObservableCollection<TreeData> newTreeDatas)

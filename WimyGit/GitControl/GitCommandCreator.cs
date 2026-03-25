@@ -169,5 +169,15 @@ namespace WimyGit
         {
             return $"lfs unlock \"{filename}\"";
         }
+
+        public static string LfsLock(string filename)
+        {
+            return $"lfs lock \"{filename}\"";
+        }
+
+        public static string LfsLocksForFile(string filename)
+        {
+            return $"lfs locks \"{filename}\"";
+        }
     }
 }

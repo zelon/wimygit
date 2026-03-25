@@ -10,6 +10,7 @@ namespace WimyGit.UserControls
 		public string FilePath { get; set; }
 		public string Display { get; set; }
 		public bool IsLfsLocked { get; set; }
+		public bool IsOnlyLocked => IsLfsLocked && Status == "Locked";
 		public bool IsSelected {
 			get { return is_selected_; }
 			set {
@@ -17,6 +18,9 @@ namespace WimyGit.UserControls
 				pendingTabViewModel_.StageSelectedCommand.RaiseCanExecuteChanged();
 				pendingTabViewModel_.StageSelectedPartialCommand.RaiseCanExecuteChanged();
 				pendingTabViewModel_.LfsUnlockCommand.RaiseCanExecuteChanged();
+				pendingTabViewModel_.ModifiedDiffCommand.RaiseCanExecuteChanged();
+				pendingTabViewModel_.RevertCommand.RaiseCanExecuteChanged();
+				pendingTabViewModel_.MergeToolCommand.RaiseCanExecuteChanged();
 			}
 		}
 
