@@ -9,12 +9,14 @@ namespace WimyGit.UserControls
 		public string Status { get; set; }
 		public string FilePath { get; set; }
 		public string Display { get; set; }
+		public bool IsLfsLocked { get; set; }
 		public bool IsSelected {
 			get { return is_selected_; }
 			set {
 				is_selected_ = value;
 				pendingTabViewModel_.StageSelectedCommand.RaiseCanExecuteChanged();
 				pendingTabViewModel_.StageSelectedPartialCommand.RaiseCanExecuteChanged();
+				pendingTabViewModel_.LfsUnlockCommand.RaiseCanExecuteChanged();
 			}
 		}
 

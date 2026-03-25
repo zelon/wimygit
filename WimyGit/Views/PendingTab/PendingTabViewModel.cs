@@ -22,6 +22,13 @@ namespace WimyGit.UserControls
         public ObservableCollection<FileStatus> ModifiedList { get; set; }
         public ObservableCollection<FileStatus> StagedList { get; set; }
 
+        private string _unstagedSectionTitle = "Unstaged files";
+        public string UnstagedSectionTitle
+        {
+            get { return _unstagedSectionTitle; }
+            set { _unstagedSectionTitle = value; NotifyPropertyChanged("UnstagedSectionTitle"); }
+        }
+
         public ICommand SelectAllCommand { get; private set; }
         public DelegateCommand StageSelectedCommand { get; private set; }
         public DelegateCommand StageSelectedPartialCommand { get; private set; }
@@ -36,9 +43,10 @@ namespace WimyGit.UserControls
         public ICommand OpenSelectedFileCommand { get; private set; }
         public ICommand MergeToolCommand { get; private set; }
         public ICommand DeleteLocalFileCommand { get; private set; }
+        public DelegateCommand LfsUnlockCommand { get; private set; }
 
         public Action OnSelectAllCallbackViewSide;
-        
+
         public bool ShowAICommitMessageButton
         {
             get
@@ -50,9 +58,11 @@ namespace WimyGit.UserControls
         private WeakReference<IGitRepository> _gitRepository;
         private bool _noCommitsYet = false;
         private string _commitMessage;
-        public string CommitMessage {
+        public string CommitMessage
+        {
             get { return _commitMessage; }
-            set {
+            set
+            {
                 _commitMessage = value;
                 NotifyPropertyChanged("CommitMessage");
             }
@@ -75,6 +85,7 @@ namespace WimyGit.UserControls
             OpenSelectedFileCommand = new DelegateCommand(OnOpenSelectedFileCommand);
             MergeToolCommand = new DelegateCommand(OnMergeToolCommand);
             DeleteLocalFileCommand = new DelegateCommand(OnDeleteLocalFileCommand);
+            LfsUnlockCommand = new DelegateCommand(OnLfsUnlockCommand, CanLfsUnlock);
 
             SelectAllCommand = new DelegateCommand(OnSelectAllCommand);
 
@@ -87,7 +98,7 @@ namespace WimyGit.UserControls
             _gitRepository = new WeakReference<IGitRepository>(gitRepository);
         }
 
-        public void RefreshPending(List<string> porcelains)
+        public void RefreshPending(List<string> porcelains, List<string> lfsLockLines)
         {
             if (_gitRepository.TryGetTarget(out IGitRepository gitRepository) == false)
             {
@@ -97,6 +108,9 @@ namespace WimyGit.UserControls
             var staged_backup = new SelectionRecover(StagedList);
             var collecting_staged = new ObservableCollection<FileStatus>();
             var collecting_modified = new ObservableCollection<FileStatus>();
+
+            var lockedFilenames = ParseLfsLockedFilenames(lfsLockLines);
+            bool hasLockedFiles = lockedFilenames.Count > 0;
 
             foreach (var porcelain in porcelains)
             {
@@ -111,14 +125,29 @@ namespace WimyGit.UserControls
                 }
                 if (status.Modified != null)
                 {
-                    AddModifiedList(status.Modified, modified_backup, collecting_modified);
+                    bool isLocked = lockedFilenames.Remove(status.Modified.Filename);
+                    AddModifiedList(status.Modified, modified_backup, collecting_modified, isLocked);
                 }
             }
+
+            foreach (var lockedFile in lockedFilenames)
+            {
+                FileStatus fs = new FileStatus(this);
+                fs.Status = "Locked";
+                fs.FilePath = lockedFile;
+                fs.Display = lockedFile;
+                fs.IsLfsLocked = true;
+                fs.IsSelected = modified_backup.WasSelected(lockedFile);
+                collecting_modified.Add(fs);
+            }
+
             StagedList = collecting_staged;
             ModifiedList = collecting_modified;
 
             NotifyPropertyChanged("StagedList");
             NotifyPropertyChanged("ModifiedList");
+
+            UnstagedSectionTitle = hasLockedFiles ? "Unstaged & Locked Files" : "Unstaged files";
 
             if (ModifiedList.Count == 0 && StagedList.Count == 0)
             {
@@ -126,13 +155,34 @@ namespace WimyGit.UserControls
             }
         }
 
+        private HashSet<string> ParseLfsLockedFilenames(List<string> lfsLockLines)
+        {
+            var result = new HashSet<string>();
+            if (lfsLockLines == null)
+            {
+                return result;
+            }
+            foreach (var line in lfsLockLines)
+            {
+                string trimmed = line.Trim();
+                if (string.IsNullOrEmpty(trimmed)) continue;
+                var match = System.Text.RegularExpressions.Regex.Match(trimmed, @"^(\S+)");
+                if (match.Success)
+                {
+                    result.Add(match.Groups[1].Value);
+                }
+            }
+            return result;
+        }
+
         void AddModifiedList(WimyGitLib.GitFileStatus.Pair git_file_status, SelectionRecover backup_selection,
-                             ObservableCollection<FileStatus> to)
+                             ObservableCollection<FileStatus> to, bool isLocked = false)
         {
             FileStatus status = new FileStatus(this);
-            status.Status = git_file_status.Description;
+            status.Status = isLocked ? $"{git_file_status.Description}, Locked" : git_file_status.Description;
             status.FilePath = git_file_status.Filename;
             status.Display = status.FilePath;
+            status.IsLfsLocked = isLocked;
             status.IsSelected = backup_selection.WasSelected(status.FilePath);
 
             to.Add(status);
@@ -482,6 +532,53 @@ namespace WimyGit.UserControls
             await gitRepository.Refresh();
         }
 
+        private async void OnLfsUnlockCommand(object parameter)
+        {
+            if (_gitRepository.TryGetTarget(out IGitRepository gitRepository) == false)
+            {
+                return;
+            }
+            var lockedFiles = ModifiedList.Where(o => o.IsSelected && o.IsLfsLocked).ToList();
+            if (!lockedFiles.Any())
+            {
+                return;
+            }
+
+            var modifiedAndLocked = lockedFiles.Where(o => o.Status.Contains("Modified")).ToList();
+            if (modifiedAndLocked.Any())
+            {
+                string fileList = string.Join("\n", modifiedAndLocked.Select(o => o.FilePath));
+                UIService.ShowMessage(
+                    $"Cannot unlock Modified file.\n\n{fileList}\n\nRevert first if you want to unlock.");
+                return;
+            }
+
+            var failedFiles = new List<string>();
+            foreach (var fileStatus in lockedFiles)
+            {
+                gitRepository.AddLog("LFS Unlock: " + fileStatus.FilePath);
+                List<string> output = gitRepository.CreateGitRunner().Run(GitCommandCreator.LfsUnlock(fileStatus.FilePath));
+                if (output.Any(line => line.Contains("Cannot unlock")))
+                {
+                    failedFiles.Add(fileStatus.FilePath);
+                    gitRepository.AddLog("LFS Unlock failed: " + fileStatus.FilePath);
+                }
+            }
+
+            if (failedFiles.Any())
+            {
+                string fileList = string.Join("\n", failedFiles);
+                UIService.ShowMessage($"Unlock failed files: \n\n{fileList}");
+            }
+
+            await gitRepository.Refresh();
+        }
+
+        private bool CanLfsUnlock(object parameter)
+        {
+            return ModifiedList != null && ModifiedList.Any(o => o.IsSelected && o.IsLfsLocked);
+        }
+
         private void QuickDiff(string item, FileStatus fileStatus, string displayPrefix, string diffCommandPrefix)
         {
             if (_gitRepository.TryGetTarget(out IGitRepository gitRepository) == false)
@@ -590,11 +687,13 @@ namespace WimyGit.UserControls
             }
         }
 
-        public IEnumerable<string> SelectedModifiedFilePathList {
+        public IEnumerable<string> SelectedModifiedFilePathList
+        {
             get { return ModifiedList.Where(o => o.IsSelected).Select(o => o.FilePath); }
         }
 
-        public IEnumerable<string> SelectedStagedFilePathList {
+        public IEnumerable<string> SelectedStagedFilePathList
+        {
             get { return StagedList.Where(o => o.IsSelected).Select(o => o.FilePath); }
         }
 

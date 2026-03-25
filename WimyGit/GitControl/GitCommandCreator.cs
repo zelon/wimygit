@@ -159,5 +159,15 @@ namespace WimyGit
         {
             return $"worktree remove \"{path}\"";
         }
+
+        public static string LfsLocksLocal()
+        {
+            return "lfs locks --local";
+        }
+
+        public static string LfsUnlock(string filename)
+        {
+            return $"lfs unlock \"{filename}\"";
+        }
     }
 }

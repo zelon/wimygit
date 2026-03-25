@@ -303,9 +303,10 @@ namespace WimyGit.ViewModels
             Task tagTabResult = _tagTabViewModel.Refresh();
             Task remoteTabResult = _remoteTabViewModel.Refresh();
             Task<int> worktreeTabResult = _worktreeTabViewModel.RefreshAndGetWorktreeCount();
+            Task<List<string>> lfsLocksTask = GetLfsLockedFilesAsync();
 
-            await Task.WhenAll(refreshBranchTask, git_porcelain_result, stashTabResult, branchTabResult, tagTabResult, remoteTabResult, worktreeTabResult);
-            _pendingTabViewModel.RefreshPending(git_porcelain_result.Result);
+            await Task.WhenAll(refreshBranchTask, git_porcelain_result, stashTabResult, branchTabResult, tagTabResult, remoteTabResult, worktreeTabResult, lfsLocksTask);
+            _pendingTabViewModel.RefreshPending(git_porcelain_result.Result, lfsLocksTask.Result);
 
             int stashListCount = stashTabResult.Result;
             if (stashListCount > 0)
@@ -327,6 +328,23 @@ namespace WimyGit.ViewModels
             TimeSpan elapsed = DateTime.Now - start;
             AddLog($"Refreshed elapsed: {elapsed.TotalMilliseconds}");
             return true;
+        }
+
+        private async Task<List<string>> GetLfsLockedFilesAsync()
+        {
+            string gitAttributesPath = System.IO.Path.Combine(Directory, ".gitattributes");
+            if (!System.IO.File.Exists(gitAttributesPath))
+            {
+                return new List<string>();
+            }
+            try
+            {
+                return await CreateGitRunner().RunAsync(GitCommandCreator.LfsLocksLocal());
+            }
+            catch
+            {
+                return new List<string>();
+            }
         }
 
         private async Task<bool> RefreshBranchAsync()

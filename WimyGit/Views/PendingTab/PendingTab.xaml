@@ -98,7 +98,7 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition />
             </Grid.RowDefinitions>
-            <Label Content="Unstaged files" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="5,5,0,0"/>
+            <Label Content="{Binding UnstagedSectionTitle}" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="5,5,0,0"/>
             <Button Grid.Column="0" Grid.ColumnSpan="2" Content="_Stage Selected" Command="{Binding StageSelectedCommand}" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="10" Padding="15"/>
             <ListBox Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" x:Name="unstagedFileListBox" ItemsSource="{Binding ModifiedList}" SelectionMode="Extended" VirtualizingStackPanel.IsVirtualizing="False" SelectionChanged="OnUnstagedFileListBox_SelectionChanged" GotKeyboardFocus="OnStagedFileListBox_GotFocus" FontFamily="Consolas">
                 <ListBox.InputBindings>
@@ -119,6 +119,8 @@
                         <MenuItem Header="Open" InputGestureText="Return" Command="{Binding OpenSelectedFileCommand}" />
                         <MenuItem Header="MergeTool" Command="{Binding MergeToolCommand}" />
                         <MenuItem Header="Delete Local File" Command="{Binding DeleteLocalFileCommand}" CommandParameter="{Binding RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}, Path=PlacementTarget.SelectedItem}" />
+                        <Separator Visibility="{Binding PlacementTarget.SelectedItem.IsLfsLocked, RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                        <MenuItem Header="Unlock (LFS)" Command="{Binding LfsUnlockCommand}" Visibility="{Binding PlacementTarget.SelectedItem.IsLfsLocked, RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}, Converter={StaticResource BooleanToVisibilityConverter}}" />
                     </ContextMenu>
                 </ListBox.ContextMenu>
                 <ListBox.ItemContainerStyle>
