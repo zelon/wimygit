@@ -13,6 +13,7 @@ namespace WimyGit.ViewModels
         private readonly UserControls.BranchTabViewModel _branchTabViewModel;
         private readonly UserControls.TagTabViewModel _tagTabViewModel;
         private readonly UserControls.RemoteTabViewModel _remoteTabViewModel;
+        private readonly UserControls.WorktreeTabViewModel _worktreeTabViewModel;
 
         private readonly RepositoryTab repository_tab_;
         private readonly TabItem _workspaceTabItem;
@@ -27,6 +28,7 @@ namespace WimyGit.ViewModels
             UserControls.BranchTabViewModel branchTabViewModel,
             UserControls.TagTabViewModel tagTabViewModel,
             UserControls.RemoteTabViewModel remoteTabViewModel,
+            UserControls.WorktreeTabViewModel worktreeTabViewModel,
             TabItem workspaceTabItem, TabItem quickDiffTabItem, TabControl quickDiffUnitTabControl)
         {
             DisplayAuthor = GlobalSetting.GetInstance().GetSignature();
@@ -47,8 +49,10 @@ namespace WimyGit.ViewModels
             _branchTabViewModel = branchTabViewModel;
             _tagTabViewModel = tagTabViewModel;
             _remoteTabViewModel = remoteTabViewModel;
+            _worktreeTabViewModel = worktreeTabViewModel;
 
             StashTabHeader = "Stash";
+            WorktreeTabHeader = "Worktree";
 
             repository_tab_ = repository_tab;
 
@@ -87,6 +91,7 @@ namespace WimyGit.ViewModels
         public QuickDiffViewModel QuickDiffViewModel { get; private set; }
         public HistoryTabViewModel HistoryTabMember { get; private set; }
         public string StashTabHeader { get; set; }
+        public string WorktreeTabHeader { get; set; }
 
         public ICommand RefreshCommand { get; private set; }
         public ICommand ViewTimelapseCommand { get; private set; }
@@ -297,8 +302,9 @@ namespace WimyGit.ViewModels
             Task branchTabResult = _branchTabViewModel.Refresh();
             Task tagTabResult = _tagTabViewModel.Refresh();
             Task remoteTabResult = _remoteTabViewModel.Refresh();
+            Task<int> worktreeTabResult = _worktreeTabViewModel.RefreshAndGetWorktreeCount();
 
-            await Task.WhenAll(refreshBranchTask, git_porcelain_result, stashTabResult, branchTabResult, tagTabResult, remoteTabResult);
+            await Task.WhenAll(refreshBranchTask, git_porcelain_result, stashTabResult, branchTabResult, tagTabResult, remoteTabResult, worktreeTabResult);
             _pendingTabViewModel.RefreshPending(git_porcelain_result.Result);
 
             int stashListCount = stashTabResult.Result;
@@ -311,6 +317,10 @@ namespace WimyGit.ViewModels
                 StashTabHeader = "Stash";
             }
             NotifyPropertyChanged("StashTabHeader");
+
+            int worktreeCount = worktreeTabResult.Result;
+            WorktreeTabHeader = worktreeCount >= 2 ? $"Worktree [{worktreeCount}]" : "Worktree";
+            NotifyPropertyChanged("WorktreeTabHeader");
 
             repository_tab_.LeaveLoadingScreen();
 
@@ -379,6 +389,11 @@ namespace WimyGit.ViewModels
             Log += string.Format("[{0}] {1}\n", DateTime.Now.ToLocalTime(), string.Join("\n", logs));
             NotifyPropertyChanged("Log");
             repository_tab_.ScrollToEndLogTextBox();
+        }
+
+        public void AddGitCommandLog(string cmd)
+        {
+            AddLog("Git Command: git " + cmd);
         }
 
         public bool IsQuickDiffTabSelected()

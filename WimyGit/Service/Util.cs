@@ -46,8 +46,9 @@ namespace WimyGit
 			{
 				return false;
 			}
-			if (Directory.Exists(Path.Combine(directory, ".git")) == false)
-			{
+			if (Directory.Exists(Path.Combine(directory, ".git")) == false &&
+                File.Exists(Path.Combine(directory, ".git")) == false) // .git file means 'git worktree'
+            {
 				return false;
 			}
 			GitWrapper git_wrapper = new GitWrapper(directory, null);

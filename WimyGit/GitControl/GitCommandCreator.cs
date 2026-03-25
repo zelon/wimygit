@@ -134,5 +134,30 @@ namespace WimyGit
         {
             return $"remote --verbose show \"{remoteName}\"";
         }
+
+        public static string GetCurrentBranch()
+        {
+            return "branch --show-current";
+        }
+
+        public static string ListWorktree()
+        {
+            return "worktree list --porcelain";
+        }
+
+        public static string AddWorktree(string path, string branch)
+        {
+            return $"worktree add \"{path}\" \"{branch}\"";
+        }
+
+        public static string AddWorktreeWithNewBranch(string path, string branch)
+        {
+            return $"worktree add -b \"{branch}\" \"{path}\"";
+        }
+
+        public static string RemoveWorktree(string path)
+        {
+            return $"worktree remove \"{path}\"";
+        }
     }
 }

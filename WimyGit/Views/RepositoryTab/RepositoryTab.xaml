@@ -199,6 +199,9 @@
                     <TabItem Header="Remote">
                         <user_control:RemoteTab x:Name="RemoteTab" />
                     </TabItem>
+                    <TabItem Header="{Binding WorktreeTabHeader}">
+                        <user_control:WorktreeTab x:Name="WorktreeTab" />
+                    </TabItem>
                 </TabControl>
             </Grid>
         </Grid>

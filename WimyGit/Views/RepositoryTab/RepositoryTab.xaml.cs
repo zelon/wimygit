@@ -19,6 +19,7 @@ namespace WimyGit
             UserControls.BranchTabViewModel branchTabViewModel = (UserControls.BranchTabViewModel)BranchTab.DataContext;
             UserControls.TagTabViewModel tagTabViewModel = (UserControls.TagTabViewModel)TagTab.DataContext;
             UserControls.RemoteTabViewModel remoteTabViewModel = (UserControls.RemoteTabViewModel)RemoteTab.DataContext;
+            UserControls.WorktreeTabViewModel worktreeTabViewModel = (UserControls.WorktreeTabViewModel)WorktreeTab.DataContext;
 
             var viewModel = new ViewModels.RepositoryViewModel(git_repository_path,
                 this,
@@ -27,6 +28,7 @@ namespace WimyGit
                 branchTabViewModel,
                 tagTabViewModel,
                 remoteTabViewModel,
+                worktreeTabViewModel,
                 WorkspaceItem, QuickDiffItem, QuickDiffTab.TabControlMain);
             DataContext = viewModel;
 
@@ -35,6 +37,7 @@ namespace WimyGit
             branchTabViewModel.SetGitRepository(viewModel);
             tagTabViewModel.SetGitRepository(viewModel);
             remoteTabViewModel.SetGitRepository(viewModel);
+            worktreeTabViewModel.SetGitRepository(viewModel);
 
             IGitRepository gitRepository = viewModel;
             Plugin.PluginController.ConstructPluginToolbarButtons(toolBar, gitRepository);

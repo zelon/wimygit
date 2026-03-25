@@ -10,6 +10,7 @@ namespace WimyGit
         public WimyGitLib.RunExternal CreateGitRunner();
         public void AddLog(string message);
         public void AddLog(System.Collections.Generic.List<string> logs);
+        public void AddGitCommandLog(string cmd);
         public bool IsQuickDiffTabSelected();
         public void SetQuickDiffBuilder(Service.QuickDiffBuilder quickDiffBuilder);
     }
