@@ -181,7 +181,7 @@
                             </Setter>
                         </Style>
                     </TabControl.Resources>
-                    <TabItem Header="Pending">
+                    <TabItem Header="{Binding PendingTabHeader}">
                         <user_control:PendingTab x:Name="PendingTab" />
                     </TabItem>
                     <TabItem Header="History">

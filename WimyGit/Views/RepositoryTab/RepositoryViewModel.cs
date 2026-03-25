@@ -93,6 +93,17 @@ namespace WimyGit.ViewModels
         public string StashTabHeader { get; set; }
         public string WorktreeTabHeader { get; set; }
 
+        private string _pendingTabHeader = "Pending";
+        public string PendingTabHeader
+        {
+            get => _pendingTabHeader;
+            set
+            {
+                _pendingTabHeader = value;
+                NotifyPropertyChanged("PendingTabHeader");
+            }
+        }
+
         public ICommand RefreshCommand { get; private set; }
         public ICommand ViewTimelapseCommand { get; private set; }
         public ICommand FetchAllCommand { get; private set; }
@@ -307,6 +318,15 @@ namespace WimyGit.ViewModels
 
             await Task.WhenAll(refreshBranchTask, git_porcelain_result, stashTabResult, branchTabResult, tagTabResult, remoteTabResult, worktreeTabResult, lfsLocksTask);
             _pendingTabViewModel.RefreshPending(git_porcelain_result.Result, lfsLocksTask.Result);
+
+            if (_pendingTabViewModel.LockedCount > 0)
+            {
+                PendingTabHeader = $"Pending [{_pendingTabViewModel.LockedCount} Locked]";
+            }
+            else
+            {
+                PendingTabHeader = "Pending";
+            }
 
             int stashListCount = stashTabResult.Result;
             if (stashListCount > 0)

@@ -59,6 +59,17 @@ namespace WimyGit.UserControls
             }
         }
 
+        private int _lockedCount = 0;
+        public int LockedCount
+        {
+            get { return _lockedCount; }
+            set
+            {
+                _lockedCount = value;
+                NotifyPropertyChanged("LockedCount");
+            }
+        }
+
         public bool ShowAICommitMessageButton
         {
             get
@@ -137,7 +148,8 @@ namespace WimyGit.UserControls
             var collecting_modified = new ObservableCollection<FileStatus>();
 
             var lockedFilenames = ParseLfsLockedFilenames(lfsLockLines);
-            bool hasLockedFiles = lockedFilenames.Count > 0;
+            LockedCount = lockedFilenames.Count;
+            bool hasLockedFiles = LockedCount > 0;
 
             foreach (var porcelain in porcelains)
             {
