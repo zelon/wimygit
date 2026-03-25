@@ -44,8 +44,20 @@ namespace WimyGit.UserControls
         public DelegateCommand MergeToolCommand { get; private set; }
         public ICommand DeleteLocalFileCommand { get; private set; }
         public DelegateCommand LfsUnlockCommand { get; private set; }
+        public ICommand ShowLfsLocksCommand { get; private set; }
 
         public Action OnSelectAllCallbackViewSide;
+
+        private bool _hasLfsLockableExtensions = false;
+        public bool HasLfsLockableExtensions
+        {
+            get { return _hasLfsLockableExtensions; }
+            set
+            {
+                _hasLfsLockableExtensions = value;
+                NotifyPropertyChanged("HasLfsLockableExtensions");
+            }
+        }
 
         public bool ShowAICommitMessageButton
         {
@@ -86,6 +98,7 @@ namespace WimyGit.UserControls
             MergeToolCommand = new DelegateCommand(OnMergeToolCommand, CanExecuteModifiableCommand);
             DeleteLocalFileCommand = new DelegateCommand(OnDeleteLocalFileCommand);
             LfsUnlockCommand = new DelegateCommand(OnLfsUnlockCommand, CanLfsUnlock);
+            ShowLfsLocksCommand = new DelegateCommand(OnShowLfsLocksCommand);
 
             SelectAllCommand = new DelegateCommand(OnSelectAllCommand);
 
@@ -96,6 +109,19 @@ namespace WimyGit.UserControls
         public void SetGitRepository(IGitRepository gitRepository)
         {
             _gitRepository = new WeakReference<IGitRepository>(gitRepository);
+            CheckLfsLockable();
+        }
+
+        private void CheckLfsLockable()
+        {
+            if (_gitRepository.TryGetTarget(out IGitRepository gitRepository) == false)
+            {
+                HasLfsLockableExtensions = false;
+                return;
+            }
+
+            var extensions = GitAttributes.GetLfsLockableExtensions(gitRepository.GetRepositoryDirectory());
+            HasLfsLockableExtensions = extensions.Count > 0;
         }
 
         public void RefreshPending(List<string> porcelains, List<string> lfsLockLines)
@@ -104,6 +130,7 @@ namespace WimyGit.UserControls
             {
                 return;
             }
+            CheckLfsLockable();
             var modified_backup = new SelectionRecover(ModifiedList);
             var staged_backup = new SelectionRecover(StagedList);
             var collecting_staged = new ObservableCollection<FileStatus>();
@@ -583,6 +610,15 @@ namespace WimyGit.UserControls
         private bool CanLfsUnlock(object parameter)
         {
             return ModifiedList != null && ModifiedList.Any(o => o.IsSelected && o.IsLfsLocked);
+        }
+
+        private void OnShowLfsLocksCommand(object parameter)
+        {
+            if (_gitRepository.TryGetTarget(out IGitRepository gitRepository) == false)
+            {
+                return;
+            }
+            UIService.RunInConsoleProgressWindow(gitRepository.CreateGitRunner(), "lfs locks");
         }
 
         private void QuickDiff(string item, FileStatus fileStatus, string displayPrefix, string diffCommandPrefix)

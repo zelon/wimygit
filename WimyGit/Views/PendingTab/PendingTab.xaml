@@ -99,7 +99,15 @@
                 <RowDefinition />
             </Grid.RowDefinitions>
             <Label Content="{Binding UnstagedSectionTitle}" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="5,5,0,0"/>
-            <Button Grid.Column="0" Grid.ColumnSpan="2" Content="_Stage Selected" Command="{Binding StageSelectedCommand}" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="10" Padding="15"/>
+            <Grid Grid.Column="0" Grid.ColumnSpan="2">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Button Grid.Column="1" Content="_Stage Selected" Command="{Binding StageSelectedCommand}" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="10" Padding="15"/>
+                <Button Grid.Column="2" Content="Show Locks" Command="{Binding ShowLfsLocksCommand}" Visibility="{Binding HasLfsLockableExtensions, Converter={StaticResource BooleanToVisibilityConverter}}" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,10,0" Padding="10,5"/>
+            </Grid>
             <ListBox Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" x:Name="unstagedFileListBox" ItemsSource="{Binding ModifiedList}" SelectionMode="Extended" VirtualizingStackPanel.IsVirtualizing="False" SelectionChanged="OnUnstagedFileListBox_SelectionChanged" GotKeyboardFocus="OnStagedFileListBox_GotFocus" FontFamily="Consolas">
                 <ListBox.InputBindings>
                     <KeyBinding Modifiers="Ctrl" Key="D" Command="{Binding ModifiedDiffCommand}" />

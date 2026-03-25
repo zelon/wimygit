@@ -5,6 +5,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows.Input;
+using WimyGitLib;
 
 namespace WimyGit.ViewModels
 {
@@ -122,19 +123,7 @@ namespace WimyGit.ViewModels
 
         private void LoadLfsExtensions()
         {
-            _lfsTrackedExtensions.Clear();
-            string gitAttributesPath = Path.Combine(repositoryViewModel_.Directory, ".gitattributes");
-            if (!File.Exists(gitAttributesPath)) return;
-            foreach (var line in File.ReadAllLines(gitAttributesPath))
-            {
-                if (!line.Contains("filter=lfs")) continue;
-                if (!line.Contains("lockable")) continue;
-                var parts = line.Trim().Split(new char[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
-                if (parts.Length == 0) continue;
-                string pattern = parts[0];
-                if (pattern.StartsWith("*."))
-                    _lfsTrackedExtensions.Add(pattern.Substring(1)); // e.g. ".psd"
-            }
+            _lfsTrackedExtensions = GitAttributes.GetLfsLockableExtensions(repositoryViewModel_.Directory);
             HasLfsLockableExtensions = _lfsTrackedExtensions.Count > 0;
         }
 
