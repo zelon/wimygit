@@ -6,6 +6,38 @@ namespace WimyGitLib
 {
     public class GitAttributes
     {
+        public static bool HasLfsGitAttribute(string repositoryDirectory)
+        {
+            string gitAttributesPath = Path.Combine(repositoryDirectory, ".gitattributes");
+            if (!File.Exists(gitAttributesPath))
+            {
+                return false;
+            }
+
+            try
+            {
+                foreach (var line in File.ReadAllLines(gitAttributesPath))
+                {
+                    string trimmed = line.Trim();
+                    if (string.IsNullOrEmpty(trimmed) || trimmed.StartsWith("#"))
+                    {
+                        continue;
+                    }
+
+                    if (trimmed.Contains("filter=lfs"))
+                    {
+                        return true;
+                    }
+                }
+            }
+            catch
+            {
+                // ignore
+            }
+
+            return false;
+        }
+
         public static HashSet<string> GetLfsLockableExtensions(string repositoryDirectory)
         {
             var result = new HashSet<string>(StringComparer.OrdinalIgnoreCase);

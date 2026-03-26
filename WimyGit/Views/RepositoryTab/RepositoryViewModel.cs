@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -92,6 +93,33 @@ namespace WimyGit.ViewModels
         public HistoryTabViewModel HistoryTabMember { get; private set; }
         public string StashTabHeader { get; set; }
         public string WorktreeTabHeader { get; set; }
+
+        private string _lfsWarning = "";
+        public string LfsWarning
+        {
+            get => _lfsWarning;
+            set
+            {
+                _lfsWarning = value;
+                NotifyPropertyChanged("LfsWarning");
+                NotifyPropertyChanged("HasLfsWarning");
+            }
+        }
+
+        public bool HasLfsWarning => !string.IsNullOrEmpty(_lfsWarning);
+
+        public async Task CheckLfsInstallation()
+        {
+            if (!WimyGitLib.GitAttributes.HasLfsGitAttribute(Directory))
+            {
+                LfsWarning = "";
+                return;
+            }
+            var output = await CreateGitRunner().RunAsync(GitCommandCreator.LfsVersion());
+            LfsWarning = (output != null && output.Any(line => line.StartsWith("git-lfs/")))
+                ? ""
+                : "Warning: Git LFS is not installed, but this repository has LFS gitattributes.";
+        }
 
         private string _pendingTabHeader = "Pending";
         public string PendingTabHeader
@@ -315,8 +343,9 @@ namespace WimyGit.ViewModels
             Task remoteTabResult = _remoteTabViewModel.Refresh();
             Task<int> worktreeTabResult = _worktreeTabViewModel.RefreshAndGetWorktreeCount();
             Task<List<string>> lfsLocksTask = GetLfsLockedFilesAsync();
+            Task checkLfsTask = CheckLfsInstallation();
 
-            await Task.WhenAll(refreshBranchTask, git_porcelain_result, stashTabResult, branchTabResult, tagTabResult, remoteTabResult, worktreeTabResult, lfsLocksTask);
+            await Task.WhenAll(refreshBranchTask, git_porcelain_result, stashTabResult, branchTabResult, tagTabResult, remoteTabResult, worktreeTabResult, lfsLocksTask, checkLfsTask);
             _pendingTabViewModel.RefreshPending(git_porcelain_result.Result, lfsLocksTask.Result);
 
             if (_pendingTabViewModel.LockedCount > 0)

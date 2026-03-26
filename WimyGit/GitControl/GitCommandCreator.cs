@@ -160,6 +160,11 @@ namespace WimyGit
             return $"worktree remove \"{path}\"";
         }
 
+        public static string LfsVersion()
+        {
+            return "lfs version";
+        }
+
         public static string LfsLocksLocal()
         {
             return "lfs locks --local";

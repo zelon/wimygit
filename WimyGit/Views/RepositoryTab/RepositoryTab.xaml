@@ -152,10 +152,14 @@
             <Grid Grid.Column="2">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
                 <Label Content="{Binding Info}" HorizontalAlignment="Left" Grid.Row="0" FontFamily="Consolas" />
-                <TabControl x:Name="tabControl" HorizontalContentAlignment="Left" VerticalContentAlignment="Stretch" Grid.Row="1">
+                <Label Content="{Binding LfsWarning}" HorizontalAlignment="Left" Grid.Row="1" FontFamily="Consolas"
+                       Foreground="DarkRed" FontSize="30" FontWeight="Bold"
+                       Visibility="{Binding HasLfsWarning, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                <TabControl x:Name="tabControl" Grid.Row="2" HorizontalContentAlignment="Left" VerticalContentAlignment="Stretch">
                     <TabControl.Resources>
                         <Style TargetType="TabItem">
                             <Setter Property="Template">
