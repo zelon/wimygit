@@ -92,6 +92,22 @@ namespace WimyGit
             LoadingScreen.Fill = newColor;
         }
 
+        private void OnSplitterDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            double leftWidth = MainSplitGrid.ColumnDefinitions[0].ActualWidth;
+            double rightWidth = MainSplitGrid.ColumnDefinitions[2].ActualWidth;
+            if (leftWidth <= rightWidth)
+            {
+                MainSplitGrid.ColumnDefinitions[0].Width = new GridLength(2, GridUnitType.Star);
+                MainSplitGrid.ColumnDefinitions[2].Width = new GridLength(1, GridUnitType.Star);
+            }
+            else
+            {
+                MainSplitGrid.ColumnDefinitions[0].Width = new GridLength(1, GridUnitType.Star);
+                MainSplitGrid.ColumnDefinitions[2].Width = new GridLength(2, GridUnitType.Star);
+            }
+        }
+
         private void ShowPushMenu(object sender, RoutedEventArgs e)
         {
             Button button = PushButton;
