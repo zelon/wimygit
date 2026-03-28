@@ -1,6 +1,8 @@
-﻿using System.Drawing;
+﻿using System;
+using System.Drawing;
 using System.Windows.Controls;
 using System.Windows.Documents;
+using System.Windows.Input;
 using WimyGit.Service;
 
 namespace WimyGit.Views.QuickDiffTab
@@ -8,12 +10,16 @@ namespace WimyGit.Views.QuickDiffTab
     internal class QuickDiffUnitViewModel : NotifyBase
     {
         public string Title { get; set; } = "No title";
+        public ICommand MoreContextCommand { get; }
+        public ICommand LessContextCommand { get; }
 
         private RichTextBox _richTextBox;
 
-        public QuickDiffUnitViewModel(RichTextBox richTextBox)
+        public QuickDiffUnitViewModel(RichTextBox richTextBox, Action onMoreContext, Action onLessContext)
         {
             _richTextBox = richTextBox;
+            MoreContextCommand = new DelegateCommand(_ => onMoreContext());
+            LessContextCommand = new DelegateCommand(_ => onLessContext());
         }
 
         public void SetContentBuilder(QuickDiffContentInfo quickDiffContentInfo)

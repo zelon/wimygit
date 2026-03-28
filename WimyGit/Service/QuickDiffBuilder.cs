@@ -20,6 +20,7 @@ namespace WimyGit.Service
         private string DiffCommand { get; set; }
         private List<string> RawBody { get; set; } = [];
         public bool IsDiffColorView { get; set; } = true;
+        public int ContextLines { get; set; } = 3;
 
         public QuickDiffBuilder(IGitRepository gitRepository, string filePath, string currentCommitId, string displayPrefix, string newFilePath, string diffCommand,
             List<string> rawBody = null)
@@ -54,8 +55,9 @@ namespace WimyGit.Service
             if (string.IsNullOrEmpty(DiffCommand) == false)
             {
                 WimyGitLib.RunExternal runner = GitRepository.CreateGitRunner();
-                GitRepository.AddLog(DiffCommand);
-                List<string> lines = runner.Run(DiffCommand);
+                string commandWithContext = DiffCommand.Replace("--color=always", $"--color=always -U{ContextLines}");
+                GitRepository.AddLog(commandWithContext);
+                List<string> lines = runner.Run(commandWithContext);
                 output.Add(new QuickDiffContentInfo()
                 {
                     IsDiffColorView = IsDiffColorView,
@@ -69,7 +71,7 @@ namespace WimyGit.Service
                     {
                         foreach (string parentCommitId in parentCommitIds)
                         {
-                            string subDiffCommand = $"diff --color=always {parentCommitId} {CurrentCommitId} -- \"{FilePath}\" ";
+                            string subDiffCommand = $"diff --color=always -U{ContextLines} {parentCommitId} {CurrentCommitId} -- \"{FilePath}\" ";
                             GitRepository.AddLog(subDiffCommand);
                             List<string> subDiffLines = runner.Run(subDiffCommand);
                             output.Add(new QuickDiffContentInfo()
