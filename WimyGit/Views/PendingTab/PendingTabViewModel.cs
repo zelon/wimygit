@@ -633,7 +633,7 @@ namespace WimyGit.UserControls
             UIService.RunInConsoleProgressWindow(gitRepository.CreateGitRunner(), "lfs locks");
         }
 
-        private void QuickDiff(string item, FileStatus fileStatus, string displayPrefix, string diffCommandPrefix)
+        private void QuickDiff(string item, FileStatus fileStatus, string displayPrefix, string diffCommandPrefix, Action diffToolAction)
         {
             if (_gitRepository.TryGetTarget(out IGitRepository gitRepository) == false)
             {
@@ -711,6 +711,7 @@ namespace WimyGit.UserControls
                             displayPrefix,
                             /* newFilePath= */ null,
                             diffCommand: diffCommandPrefix + Util.WrapFilePath(item));
+                        quickDiffBuilder.DiffToolAction = diffToolAction;
                     }
                 }
             }
@@ -725,7 +726,8 @@ namespace WimyGit.UserControls
             }
             foreach (var item in SelectedModifiedFilePathList)
             {
-                QuickDiff(item, GetModifiedStatus(item), "[UNSTAGED]", diffCommandPrefix: "diff -- ");
+                QuickDiff(item, GetModifiedStatus(item), "[UNSTAGED]", diffCommandPrefix: "diff -- ",
+                    diffToolAction: () => { if (_gitRepository.TryGetTarget(out var repo)) repo.GetGitWrapper().DiffTool(item); });
             }
         }
 
@@ -737,7 +739,8 @@ namespace WimyGit.UserControls
             }
             foreach (var item in SelectedStagedFilePathList)
             {
-                QuickDiff(item, GetStagedStatus(item), "[STAGED]", diffCommandPrefix: "diff --cached -- ");
+                QuickDiff(item, GetStagedStatus(item), "[STAGED]", diffCommandPrefix: "diff --cached -- ",
+                    diffToolAction: () => { if (_gitRepository.TryGetTarget(out var repo)) repo.GetGitWrapper().DiffToolStaged(item); });
             }
         }
 

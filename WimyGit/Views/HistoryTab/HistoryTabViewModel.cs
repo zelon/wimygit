@@ -40,6 +40,8 @@ namespace WimyGit.ViewModels
                                 newFilePath: null,
                                 diffCommand: gitCommand);
                             quickDiffBuilder.IsDiffColorView = false;
+                            quickDiffBuilder.DiffToolAction = () => gitRepository.GetGitWrapper().DiffHistorySelectedWithTool(
+                                _selectedHistoryFile.CommitId, _selectedHistoryFile.FileName);
                         }
                         else
                         {
@@ -50,6 +52,8 @@ namespace WimyGit.ViewModels
                                 displayPrefix: "From History",
                                 newFilePath: null,
                                 diffCommand: gitCommand);
+                            quickDiffBuilder.DiffToolAction = () => gitRepository.GetGitWrapper().DiffHistorySelectedWithTool(
+                                _selectedHistoryFile.CommitId, _selectedHistoryFile.FileName);
                         }
                     }
                     else
@@ -61,6 +65,8 @@ namespace WimyGit.ViewModels
                             displayPrefix: "From History",
                             newFilePath: null,
                             diffCommand: gitCommand);
+                        quickDiffBuilder.DiffToolAction = () => gitRepository.GetGitWrapper().DiffHistorySelectedWithRenameTrackingWithTool(
+                            _selectedHistoryFile.CommitId, _selectedHistoryFile.FileName, _selectedHistoryFile.FileName2);
                     }
                     gitRepository.SetQuickDiffBuilder(quickDiffBuilder);
                 }

@@ -27,7 +27,8 @@ namespace WimyGit.ViewModels
                 var quickDiffUnitViewModel = new Views.QuickDiffTab.QuickDiffUnitViewModel(
                     quickDiffUnitView.RichOutput,
                     onMoreContext: () => { builder.ContextLines += 3; Rebuild(); },
-                    onLessContext: () => { builder.ContextLines = Math.Max(0, builder.ContextLines - 3); Rebuild(); });
+                    onLessContext: () => { builder.ContextLines = Math.Max(0, builder.ContextLines - 3); Rebuild(); },
+                    onDiffTool: quickDiffContentInfo.DiffToolAction);
                 TabItem basicDiffTabItem = new TabItem();
                 basicDiffTabItem.Header = SelectTabHeader(index, quickDiffContentInfos);
                 basicDiffTabItem.Content = quickDiffUnitView;

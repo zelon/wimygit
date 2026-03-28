@@ -12,14 +12,18 @@ namespace WimyGit.Views.QuickDiffTab
         public string Title { get; set; } = "No title";
         public ICommand MoreContextCommand { get; }
         public ICommand LessContextCommand { get; }
+        public ICommand DiffToolCommand { get; }
+        public System.Windows.Visibility DiffToolVisibility { get; }
 
         private RichTextBox _richTextBox;
 
-        public QuickDiffUnitViewModel(RichTextBox richTextBox, Action onMoreContext, Action onLessContext)
+        public QuickDiffUnitViewModel(RichTextBox richTextBox, Action onMoreContext, Action onLessContext, Action onDiffTool)
         {
             _richTextBox = richTextBox;
             MoreContextCommand = new DelegateCommand(_ => onMoreContext());
             LessContextCommand = new DelegateCommand(_ => onLessContext());
+            DiffToolCommand = new DelegateCommand(_ => onDiffTool?.Invoke());
+            DiffToolVisibility = onDiffTool != null ? System.Windows.Visibility.Visible : System.Windows.Visibility.Collapsed;
         }
 
         public void SetContentBuilder(QuickDiffContentInfo quickDiffContentInfo)

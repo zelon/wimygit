@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace WimyGit.Service
@@ -8,6 +9,7 @@ namespace WimyGit.Service
         public bool IsDiffColorView { get; set; }
         public string Display { get; set; }
         public List<string> Lines { get; set; } = [];
+        public Action DiffToolAction { get; set; }
     }
 
     public class QuickDiffBuilder
@@ -21,6 +23,7 @@ namespace WimyGit.Service
         private List<string> RawBody { get; set; } = [];
         public bool IsDiffColorView { get; set; } = true;
         public int ContextLines { get; set; } = 3;
+        public Action DiffToolAction { get; set; }
 
         public QuickDiffBuilder(IGitRepository gitRepository, string filePath, string currentCommitId, string displayPrefix, string newFilePath, string diffCommand,
             List<string> rawBody = null)
@@ -62,7 +65,8 @@ namespace WimyGit.Service
                 {
                     IsDiffColorView = IsDiffColorView,
                     Display = DisplayPrefix + "[DIFF]",
-                    Lines = lines
+                    Lines = lines,
+                    DiffToolAction = DiffToolAction
                 });
                 if (string.IsNullOrEmpty(CurrentCommitId) == false)
                 {
@@ -74,11 +78,14 @@ namespace WimyGit.Service
                             string subDiffCommand = $"diff --color=always -U{ContextLines} {parentCommitId} {CurrentCommitId} -- \"{FilePath}\" ";
                             GitRepository.AddLog(subDiffCommand);
                             List<string> subDiffLines = runner.Run(subDiffCommand);
+                            string capturedParentId = parentCommitId;
                             output.Add(new QuickDiffContentInfo()
                             {
                                 IsDiffColorView = IsDiffColorView,
                                 Display = $"{DisplayPrefix}[DIFF vs {parentCommitId}]",
-                                Lines = subDiffLines
+                                Lines = subDiffLines,
+                                DiffToolAction = () => GitRepository.CreateGitRunner().RunWithoutWaiting(
+                                    $"difftool --no-prompt {capturedParentId} {CurrentCommitId} -- \"{FilePath}\"")
                             });
                         }
                     }
