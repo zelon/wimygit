@@ -23,7 +23,7 @@ namespace WimyGit
             tab_header.Padding = zeroThickness;
             tab_header.Margin = zeroThickness;
             tab_header.Path.Content = path;
-            tab_header.Title.Content = Util.GetRepositoryName(path);
+            tab_header.Title.Text = Util.GetRepositoryName(path);
             tab_item.Header = tab_header;
             tab_item.Content = new RepositoryTab(path);
 

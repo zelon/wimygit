@@ -20,11 +20,11 @@ namespace WimyGit.UserControls
         {
             if (path == null)
             {
-                Title.Content = "[[New Tab]]";
+                Title.Text = "[[New Tab]]";
                 return;
             }
             Path.Content = path;
-            Title.Content = Util.GetRepositoryName(path);
+            Title.Text = Util.GetRepositoryName(path);
             ToolTip = path;
         }
 
