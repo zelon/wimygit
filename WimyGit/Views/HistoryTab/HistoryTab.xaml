@@ -30,6 +30,7 @@
                         <MenuItem Header="Create Branch..." Command="{Binding CreateBranchCommand}" />
                         <MenuItem Header="Create Tag..." Command="{Binding CreateTagCommand}" />
                         <MenuItem Header="Rebase" Command="{Binding RebaseCommand}" />
+                        <MenuItem Header="Cherry-pick to current branch" Command="{Binding CherryPickCommand}" />
                         <Separator/>
                         <MenuItem Header="Reset">
                             <MenuItem Header="Reset soft" Command="{Binding ResetSoftCommand}" />

@@ -76,6 +76,7 @@ namespace WimyGit.ViewModels
         public ICommand CreateBranchCommand { get; private set; }
         public ICommand CreateTagCommand { get; private set; }
         public ICommand RebaseCommand { get; private set; }
+        public ICommand CherryPickCommand { get; private set; }
         public ICommand CheckoutCommand { get; private set; }
         public ICommand ResetSoftCommand { get; private set; }
         public ICommand ResetMixedCommand { get; private set; }
@@ -100,6 +101,7 @@ namespace WimyGit.ViewModels
             CreateBranchCommand = new DelegateCommand(OnCreateBranchCommand);
             CreateTagCommand = new DelegateCommand(OnCreateTagCommand);
             RebaseCommand = new DelegateCommand(OnRebaseCommand);
+            CherryPickCommand = new DelegateCommand(OnCherryPickCommand);
             CheckoutCommand = new DelegateCommand(OnCheckoutCommand);
 
             ResetSoftCommand = new DelegateCommand(OnResetSoftCommand);
@@ -188,6 +190,21 @@ namespace WimyGit.ViewModels
                 return;
             }
             string gitCommand = $"rebase {SelectedHistoryStatus.CommitId}";
+            UIService.RunInConsoleProgressWindow(gitRepository.CreateGitRunner(), gitCommand);
+            gitRepository.Refresh();
+        }
+
+        public void OnCherryPickCommand(object parameter)
+        {
+            if (_gitRepository.TryGetTarget(out IGitRepository gitRepository) == false)
+            {
+                return;
+            }
+            if (SelectedHistoryStatus == null)
+            {
+                return;
+            }
+            string gitCommand = $"cherry-pick {SelectedHistoryStatus.CommitId}";
             UIService.RunInConsoleProgressWindow(gitRepository.CreateGitRunner(), gitCommand);
             gitRepository.Refresh();
         }
