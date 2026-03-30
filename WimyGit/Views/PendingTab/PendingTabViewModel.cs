@@ -444,9 +444,10 @@ namespace WimyGit.UserControls
             foreach (var item in SelectedModifiedFilePathList)
             {
                 string directory = gitRepository.GetRepositoryDirectory();
-                string directory_name = System.IO.Path.GetDirectoryName(directory + "\\" + item);
-                RunExternal runner = new RunExternal("explorer.exe", directory_name);
-                runner.RunWithoutWaiting(directory + "\\" + item);
+                string fullPath = Path.GetFullPath(Path.Combine(directory, item));
+                string directoryName = Path.GetDirectoryName(fullPath);
+                RunExternal runner = new RunExternal("explorer.exe", directoryName);
+                runner.RunWithoutWaiting(fullPath);
             }
         }
 
