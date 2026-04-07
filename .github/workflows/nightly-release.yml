@@ -5,15 +5,20 @@ name: Nightly Release
 
 on:
   workflow_dispatch:
+    inputs:
+      winget-publish:
+        description: 'Publish to winget'
+        type: boolean
+        default: true
 
 jobs:
   release:
     runs-on: windows-latest
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     - name: Setup .NET
-      uses: actions/setup-dotnet@v4
+      uses: actions/setup-dotnet@v5
       with:
         dotnet-version: 10.0.x
 
@@ -64,16 +69,15 @@ jobs:
       shell: pwsh
 
     - name: Create GitHub Release
-      uses: softprops/action-gh-release@v2
-      with:
-        tag_name: ${{ steps.tag.outputs.tag }}
-        files: ${{ steps.tag.outputs.tag }}.zip
-        generate_release_notes: true
-        prerelease: true
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        $tag = "${{ steps.tag.outputs.tag }}"
+        $zipName = "$tag.zip"
+        gh release create $tag $zipName --generate-notes --prerelease --title $tag
 
     - name: Winget Publish
+      if: ${{ inputs.winget-publish == true }}
       env:
         GITHUB_TOKEN: ${{ secrets.MY_PAT }}
       run: |
