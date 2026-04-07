@@ -5,13 +5,18 @@ name: Stable Release
 
 on:
   workflow_dispatch:
-  
+    inputs:
+      winget-publish:
+        description: 'Publish to winget'
+        type: boolean
+        default: true  
+
 jobs:
   release:
     runs-on: windows-latest
 
     steps:
-    - name: Validate branch name
+    - name: Validate branch name and set variables
       id: config
       shell: pwsh
       run: |
@@ -32,11 +37,15 @@ jobs:
         Write-Host "zipFileName=$zipFileName"
         echo "zipFileName=$zipFileName" >> $env:GITHUB_OUTPUT
 
-    - uses: actions/checkout@v4
+        $zipDownloadUrl = "https://github.com/zelon/wimygit/releases/download/$tag/$zipFileName"
+        Write-Host "zipDownloadUrl=$zipDownloadUrl"
+        echo "zipDownloadUrl=$zipDownloadUrl" >> $env:GITHUB_OUTPUT
+
+    - uses: actions/checkout@v6
       with:
         ref: ${{ github.ref_name }}
     - name: Setup .NET
-      uses: actions/setup-dotnet@v4
+      uses: actions/setup-dotnet@v5
       with:
         dotnet-version: 10.0.x
 
@@ -46,9 +55,9 @@ jobs:
         git config --global user.email 'action@github.com'
 
     - name: Set Official Version
-      id: newVersion
+      shell: pwsh
       run: |
-        powershell ./cicd/SetVersion.ps1 -NewVersion ${{ steps.config.outputs.version }}
+        ./cicd/SetVersion.ps1 -NewVersion ${{ steps.config.outputs.version }}
         git add .
         git commit -m "Update Version to ${{ steps.config.outputs.version }}"
         git push origin ${{ github.ref_name }}
@@ -74,27 +83,26 @@ jobs:
     - name: Zip build folder
       shell: pwsh
       run: |
-        powershell Compress-Archive -Path WimyGit\bin\Release\publish\* -DestinationPath ${{ steps.config.outputs.zipFileName }} -Force
+        Compress-Archive -Path WimyGit\bin\Release\publish\* -DestinationPath ${{ steps.config.outputs.zipFileName }} -Force
 
     - name: Create GitHub Release
-      uses: softprops/action-gh-release@v2
-      with:
-        name: "WimyGit ${{ steps.config.outputs.tag }}"
-        tag_name: ${{ steps.config.outputs.tag }}
-        files: ${{ steps.config.outputs.zipFileName }}
-        generate_release_notes: true
-        prerelease: true
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        $tag = "${{ steps.config.outputs.tag }}"
+        $zipName = "${{ steps.config.outputs.zipFileName }}"
+        $title = "WimyGit ${{ steps.config.outputs.tag }}"
+        gh release create $tag $zipName --generate-notes --prerelease --title $title
 
     - name: Winget Publish
+      if: ${{ inputs.winget-publish == true }}
       env:
         GITHUB_TOKEN: ${{ secrets.MY_PAT }}
       shell: pwsh
       run: |
         $packageIdentifier = "Wimysoft.WimyGit"
         $newVersion = "${{ steps.config.outputs.version }}"
-        $newDownloadUrl = "https://github.com/zelon/wimygit/releases/download/${{ steps.config.outputs.tag }}/${{ steps.config.outputs.zipFileName }}"
+        $newDownloadUrl = "${{ steps.config.outputs.zipDownloadUrl }}"
         Write-Host "-packageIdentifier $packageIdentifier -newVersion $newVersion -newDownloadUrl $newDownloadUrl"
-        powershell .\cicd\CreateWingetPullRequest.ps1 submit -packageIdentifier $packageIdentifier -newVersion $newVersion -newDownloadUrl $newDownloadUrl -token $env:GITHUB_TOKEN
+        .\cicd\CreateWingetPullRequest.ps1 submit -packageIdentifier $packageIdentifier -newVersion $newVersion -newDownloadUrl $newDownloadUrl -token $env:GITHUB_TOKEN
         
