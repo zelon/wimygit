@@ -150,11 +150,27 @@ pub fn open_in_terminal(path: String) -> Result<(), String> {
     }
     #[cfg(target_os = "linux")]
     {
-        // Try common terminals in order
-        let terminals = ["x-terminal-emulator", "gnome-terminal", "xterm"];
+        // (binary, args_before_dir, append_dir)
+        // args_before_dir: flags that precede the directory value
+        // append_dir: whether to append the dir path as the final argument
+        let candidates: &[(&str, &[&str], bool)] = &[
+            ("gnome-terminal",      &["--working-directory"],  true),
+            ("ptyxis",              &["--new-window", "-d"],   true),
+            ("konsole",             &["--workdir"],             true),
+            ("xfce4-terminal",      &["--working-directory"],  true),
+            ("mate-terminal",       &["--working-directory"],  true),
+            ("x-terminal-emulator", &["--working-directory"],  true),
+            ("xterm",               &[],                       false),
+        ];
         let mut launched = false;
-        for term in &terminals {
-            if std::process::Command::new(term).arg(&dir).spawn().is_ok() {
+        for (binary, extra_args, append_dir) in candidates {
+            let mut cmd = std::process::Command::new(binary);
+            cmd.current_dir(&dir);
+            cmd.args(*extra_args);
+            if *append_dir {
+                cmd.arg(&dir);
+            }
+            if cmd.spawn().is_ok() {
                 launched = true;
                 break;
             }
