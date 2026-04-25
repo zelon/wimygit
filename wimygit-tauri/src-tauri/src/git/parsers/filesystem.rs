@@ -137,7 +137,7 @@ pub fn open_in_terminal(path: String) -> Result<(), String> {
     #[cfg(target_os = "windows")]
     {
         std::process::Command::new("cmd.exe")
-            .args(["/K", &format!("cd /d \"{}\"", dir)])
+            .args(["/C", &format!("start cmd.exe /K \"cd /d {}\"", dir)])
             .spawn()
             .map_err(|e| format!("Failed to open terminal: {}", e))?;
     }
