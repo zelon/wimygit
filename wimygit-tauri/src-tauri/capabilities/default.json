@@ -22,6 +22,12 @@
     "fs:allow-rename",
     "fs:allow-copy-file",
     {
+      "identifier": "fs:scope",
+      "allow": [
+        { "path": "**" }
+      ]
+    },
+    {
       "identifier": "http:default",
       "allow": [
         { "url": "https://api.github.com/repos/zelon/wimygit/releases/latest" }
