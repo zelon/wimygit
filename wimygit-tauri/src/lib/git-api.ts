@@ -441,3 +441,13 @@ export async function installPlugin(
 export async function updatePlugin(pluginDir: string): Promise<string> {
   return invoke<string>("run_git_simple", { args: ["pull"], cwd: pluginDir });
 }
+
+// ============= App commands =============
+
+export async function getExecutableDir(): Promise<string> {
+  return invoke<string>("get_executable_dir");
+}
+
+export async function getConfigDir(): Promise<string> {
+  return invoke<string>("get_config_dir");
+}

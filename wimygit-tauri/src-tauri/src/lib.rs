@@ -79,6 +79,27 @@ async fn get_lfs_locks_for_file(repo_path: String, filename: String) -> Result<V
     Ok(parse_lfs_locks(&result.stdout))
 }
 
+/// Returns the directory containing the running executable
+#[tauri::command]
+fn get_executable_dir() -> Result<String, String> {
+    let exe = std::env::current_exe()
+        .map_err(|e| format!("Cannot get executable path: {}", e))?;
+    let dir = exe.parent()
+        .ok_or_else(|| "Cannot get executable directory".to_string())?;
+    Ok(dir.to_string_lossy().to_string())
+}
+
+/// Returns the wimygit config directory (parent of Plugins dir)
+#[tauri::command]
+fn get_config_dir() -> Result<String, String> {
+    // Reuse plugin's base directory logic – config dir is the wimygit app data root
+    let plugin_dir = plugin::get_plugin_dir()?;
+    let path = std::path::Path::new(&plugin_dir);
+    let parent = path.parent()
+        .ok_or_else(|| "Cannot get config directory".to_string())?;
+    Ok(parent.to_string_lossy().to_string())
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
   tauri::Builder::default()
@@ -136,6 +157,9 @@ pub fn run() {
       plugin::load_plugins,
       plugin::run_plugin,
       plugin::remove_plugin_dir,
+      // App commands
+      get_executable_dir,
+      get_config_dir,
       // LFS commands
       has_lfs_attributes,
       get_lfs_lockable_extensions_cmd,

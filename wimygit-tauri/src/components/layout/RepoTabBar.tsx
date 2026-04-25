@@ -1,3 +1,5 @@
+import { HamburgerMenu } from "./HamburgerMenu";
+
 interface RepoTabItem {
   id: string;
   repoName: string;
@@ -10,11 +12,14 @@ interface RepoTabBarProps {
   onSelect: (id: string) => void;
   onClose: (id: string) => void;
   onAdd: () => void;
+  onPluginClick: () => void;
 }
 
-export function RepoTabBar({ tabs, activeId, onSelect, onClose, onAdd }: RepoTabBarProps) {
+export function RepoTabBar({ tabs, activeId, onSelect, onClose, onAdd, onPluginClick }: RepoTabBarProps) {
   return (
-    <div className="flex items-center bg-gray-200 dark:bg-gray-900 border-b border-gray-300 dark:border-gray-700 overflow-x-auto shrink-0">
+    <div className="flex items-center bg-gray-200 dark:bg-gray-900 border-b border-gray-300 dark:border-gray-700 shrink-0">
+      <HamburgerMenu onPluginClick={onPluginClick} />
+      <div className="flex items-center overflow-x-auto flex-1">
       {tabs.map((tab) => (
         <div
           key={tab.id}
@@ -51,6 +56,7 @@ export function RepoTabBar({ tabs, activeId, onSelect, onClose, onAdd }: RepoTab
       >
         +
       </button>
+      </div>
     </div>
   );
 }

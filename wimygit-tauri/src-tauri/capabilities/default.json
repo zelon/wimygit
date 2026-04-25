@@ -12,6 +12,7 @@
     "shell:allow-spawn",
     "shell:allow-stdin-write",
     "shell:allow-kill",
+    "shell:allow-open",
     "fs:default",
     "fs:allow-read",
     "fs:allow-write",

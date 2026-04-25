@@ -30,7 +30,6 @@ const BASE_INNER_TABS = [
   { id: "tags", label: "Tags" },
   { id: "worktrees", label: "Worktrees" },
   { id: "stash", label: "Stash" },
-  { id: "plugins", label: "Plugins" },
 ];
 
 interface RepoTabState {
@@ -79,6 +78,7 @@ function App() {
   const [showTimeLapse, setShowTimeLapse] = useState(false);
   const [lfsWarning, setLfsWarning] = useState<string | null>(null);
   const [lfsLockCount, setLfsLockCount] = useState(0);
+  const [showPluginModal, setShowPluginModal] = useState(false);
 
   // Restore previously opened repos on startup
   useEffect(() => {
@@ -289,6 +289,7 @@ function App() {
         onSelect={handleSelectRepo}
         onClose={handleCloseRepo}
         onAdd={() => handleOpenRepo()}
+        onPluginClick={() => setShowPluginModal(true)}
       />
 
       {/* LFS 경고 배너 */}
@@ -384,16 +385,6 @@ function App() {
               onRefresh={handleRefresh}
             />
           )}
-          {activeRepo.activeTab === "plugins" && (
-            <PluginTab
-              repoPath={activeRepo.repoPath}
-              onRefresh={() => {
-                handleRefresh();
-                reloadPlugins();
-              }}
-            />
-          )}
-
           {/* TimeLapse overlay */}
           {showTimeLapse && selectedFilePath && (
             <div className="absolute inset-0 z-40">
@@ -417,6 +408,33 @@ function App() {
           {activeRepo.repoPath}
         </button>
       </footer>
+
+      {/* Plugin modal overlay */}
+      {showPluginModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="relative w-[90vw] h-[85vh] bg-white dark:bg-gray-900 rounded-lg shadow-xl flex flex-col overflow-hidden">
+            <div className="flex items-center justify-between px-4 py-2 border-b border-gray-200 dark:border-gray-700 shrink-0">
+              <h2 className="text-sm font-semibold text-gray-800 dark:text-gray-200">Plugins</h2>
+              <button
+                onClick={() => setShowPluginModal(false)}
+                className="w-6 h-6 flex items-center justify-center rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-500 hover:text-gray-800 dark:hover:text-gray-200"
+                title="Close"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="flex-1 overflow-hidden">
+              <PluginTab
+                repoPath={activeRepo.repoPath}
+                onRefresh={() => {
+                  handleRefresh();
+                  reloadPlugins();
+                }}
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
