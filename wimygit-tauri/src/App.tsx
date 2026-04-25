@@ -138,6 +138,18 @@ function App() {
     updateActiveRepo((t) => ({ refreshKey: t.refreshKey + 1 }));
   }, [updateActiveRepo]);
 
+  // F5 키를 앱 전체 새로고침 대신 현재 repo Refresh로 동작하게 변경
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "F5") {
+        e.preventDefault();
+        handleRefresh();
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [handleRefresh]);
+
   const handleTabChange = useCallback(
     (tabId: string) => {
       updateActiveRepo(() => ({ activeTab: tabId }));
