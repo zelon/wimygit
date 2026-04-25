@@ -17,9 +17,9 @@ import { DiffViewer } from "../shared/DiffViewer";
 
 // ─── constants ────────────────────────────────────────────────────────────────
 
-const MIN_SIDEBAR_WIDTH = 180;
-const MAX_SIDEBAR_WIDTH = 520;
+const MIN_SIDEBAR_WIDTH = 200;
 const DEFAULT_SIDEBAR_WIDTH = 240;
+const MIN_MAIN_PANEL_WIDTH = 200;
 
 type LeftTab = "workspace" | "quickdiff";
 
@@ -110,7 +110,7 @@ function WorkspaceTree({ repoPath, refreshKey, onFileSelect, onRefresh }: Worksp
                 }))
               );
             })
-            .catch(() => {});
+            .catch(() => { });
           return { ...n, expanded: true };
         }
         return { ...n, expanded: willExpand };
@@ -128,11 +128,10 @@ function WorkspaceTree({ repoPath, refreshKey, onFileSelect, onRefresh }: Worksp
         {/* Repo root */}
         <div
           onClick={() => handleSelect(repoPath, true)}
-          className={`flex items-center gap-1 px-2 py-0.5 cursor-pointer rounded-sm ${
-            selectedPath === repoPath
+          className={`flex items-center gap-1 px-2 py-0.5 cursor-pointer rounded-sm ${selectedPath === repoPath
               ? "bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-200"
               : "hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300"
-          }`}
+            }`}
         >
           <span className="text-yellow-500 shrink-0">[repo]</span>
           <span className="truncate font-medium">
@@ -184,11 +183,10 @@ function TreeRow({ node, depth, selectedPath, onSelect, onToggle, onContextMenu 
         onClick={() => { onSelect(node.path, node.is_dir); if (node.is_dir) onToggle(node); }}
         onContextMenu={(e) => { e.preventDefault(); onContextMenu(e, node); }}
         style={{ paddingLeft: `${depth * 12 + 6}px` }}
-        className={`flex items-center gap-1 py-0.5 pr-1 cursor-pointer text-xs rounded-sm ${
-          isSelected
+        className={`flex items-center gap-1 py-0.5 pr-1 cursor-pointer text-xs rounded-sm ${isSelected
             ? "bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-200"
             : "hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300"
-        }`}
+          }`}
       >
         {node.is_dir ? (
           <span className="text-yellow-500 shrink-0 w-5">
@@ -241,7 +239,7 @@ function WorkspaceCtxMenu({ x, y, node, isLfsLockable, onClose, onLfsLock }: Wor
         className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded shadow-lg py-1 text-sm min-w-[160px]"
       >
         <button
-          onClick={() => { navigator.clipboard.writeText(node.path).catch(() => {}); onClose(); }}
+          onClick={() => { navigator.clipboard.writeText(node.path).catch(() => { }); onClose(); }}
           className="w-full text-left px-4 py-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
         >
           Copy Path
@@ -292,7 +290,7 @@ function buildWorkingModes(parents: string[]): DiffMode[] {
   }
   return [
     { kind: "working", label: "Working", staged: false },
-    { kind: "staged",  label: "Staged",  staged: true  },
+    { kind: "staged", label: "Staged", staged: true },
   ];
 }
 
@@ -422,7 +420,7 @@ function SidebarQuickDiff({ repoPath, refreshKey, selectedDiff, pendingFilePrevi
         .catch(() => { setFullDiff(""); setDiff(""); })
         .finally(() => setLoadingDiff(false));
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [repoPath, refreshKey, activeMode, contextLines, selectedDiff]);
 
   // ── Working tree: select file ──
@@ -466,8 +464,8 @@ function SidebarQuickDiff({ repoPath, refreshKey, selectedDiff, pendingFilePrevi
 
   // ── Derived display state ──
   const showingPendingPreview = !isCommitMode && !!pendingFilePreview && !internalOverride;
-  const displayDiff     = showingPendingPreview ? pendingDiff     : diff;
-  const displayLoading  = showingPendingPreview ? pendingLoading  : loadingDiff;
+  const displayDiff = showingPendingPreview ? pendingDiff : diff;
+  const displayLoading = showingPendingPreview ? pendingLoading : loadingDiff;
   const diffToolEnabled = isCommitMode || showingPendingPreview || !!selectedFile;
 
   return (
@@ -479,11 +477,10 @@ function SidebarQuickDiff({ repoPath, refreshKey, selectedDiff, pendingFilePrevi
             <button
               key={m.kind}
               onClick={() => setActiveMode(m.kind)}
-              className={`shrink-0 px-1.5 py-0.5 text-xs rounded transition-colors whitespace-nowrap ${
-                activeMode === m.kind
+              className={`shrink-0 px-1.5 py-0.5 text-xs rounded transition-colors whitespace-nowrap ${activeMode === m.kind
                   ? "bg-white dark:bg-gray-600 shadow text-gray-900 dark:text-white"
                   : "text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700"
-              }`}
+                }`}
             >
               {m.label}
             </button>
@@ -535,11 +532,10 @@ function SidebarQuickDiff({ repoPath, refreshKey, selectedDiff, pendingFilePrevi
         <div className="shrink-0 max-h-24 overflow-y-auto border-b border-gray-200 dark:border-gray-700">
           <button
             onClick={() => handleSelectFile(null)}
-            className={`w-full text-left px-2 py-0.5 text-xs border-b border-gray-100 dark:border-gray-800 ${
-              !selectedFile
+            className={`w-full text-left px-2 py-0.5 text-xs border-b border-gray-100 dark:border-gray-800 ${!selectedFile
                 ? "bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300"
                 : "text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800"
-            }`}
+              }`}
           >
             ≡ All ({files.length})
           </button>
@@ -547,11 +543,10 @@ function SidebarQuickDiff({ repoPath, refreshKey, selectedDiff, pendingFilePrevi
             <button
               key={f.filename}
               onClick={() => handleSelectFile(f)}
-              className={`w-full text-left px-2 py-0.5 text-xs border-b border-gray-100 dark:border-gray-800 truncate ${
-                selectedFile?.filename === f.filename
+              className={`w-full text-left px-2 py-0.5 text-xs border-b border-gray-100 dark:border-gray-800 truncate ${selectedFile?.filename === f.filename
                   ? "bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300"
                   : "hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300"
-              }`}
+                }`}
               title={f.filename}
             >
               {f.filename}
@@ -618,7 +613,8 @@ export function LeftSidebar({ repoPath, refreshKey, selectedDiff, pendingFilePre
     const startX = e.clientX;
     const startW = width;
     const onMove = (ev: MouseEvent) => {
-      const newW = Math.max(MIN_SIDEBAR_WIDTH, Math.min(MAX_SIDEBAR_WIDTH, startW + ev.clientX - startX));
+      const maxW = window.innerWidth - MIN_MAIN_PANEL_WIDTH;
+      const newW = Math.max(MIN_SIDEBAR_WIDTH, Math.min(maxW, startW + ev.clientX - startX));
       setWidth(newW);
       localStorage.setItem("sidebar_width", String(newW));
     };
