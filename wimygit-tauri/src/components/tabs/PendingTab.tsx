@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
+import { remove } from "@tauri-apps/plugin-fs";
 import {
   getGitStatus,
   gitStage,
@@ -8,6 +9,9 @@ import {
   gitCommit,
   getLastCommitMessage,
   gitDiff,
+  runGit,
+  runDifftool,
+  openInFileManager,
   type GitStatus,
   type FileStatus,
   getLfsLocks,
@@ -147,18 +151,82 @@ function LockedOnlyRow({ lock, onContextMenu }: LockedOnlyRowProps) {
 
 // ─── Context Menu ─────────────────────────────────────────────────────────────
 
-interface FileCtxMenuProps {
+interface UnstagedCtxMenuProps {
   x: number;
   y: number;
-  filename: string;
+  repoPath: string;
+  files: string[];
+  hasUntracked: boolean;
+  hasUnmerged: boolean;
   isLocked: boolean;
   isModified: boolean;
   onClose: () => void;
+  onStage: (files: string[]) => void;
+  onRevert: (files: string[]) => void;
+  onRefresh: () => void;
+  onDiff: (filename: string) => void;
+  onDeleteFiles: (files: string[]) => void;
   onUnlockLfs: () => void;
 }
 
-function FileCtxMenu({ x, y, filename: _filename, isLocked, isModified, onClose, onUnlockLfs }: FileCtxMenuProps) {
-  if (!isLocked) return null;
+function UnstagedCtxMenu({
+  x, y, repoPath, files, hasUntracked, hasUnmerged,
+  isLocked, isModified,
+  onClose, onStage, onRevert, onRefresh, onDiff, onDeleteFiles, onUnlockLfs,
+}: UnstagedCtxMenuProps) {
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  // 메뉴가 화면 밖으로 나가지 않도록 위치 조정
+  const [pos, setPos] = useState({ top: y, left: x });
+  useEffect(() => {
+    if (menuRef.current) {
+      const rect = menuRef.current.getBoundingClientRect();
+      let newTop = y;
+      let newLeft = x;
+      if (y + rect.height > window.innerHeight) newTop = window.innerHeight - rect.height - 4;
+      if (x + rect.width > window.innerWidth) newLeft = window.innerWidth - rect.width - 4;
+      if (newTop !== y || newLeft !== x) setPos({ top: newTop, left: newLeft });
+    }
+  }, [x, y]);
+
+  const isSingle = files.length === 1;
+  const firstFile = files[0];
+
+  // .gitignore에 추가할 폴더 경로 후보 목록 계산
+  const folderCandidates = isSingle
+    ? firstFile.split("/").slice(0, -1).reduce<string[]>((acc, part) => {
+        acc.push(acc.length > 0 ? `${acc[acc.length - 1]}/${part}` : part);
+        return acc;
+      }, [])
+    : [];
+
+  const [showGitignoreSub, setShowGitignoreSub] = useState(false);
+
+  const btnClass = "w-full text-left px-4 py-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center justify-between";
+  const dangerClass = "w-full text-left px-4 py-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 text-red-600 dark:text-red-400 flex items-center justify-between";
+  const kbdClass = "ml-4 text-[11px] text-gray-400 dark:text-gray-500";
+  const sep = <div className="border-t border-gray-200 dark:border-gray-700 my-1" />;
+
+  const handleAddToGitignore = async (pattern: string) => {
+    try {
+      const sep = navigator.platform.startsWith("Win") ? "\\" : "/";
+      const gitignorePath = `${repoPath}${sep}.gitignore`;
+      // .gitignore 파일 읽기 → 패턴 추가
+      const result = await runGit(["show", `HEAD:.gitignore`], repoPath).catch(() => null);
+      const currentContent = result?.stdout ?? "";
+      const newContent = currentContent.endsWith("\n") || currentContent === ""
+        ? `${currentContent}${pattern}\n`
+        : `${currentContent}\n${pattern}\n`;
+      // Tauri fs로 .gitignore 쓰기
+      const { writeTextFile } = await import("@tauri-apps/plugin-fs");
+      await writeTextFile(gitignorePath, newContent);
+      onClose();
+      onRefresh();
+    } catch (e) {
+      alert(`Failed to update .gitignore: ${e}`);
+      onClose();
+    }
+  };
 
   return createPortal(
     <>
@@ -169,23 +237,127 @@ function FileCtxMenu({ x, y, filename: _filename, isLocked, isModified, onClose,
         onContextMenu={(e) => { e.preventDefault(); onClose(); }}
       />
       <div
-        style={{ position: "fixed", top: y, left: x, zIndex: 9999 }}
-        className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded shadow-lg py-1 text-sm min-w-[160px]"
+        ref={menuRef}
+        style={{ position: "fixed", top: pos.top, left: pos.left, zIndex: 9999 }}
+        className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded shadow-lg py-1 text-sm min-w-[200px]"
       >
-        <button
-          onClick={() => {
-            if (isModified) {
-              alert("Cannot unlock a modified file. Revert changes first.");
-              onClose();
-              return;
-            }
-            onUnlockLfs();
-            onClose();
-          }}
-          className="w-full text-left px-4 py-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 text-amber-600 dark:text-amber-400"
-        >
-          Unlock (LFS)
+        {/* Stage */}
+        <button className={btnClass} onClick={() => { onStage(files); onClose(); }}>
+          <span>Stage</span>
         </button>
+
+        {/* Diff — 단일 파일, untracked 아닌 경우만 */}
+        {isSingle && !hasUntracked && (
+          <button className={btnClass} onClick={() => { onDiff(firstFile); onClose(); }}>
+            <span>Diff</span>
+            <span className={kbdClass}>Ctrl+D</span>
+          </button>
+        )}
+
+        {/* Revert — untracked 아닌 경우만 */}
+        {!hasUntracked && (
+          <button className={dangerClass} onClick={() => { onRevert(files); onClose(); }}>
+            <span>Revert</span>
+            <span className={kbdClass}>Ctrl+R</span>
+          </button>
+        )}
+
+        {sep}
+
+        {/* Refresh */}
+        <button className={btnClass} onClick={() => { onRefresh(); onClose(); }}>
+          <span>Refresh</span>
+          <span className={kbdClass}>F5</span>
+        </button>
+
+        {/* Open Explorer — 단일 파일만 */}
+        {isSingle && (
+          <button className={btnClass} onClick={async () => {
+            try {
+              const sep = navigator.platform.startsWith("Win") ? "\\" : "/";
+              const dir = firstFile.includes("/") || firstFile.includes("\\")
+                ? `${repoPath}${sep}${firstFile.substring(0, firstFile.lastIndexOf(firstFile.includes("/") ? "/" : "\\"))}`
+                : repoPath;
+              await openInFileManager(dir);
+            } catch { /* ignore */ }
+            onClose();
+          }}>
+            <span>Open Explorer</span>
+            <span className={kbdClass}>Ctrl+Shift+S</span>
+          </button>
+        )}
+
+        {/* MergeTool — unmerged 파일만 */}
+        {hasUnmerged && isSingle && (
+          <>
+            {sep}
+            <button className={btnClass} onClick={async () => {
+              try { await runDifftool(repoPath, ["mergetool", firstFile]); } catch { /* ignore */ }
+              onClose();
+              onRefresh();
+            }}>
+              <span>MergeTool</span>
+            </button>
+          </>
+        )}
+
+        {sep}
+
+        {/* Delete Local File */}
+        <button className={dangerClass} onClick={() => { onDeleteFiles(files); onClose(); }}>
+          <span>Delete Local File</span>
+        </button>
+
+        {/* Add folder to .gitignore — 단일 파일이고 폴더 경로가 있는 경우 */}
+        {isSingle && folderCandidates.length > 0 && (
+          <div
+            className="relative"
+            onMouseEnter={() => setShowGitignoreSub(true)}
+            onMouseLeave={() => setShowGitignoreSub(false)}
+          >
+            <button className={btnClass}>
+              <span>Add folder to .gitignore</span>
+              <span className="ml-2 text-gray-400">▸</span>
+            </button>
+            {showGitignoreSub && (
+              <div
+                style={{ position: "absolute", top: 0, left: "100%", zIndex: 10000 }}
+                className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded shadow-lg py-1 text-sm min-w-[160px]"
+              >
+                {folderCandidates.map((folder) => (
+                  <button
+                    key={folder}
+                    className={btnClass}
+                    onClick={() => handleAddToGitignore(folder + "/")}
+                  >
+                    {folder}/
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* LFS Unlock — LFS 잠긴 파일만 */}
+        {isLocked && (
+          <>
+            {sep}
+            <button
+              className="w-full text-left px-4 py-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 text-amber-600 dark:text-amber-400"
+              onClick={() => {
+                if (isModified) {
+                  alert("Cannot unlock a modified file. Revert changes first.");
+                  onClose();
+                  return;
+                }
+                onUnlockLfs();
+                onClose();
+              }}
+            >
+              Unlock (LFS)
+            </button>
+          </>
+        )}
       </div>
     </>,
     document.body
@@ -237,7 +409,9 @@ export function PendingTab({ repoPath, refreshKey, onFilePreview, onLfsLockCount
   const [hasLfsLockable, setHasLfsLockable] = useState(false);
   const [showLocksModal, setShowLocksModal] = useState<{ locks: LfsLock[]; loading: boolean } | null>(null);
   const [ctxMenu, setCtxMenu] = useState<{
-    x: number; y: number; filename: string; isLocked: boolean; isModified: boolean;
+    x: number; y: number; files: string[];
+    isLocked: boolean; isModified: boolean;
+    hasUntracked: boolean; hasUnmerged: boolean;
   } | null>(null);
 
   const fetchStatus = async () => {
@@ -316,6 +490,65 @@ export function PendingTab({ repoPath, refreshKey, onFilePreview, onLfsLockCount
     if (!confirm(`Discard changes to ${files.length} file(s)?`)) return;
     try { await gitDiscard(repoPath, files); await fetchStatus(); }
     catch (e) { setError(String(e)); }
+  };
+
+  const handleDeleteFiles = async (files: string[]) => {
+    if (!confirm(`Delete ${files.length} file(s) permanently?\n\n${files.join("\n")}`)) return;
+    try {
+      const sep = navigator.platform.startsWith("Win") ? "\\" : "/";
+      for (const file of files) {
+        await remove(`${repoPath}${sep}${file}`);
+      }
+      await fetchStatus();
+    } catch (e) {
+      setError(String(e));
+    }
+  };
+
+  const handleDifftool = async (filename: string) => {
+    try {
+      await runDifftool(repoPath, [filename]);
+    } catch (e) {
+      setError(String(e));
+    }
+  };
+
+  const handleUnstagedContextMenu = (
+    e: React.MouseEvent,
+    filename: string,
+    file: FileStatus,
+    isLocked: boolean,
+  ) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    // 우클릭한 파일이 선택에 포함되지 않으면 해당 파일만 선택
+    let targetFiles: string[];
+    if (selectedUnstaged.has(filename)) {
+      targetFiles = [...selectedUnstaged];
+    } else {
+      setSelectedUnstaged(new Set([filename]));
+      targetFiles = [filename];
+    }
+
+    const hasUntracked = targetFiles.some((f) => {
+      const found = [...(status?.untracked ?? [])].find((u) => u.filename === f);
+      return !!found;
+    });
+    const hasUnmerged = targetFiles.some((f) => {
+      const found = [...(status?.unmerged ?? [])].find((u) => u.filename === f);
+      return !!found;
+    });
+
+    setCtxMenu({
+      x: e.clientX,
+      y: e.clientY,
+      files: targetFiles,
+      isLocked,
+      isModified: file.unstaged_status === "Modified",
+      hasUntracked,
+      hasUnmerged,
+    });
   };
 
   const handleStageAll = () => {
@@ -572,7 +805,6 @@ export function PendingTab({ repoPath, refreshKey, onFilePreview, onLfsLockCount
             <>
               {unstagedFiles.map((file) => {
                 const isLocked = lockedSet.has(file.filename);
-                const isModified = file.unstaged_status === "Modified";
                 return (
                   <div key={file.filename} className="group">
                     <FileRow
@@ -580,11 +812,7 @@ export function PendingTab({ repoPath, refreshKey, onFilePreview, onLfsLockCount
                       isSelected={selectedUnstaged.has(file.filename)}
                       isLocked={isLocked}
                       onClick={(e) => handleUnstagedClick(file.filename, e.ctrlKey || e.metaKey)}
-                      onContextMenu={isLocked ? (e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        setCtxMenu({ x: e.clientX, y: e.clientY, filename: file.filename, isLocked, isModified });
-                      } : undefined}
+                      onContextMenu={(e) => handleUnstagedContextMenu(e, file.filename, file, isLocked)}
                       actions={
                         <>
                           <button
@@ -617,7 +845,11 @@ export function PendingTab({ repoPath, refreshKey, onFilePreview, onLfsLockCount
                     onContextMenu={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
-                      setCtxMenu({ x: e.clientX, y: e.clientY, filename: lock.filename, isLocked: true, isModified: false });
+                      setCtxMenu({
+                        x: e.clientX, y: e.clientY,
+                        files: [lock.filename], isLocked: true, isModified: false,
+                        hasUntracked: false, hasUnmerged: false,
+                      });
                     }}
                   />
                 </div>
@@ -629,14 +861,22 @@ export function PendingTab({ repoPath, refreshKey, onFilePreview, onLfsLockCount
 
       {/* ── Context Menu ── */}
       {ctxMenu && (
-        <FileCtxMenu
+        <UnstagedCtxMenu
           x={ctxMenu.x}
           y={ctxMenu.y}
-          filename={ctxMenu.filename}
+          repoPath={repoPath}
+          files={ctxMenu.files}
+          hasUntracked={ctxMenu.hasUntracked}
+          hasUnmerged={ctxMenu.hasUnmerged}
           isLocked={ctxMenu.isLocked}
           isModified={ctxMenu.isModified}
           onClose={() => setCtxMenu(null)}
-          onUnlockLfs={() => handleUnlockLfs(ctxMenu.filename)}
+          onStage={handleStage}
+          onRevert={handleDiscard}
+          onRefresh={fetchStatus}
+          onDiff={handleDifftool}
+          onDeleteFiles={handleDeleteFiles}
+          onUnlockLfs={() => handleUnlockLfs(ctxMenu.files[0])}
         />
       )}
 
