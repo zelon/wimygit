@@ -607,6 +607,31 @@ export function LeftSidebar({ repoPath, refreshKey, selectedDiff, pendingFilePre
     prevSelectedDiff.current = selectedDiff;
   }, [selectedDiff]);
 
+  // ── double-click to toggle 3:1 / 1:3 ratio ──
+  const handleDoubleClick = useCallback(() => {
+    const total = window.innerWidth;
+    const quarter = Math.round(total / 4);
+    const threeQuarter = Math.round((total * 3) / 4);
+    const tolerance = 30;
+
+    const is3to1 = Math.abs(width - threeQuarter) < tolerance;
+    const is1to3 = Math.abs(width - quarter) < tolerance;
+
+    let newW: number;
+    if (is3to1) {
+      newW = quarter;       // 3:1 → 1:3
+    } else if (is1to3) {
+      newW = threeQuarter;  // 1:3 → 3:1
+    } else {
+      // not at either ratio: left is smaller → 3:1, right is smaller → 1:3
+      newW = width < total / 2 ? threeQuarter : quarter;
+    }
+
+    newW = Math.max(MIN_SIDEBAR_WIDTH, Math.min(total - MIN_MAIN_PANEL_WIDTH, newW));
+    setWidth(newW);
+    localStorage.setItem("sidebar_width", String(newW));
+  }, [width]);
+
   // ── horizontal resize ──
   const startHResize = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
@@ -677,8 +702,9 @@ export function LeftSidebar({ repoPath, refreshKey, selectedDiff, pendingFilePre
       {/* ── Horizontal drag handle (right edge) ── */}
       <div
         onMouseDown={startHResize}
+        onDoubleClick={handleDoubleClick}
         className="w-3 cursor-col-resize bg-gray-200 dark:bg-gray-700 hover:bg-blue-400 dark:hover:bg-blue-500 transition-colors shrink-0"
-        title="Drag to resize"
+        title="Drag to resize / Double-click to toggle 3:1 ratio"
       />
     </div>
   );
