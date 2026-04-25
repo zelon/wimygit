@@ -21,7 +21,12 @@
     "fs:allow-remove",
     "fs:allow-rename",
     "fs:allow-copy-file",
-    "http:default",
+    {
+      "identifier": "http:default",
+      "allow": [
+        { "url": "https://api.github.com/repos/zelon/wimygit/releases/latest" }
+      ]
+    },
     "dialog:default"
   ]
 }
