@@ -34,7 +34,7 @@ type BusyKey =
 // ─── Shared button styles ─────────────────────────────────────────────────────
 
 const BASE_BTN =
-  "px-2.5 py-1 text-xs rounded transition-colors shrink-0 border disabled:opacity-60";
+  "flex flex-col items-center justify-center gap-0.5 px-3 py-1.5 min-w-[56px] text-[11px] rounded transition-colors shrink-0 border disabled:opacity-40";
 const IDLE_BTN =
   "bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600";
 const BUSY_BTN =
@@ -42,7 +42,72 @@ const BUSY_BTN =
 
 // ─── Simple tool button ───────────────────────────────────────────────────────
 
+// ─── SVG Icons (24×24, stroke-based) ─────────────────────────────────────────
+
+const ICON_CLASS = "w-6 h-6";
+
+function IconRefresh({ className = ICON_CLASS }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 2v6h-6" /><path d="M3 12a9 9 0 0 1 15-6.7L21 8" />
+      <path d="M3 22v-6h6" /><path d="M21 12a9 9 0 0 1-15 6.7L3 16" />
+    </svg>
+  );
+}
+
+function IconTimeLapse({ className = ICON_CLASS }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
+    </svg>
+  );
+}
+
+function IconFetchAll({ className = ICON_CLASS }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 3v12" /><path d="m8 11 4 4 4-4" />
+      <path d="M8 5H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-4" />
+    </svg>
+  );
+}
+
+function IconPull({ className = ICON_CLASS }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 3v15" /><path d="m7 13 5 5 5-5" /><line x1="4" y1="21" x2="20" y2="21" />
+    </svg>
+  );
+}
+
+function IconPush({ className = ICON_CLASS }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 21V6" /><path d="m17 11-5-5-5 5" /><line x1="4" y1="3" x2="20" y2="3" />
+    </svg>
+  );
+}
+
+function IconFolder({ className = ICON_CLASS }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
+    </svg>
+  );
+}
+
+function IconTerminal({ className = ICON_CLASS }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="4 17 10 11 4 5" /><line x1="12" y1="19" x2="20" y2="19" />
+    </svg>
+  );
+}
+
+// ─── Simple tool button ───────────────────────────────────────────────────────
+
 interface ToolButtonProps {
+  icon: React.ReactNode;
   label: string;
   busyLabel?: string;
   title: string;
@@ -51,7 +116,7 @@ interface ToolButtonProps {
   onClick: () => void;
 }
 
-function ToolButton({ label, busyLabel, title, isBusy, disabled, onClick }: ToolButtonProps) {
+function ToolButton({ icon, label, busyLabel, title, isBusy, disabled, onClick }: ToolButtonProps) {
   return (
     <button
       onClick={onClick}
@@ -59,7 +124,8 @@ function ToolButton({ label, busyLabel, title, isBusy, disabled, onClick }: Tool
       title={title}
       className={`${BASE_BTN} ${isBusy ? BUSY_BTN : IDLE_BTN}`}
     >
-      {isBusy ? (busyLabel ?? `${label}…`) : label}
+      {icon}
+      <span>{isBusy ? (busyLabel ?? `${label}…`) : label}</span>
     </button>
   );
 }
@@ -72,6 +138,7 @@ interface DropdownItem {
 }
 
 interface SplitButtonProps {
+  icon: React.ReactNode;
   label: string;
   title: string;
   isBusy: boolean;
@@ -80,7 +147,7 @@ interface SplitButtonProps {
   items: DropdownItem[];
 }
 
-function SplitButton({ label, title, isBusy, disabled, onMain, items }: SplitButtonProps) {
+function SplitButton({ icon, label, title, isBusy, disabled, onMain, items }: SplitButtonProps) {
   const [open, setOpen] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
 
@@ -104,14 +171,15 @@ function SplitButton({ label, title, isBusy, disabled, onMain, items }: SplitBut
         title={title}
         className={`${BASE_BTN} ${isBusy ? BUSY_BTN : IDLE_BTN} rounded-r-none border-r-0`}
       >
-        {isBusy ? `${label}…` : label}
+        {icon}
+        <span>{isBusy ? `${label}…` : label}</span>
       </button>
       {/* Dropdown arrow */}
       <button
         onClick={() => setOpen((v) => !v)}
         disabled={disabled}
         title={`${label} options`}
-        className={`${BASE_BTN} ${isBusy ? BUSY_BTN : IDLE_BTN} rounded-l-none px-1.5`}
+        className={`flex items-center px-1 border rounded-l-none rounded-r transition-colors disabled:opacity-40 ${isBusy ? BUSY_BTN : IDLE_BTN}`}
       >
         ▾
       </button>
@@ -136,7 +204,7 @@ function SplitButton({ label, title, isBusy, disabled, onMain, items }: SplitBut
 // ─── Separator ────────────────────────────────────────────────────────────────
 
 function Sep() {
-  return <div className="h-5 w-px bg-gray-300 dark:bg-gray-600 shrink-0 mx-0.5" />;
+  return <div className="self-stretch w-px bg-gray-300 dark:bg-gray-600 shrink-0 mx-1" />;
 }
 
 // ─── Header ───────────────────────────────────────────────────────────────────
@@ -207,35 +275,35 @@ export function Header({ repoPath, refreshKey, onRefresh, plugins = [], selected
 
   return (
     <div className="shrink-0 bg-gray-100 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+      {/* ── Repo / branch info ── */}
+      <div className="flex items-center gap-2 px-3 py-1 text-sm border-b border-gray-200 dark:border-gray-700">
+        {repoName && (
+          <span className="font-semibold text-gray-800 dark:text-gray-100">{repoName}</span>
+        )}
+        {currentBranch && (
+          <span className="px-2 py-0.5 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded text-xs font-medium">
+            {currentBranch}
+          </span>
+        )}
+        {author && (author.name || author.email) && (
+          <span
+            title={author.email ? `${author.name} <${author.email}>` : author.name}
+            className="flex items-center gap-1 px-2 py-0.5 bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded text-xs"
+          >
+            <span>👤</span>
+            <span>{author.name || author.email}</span>
+          </span>
+        )}
+      </div>
+
+      {/* ── Toolbar buttons ── */}
       <div className="flex items-center gap-1 px-3 py-1.5 flex-wrap">
-
-        {/* ── Repo / branch info ── */}
-        <div className="flex items-center gap-2 text-sm shrink-0">
-          {repoName && (
-            <span className="font-semibold text-gray-800 dark:text-gray-100">{repoName}</span>
-          )}
-          {currentBranch && (
-            <span className="px-2 py-0.5 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded text-xs font-medium">
-              {currentBranch}
-            </span>
-          )}
-          {author && (author.name || author.email) && (
-            <span
-              title={author.email ? `${author.name} <${author.email}>` : author.name}
-              className="flex items-center gap-1 px-2 py-0.5 bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded text-xs"
-            >
-              <span>👤</span>
-              <span>{author.name || author.email}</span>
-            </span>
-          )}
-        </div>
-
-        <Sep />
 
         {/* ── 1. Refresh ── */}
         <ToolButton
-          label="↻ Refresh"
-          busyLabel="↻…"
+          icon={<IconRefresh />}
+          label="Refresh"
+          busyLabel="Refresh…"
           title="Refresh repository status"
           isBusy={busy === "refresh"}
           disabled={isDisabled}
@@ -244,6 +312,7 @@ export function Header({ repoPath, refreshKey, onRefresh, plugins = [], selected
 
         {/* ── 2. TimeLapse ── */}
         <ToolButton
+          icon={<IconTimeLapse />}
           label="TimeLapse"
           title={selectedFilePath ? `TimeLapse: ${selectedFilePath.replace(/\\/g, "/").split("/").pop()}` : "Select a file to use TimeLapse"}
           isBusy={busy === "timelapse"}
@@ -255,6 +324,7 @@ export function Header({ repoPath, refreshKey, onRefresh, plugins = [], selected
 
         {/* ── 3. FetchAll ── */}
         <ToolButton
+          icon={<IconFetchAll />}
           label="FetchAll"
           title="git fetch --all"
           isBusy={busy === "fetchAll"}
@@ -264,6 +334,7 @@ export function Header({ repoPath, refreshKey, onRefresh, plugins = [], selected
 
         {/* ── 4. Pull ── */}
         <ToolButton
+          icon={<IconPull />}
           label="Pull"
           title="git pull"
           isBusy={busy === "pull"}
@@ -273,6 +344,7 @@ export function Header({ repoPath, refreshKey, onRefresh, plugins = [], selected
 
         {/* ── 5. Push (split button with dropdown) ── */}
         <SplitButton
+          icon={<IconPush />}
           label="Push"
           title="git push"
           isBusy={busy === "push"}
@@ -285,6 +357,7 @@ export function Header({ repoPath, refreshKey, onRefresh, plugins = [], selected
 
         {/* ── 6. OpenFolder ── */}
         <ToolButton
+          icon={<IconFolder />}
           label="OpenFolder"
           title="Open repository in file manager"
           isBusy={busy === "folder"}
@@ -294,6 +367,7 @@ export function Header({ repoPath, refreshKey, onRefresh, plugins = [], selected
 
         {/* ── 7. Terminal ── */}
         <ToolButton
+          icon={<IconTerminal />}
           label="Terminal"
           title="Open terminal at repository path"
           isBusy={busy === "terminal"}
