@@ -11,7 +11,7 @@ import {
   openInTerminal,
   type PluginInfo,
 } from "../../lib";
-import { PluginButtons } from "../tabs/PluginTab";
+import { PluginButtons } from "./PluginButtons";
 
 interface HeaderProps {
   repoPath: string;

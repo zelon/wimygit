@@ -1,5 +1,6 @@
 use std::path::PathBuf;
 use std::process::Command;
+use std::sync::OnceLock;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -9,9 +10,9 @@ pub struct GitResult {
     pub exit_code: i32,
 }
 
-/// Find git executable path based on platform
-#[tauri::command]
-pub fn find_git_path() -> Result<String, String> {
+static GIT_PATH_CACHE: OnceLock<String> = OnceLock::new();
+
+fn find_git_path_inner() -> Result<String, String> {
     #[cfg(target_os = "windows")]
     {
         // Try 'where git' on Windows
@@ -77,6 +78,19 @@ pub fn find_git_path() -> Result<String, String> {
         }
 
         Err("Git not found".to_string())
+    }
+}
+
+/// Find git executable path based on platform (cached after first call)
+#[tauri::command]
+pub fn find_git_path() -> Result<String, String> {
+    let path = GIT_PATH_CACHE.get_or_init(|| {
+        find_git_path_inner().unwrap_or_default()
+    });
+    if path.is_empty() {
+        Err("Git not found".to_string())
+    } else {
+        Ok(path.clone())
     }
 }
 
@@ -214,19 +228,24 @@ pub async fn get_blame_at_commit(
 /// Get git author info (user.name and user.email) for the given repository
 #[tauri::command]
 pub async fn get_git_author(cwd: String) -> Result<(String, String), String> {
-    let name_result = run_git(
-        vec!["config".to_string(), "user.name".to_string()],
-        cwd.clone(),
-    )
-    .await?;
-    let name = name_result.stdout.trim().to_string();
-
-    let email_result = run_git(
-        vec!["config".to_string(), "user.email".to_string()],
+    let result = run_git(
+        vec![
+            "config".to_string(),
+            "--get-regexp".to_string(),
+            r"^user\.(name|email)$".to_string(),
+        ],
         cwd,
     )
     .await?;
-    let email = email_result.stdout.trim().to_string();
 
+    let mut name = String::new();
+    let mut email = String::new();
+    for line in result.stdout.lines() {
+        if let Some(val) = line.strip_prefix("user.name ") {
+            name = val.to_string();
+        } else if let Some(val) = line.strip_prefix("user.email ") {
+            email = val.to_string();
+        }
+    }
     Ok((name, email))
 }

@@ -1,10 +1,5 @@
 export { PendingTab } from "./PendingTab";
-export { BranchTab } from "./BranchTab";
-export { RemoteTab } from "./RemoteTab";
-export { StashTab } from "./StashTab";
-export { HistoryTab } from "./HistoryTab";
 export { QuickDiffTab } from "./QuickDiffTab";
-export { TagTab } from "./TagTab";
-export { WorktreeTab } from "./WorktreeTab";
 export { DirectoryTreeTab } from "./DirectoryTreeTab";
-export { PluginTab } from "./PluginTab";
+// BranchTab, RemoteTab, StashTab, HistoryTab, TagTab, WorktreeTab, PluginTab
+// are lazy-loaded directly in App.tsx for code splitting

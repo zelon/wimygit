@@ -1,16 +1,17 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, lazy, Suspense } from "react";
 import { open } from "@tauri-apps/plugin-dialog";
-import { Header, TabBar, RepoTabBar, GitLogPanel, LeftSidebar, TimeLapsePanel } from "./components/layout";
-import {
-  PendingTab,
-  BranchTab,
-  RemoteTab,
-  StashTab,
-  HistoryTab,
-  TagTab,
-  WorktreeTab,
-  PluginTab,
-} from "./components/tabs";
+import { Header, TabBar, RepoTabBar, GitLogPanel, LeftSidebar } from "./components/layout";
+import { PendingTab } from "./components/tabs";
+
+// Lazy-loaded tabs (not needed at startup)
+const HistoryTab = lazy(() => import("./components/tabs/HistoryTab").then(m => ({ default: m.HistoryTab })));
+const BranchTab = lazy(() => import("./components/tabs/BranchTab").then(m => ({ default: m.BranchTab })));
+const RemoteTab = lazy(() => import("./components/tabs/RemoteTab").then(m => ({ default: m.RemoteTab })));
+const StashTab = lazy(() => import("./components/tabs/StashTab").then(m => ({ default: m.StashTab })));
+const TagTab = lazy(() => import("./components/tabs/TagTab").then(m => ({ default: m.TagTab })));
+const WorktreeTab = lazy(() => import("./components/tabs/WorktreeTab").then(m => ({ default: m.WorktreeTab })));
+const PluginTab = lazy(() => import("./components/tabs/PluginTab").then(m => ({ default: m.PluginTab })));
+const TimeLapsePanel = lazy(() => import("./components/layout/TimeLapsePanel").then(m => ({ default: m.TimeLapsePanel })));
 import {
   isGitRepository,
   getRepositoryRoot,
@@ -85,29 +86,36 @@ function App() {
     const stored = loadStoredTabs();
     if (stored.length === 0) return;
 
+    // Show tabs immediately, validate in background
+    const tabs: RepoTabState[] = stored.map((s) => ({
+      id: s.id,
+      repoPath: s.repoPath,
+      repoName: s.repoName,
+      activeTab: "pending",
+      refreshKey: 0,
+    }));
+    setRepoTabs(tabs);
+    const lastActive = localStorage.getItem("activeRepoId");
+    const firstId = tabs.find((t) => t.id === lastActive)?.id ?? tabs[0].id;
+    setActiveRepoId(firstId);
+
+    // Validate repos in background and remove invalid ones
     Promise.all(
       stored.map(async (s) => {
         try {
           const ok = await isGitRepository(s.repoPath);
-          return ok ? s : null;
+          return ok ? s.id : null;
         } catch {
           return null;
         }
       })
     ).then((results) => {
-      const valid = results.filter(Boolean) as typeof stored;
-      if (valid.length === 0) return;
-      const tabs: RepoTabState[] = valid.map((s) => ({
-        id: s.id,
-        repoPath: s.repoPath,
-        repoName: s.repoName,
-        activeTab: "pending",
-        refreshKey: 0,
-      }));
-      setRepoTabs(tabs);
-      const lastActive = localStorage.getItem("activeRepoId");
-      const firstId = tabs.find((t) => t.id === lastActive)?.id ?? tabs[0].id;
-      setActiveRepoId(firstId);
+      const validIds = new Set(results.filter(Boolean));
+      setRepoTabs((prev) => {
+        const next = prev.filter((t) => validIds.has(t.id));
+        if (next.length < prev.length) saveStoredTabs(next);
+        return next.length === prev.length ? prev : next;
+      });
     });
   }, []);
 
@@ -341,6 +349,7 @@ function App() {
               onLfsLockCountChange={setLfsLockCount}
             />
           )}
+          <Suspense fallback={null}>
           {activeRepo.activeTab === "history" && (
             <HistoryTab
               repoPath={activeRepo.repoPath}
@@ -385,8 +394,10 @@ function App() {
               onRefresh={handleRefresh}
             />
           )}
+          </Suspense>
           {/* TimeLapse overlay */}
           {showTimeLapse && selectedFilePath && (
+            <Suspense fallback={null}>
             <div className="absolute inset-0 z-40">
               <TimeLapsePanel
                 repoPath={activeRepo.repoPath}
@@ -394,6 +405,7 @@ function App() {
                 onClose={() => setShowTimeLapse(false)}
               />
             </div>
+            </Suspense>
           )}
         </main>
       </div>
@@ -424,6 +436,7 @@ function App() {
               </button>
             </div>
             <div className="flex-1 overflow-hidden">
+              <Suspense fallback={null}>
               <PluginTab
                 repoPath={activeRepo.repoPath}
                 onRefresh={() => {
@@ -431,6 +444,7 @@ function App() {
                   reloadPlugins();
                 }}
               />
+              </Suspense>
             </div>
           </div>
         </div>
