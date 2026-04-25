@@ -19,20 +19,18 @@ import {
 const AI_API_KEY_STORAGE = "wimygit_ai_api_key";
 
 async function generateAiCommitMessage(stagedDiff: string, apiKey: string): Promise<string> {
-  const response = await fetch("https://api.anthropic.com/v1/messages", {
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${apiKey}`;
+  const response = await fetch(url, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-api-key": apiKey,
-      "anthropic-version": "2023-06-01",
-    },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      model: "claude-haiku-4-5-20251001",
-      max_tokens: 256,
-      messages: [
+      contents: [
         {
-          role: "user",
-          content: `Write a concise git commit message (one line, under 72 chars) for the following staged diff. Output only the commit message text, nothing else.\n\n${stagedDiff.slice(0, 8000)}`,
+          parts: [
+            {
+              text: `Write a concise git commit message (one line, under 72 chars) for the following staged diff. Output only the commit message text, nothing else.\n\n${stagedDiff.slice(0, 8000)}`,
+            },
+          ],
         },
       ],
     }),
@@ -42,7 +40,7 @@ async function generateAiCommitMessage(stagedDiff: string, apiKey: string): Prom
     throw new Error(`API error: ${response.status} ${err}`);
   }
   const data = await response.json();
-  return data.content?.[0]?.text?.trim() ?? "";
+  return data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() ?? "";
 }
 
 interface PendingTabProps {
@@ -56,8 +54,8 @@ function statusIcon(file: FileStatus): { icon: string; cls: string } {
   if (file.is_unmerged) return { icon: "!", cls: "text-yellow-500" };
   const s = file.staged_status ?? file.unstaged_status;
   if (s === "Added" || s === "Untracked") return { icon: "+", cls: "text-green-600 dark:text-green-400" };
-  if (s === "Deleted")  return { icon: "−", cls: "text-red-600 dark:text-red-400" };
-  if (s === "Renamed")  return { icon: "→", cls: "text-blue-600 dark:text-blue-400" };
+  if (s === "Deleted") return { icon: "−", cls: "text-red-600 dark:text-red-400" };
+  if (s === "Renamed") return { icon: "→", cls: "text-blue-600 dark:text-blue-400" };
   return { icon: "M", cls: "text-yellow-600 dark:text-yellow-400" };
 }
 
@@ -73,13 +71,13 @@ function ApiKeyInput({ initial, onSave, onCancel }: ApiKeyInputProps) {
   const [value, setValue] = useState(initial);
   return (
     <div className="flex flex-col gap-1 p-2 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-300 dark:border-yellow-700 rounded text-xs">
-      <span className="font-medium text-yellow-800 dark:text-yellow-200">Anthropic API Key</span>
+      <span className="font-medium text-yellow-800 dark:text-yellow-200">Google Gemini API Key</span>
       <input
         type="password"
         value={value}
         onChange={(e) => setValue(e.target.value)}
         onKeyDown={(e) => { if (e.key === "Enter") onSave(value); if (e.key === "Escape") onCancel(); }}
-        placeholder="sk-ant-..."
+        placeholder="AIza..."
         autoFocus
         className="px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
       />
@@ -110,11 +108,10 @@ function FileRow({ file, isSelected, isCheckSelected, isLocked, onClick, onConte
     <div
       onClick={onClick}
       onContextMenu={onContextMenu}
-      className={`flex items-center gap-1.5 px-3 py-0.5 text-xs cursor-pointer border-b border-gray-50 dark:border-gray-800 select-none ${
-        highlight
+      className={`flex items-center gap-1.5 px-3 py-0.5 text-xs cursor-pointer border-b border-gray-50 dark:border-gray-800 select-none ${highlight
           ? "bg-blue-50 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200"
           : "hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300"
-      }`}
+        }`}
     >
       <span className={`font-mono font-bold w-3.5 shrink-0 ${cls}`}>{icon}</span>
       <span className="flex-1 truncate" title={file.filename}>{file.filename}</span>
@@ -405,11 +402,11 @@ export function PendingTab({ repoPath, refreshKey, onFilePreview, onLfsLockCount
     return <div className="flex items-center justify-center h-64 text-gray-500 text-sm">Loading...</div>;
   }
 
-  const stagedFiles    = status?.staged    ?? [];
-  const modifiedFiles  = status?.modified  ?? [];
+  const stagedFiles = status?.staged ?? [];
+  const modifiedFiles = status?.modified ?? [];
   const untrackedFiles = status?.untracked ?? [];
-  const unmergedFiles  = status?.unmerged  ?? [];
-  const unstagedFiles  = [...modifiedFiles, ...untrackedFiles];
+  const unmergedFiles = status?.unmerged ?? [];
+  const unstagedFiles = [...modifiedFiles, ...untrackedFiles];
 
   // LFS 계산
   const lockedSet = new Set(lfsLocks.map((l) => l.filename));
@@ -463,7 +460,7 @@ export function PendingTab({ repoPath, refreshKey, onFilePreview, onLfsLockCount
             <button
               onClick={handleAiCommitMessage}
               disabled={aiGenerating || stagedFiles.length === 0}
-              title={apiKey ? "Generate AI commit message" : "Set API key first"}
+              title={apiKey ? "Generate AI commit message (Gemini)" : "Set Gemini API key first"}
               className="px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-40 whitespace-nowrap flex items-center gap-1"
             >
               {aiGenerating ? <span className="animate-pulse">Generating…</span> : <><span>✦</span><span>AI commit message</span></>}
@@ -537,8 +534,8 @@ export function PendingTab({ repoPath, refreshKey, onFilePreview, onLfsLockCount
             hasLfsLockable
               ? { label: "Show Locks", onClick: handleShowLocks }
               : unstagedFiles.length > 0
-              ? { label: "Stage All", onClick: handleStageAll }
-              : undefined
+                ? { label: "Stage All", onClick: handleStageAll }
+                : undefined
           }
         />
         {/* Stage All 버튼: Show Locks가 표시될 때는 별도 위치에 배치 */}
