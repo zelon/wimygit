@@ -677,7 +677,7 @@ export function LeftSidebar({ repoPath, refreshKey, selectedDiff, pendingFilePre
       {/* ── Horizontal drag handle (right edge) ── */}
       <div
         onMouseDown={startHResize}
-        className="w-1.5 cursor-col-resize bg-gray-200 dark:bg-gray-700 hover:bg-blue-400 dark:hover:bg-blue-500 transition-colors shrink-0"
+        className="w-3 cursor-col-resize bg-gray-200 dark:bg-gray-700 hover:bg-blue-400 dark:hover:bg-blue-500 transition-colors shrink-0"
         title="Drag to resize"
       />
     </div>
