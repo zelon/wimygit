@@ -86,7 +86,7 @@ function App() {
     const stored = loadStoredTabs();
     if (stored.length === 0) return;
 
-    // Show tabs immediately, validate in background
+    // Show tabs immediately, only validate active repo on startup
     const tabs: RepoTabState[] = stored.map((s) => ({
       id: s.id,
       repoPath: s.repoPath,
@@ -99,24 +99,24 @@ function App() {
     const firstId = tabs.find((t) => t.id === lastActive)?.id ?? tabs[0].id;
     setActiveRepoId(firstId);
 
-    // Validate repos in background and remove invalid ones
-    Promise.all(
-      stored.map(async (s) => {
-        try {
-          const ok = await isGitRepository(s.repoPath);
-          return ok ? s.id : null;
-        } catch {
-          return null;
+    // Only validate the active repo on startup
+    const activeTab = tabs.find((t) => t.id === firstId);
+    if (activeTab) {
+      isGitRepository(activeTab.repoPath).then((ok) => {
+        if (!ok) {
+          setRepoTabs((prev) => {
+            const next = prev.filter((t) => t.id !== firstId);
+            saveStoredTabs(next);
+            const newActive = next[0]?.id ?? "";
+            setActiveRepoId(newActive);
+            localStorage.setItem("activeRepoId", newActive);
+            return next;
+          });
         }
-      })
-    ).then((results) => {
-      const validIds = new Set(results.filter(Boolean));
-      setRepoTabs((prev) => {
-        const next = prev.filter((t) => validIds.has(t.id));
-        if (next.length < prev.length) saveStoredTabs(next);
-        return next.length === prev.length ? prev : next;
+      }).catch(() => {
+        // ignore validation errors on startup
       });
-    });
+    }
   }, []);
 
   const activeRepo = repoTabs.find((t) => t.id === activeRepoId) ?? null;
@@ -160,7 +160,37 @@ function App() {
   const handleSelectRepo = useCallback((id: string) => {
     setActiveRepoId(id);
     localStorage.setItem("activeRepoId", id);
-  }, []);
+
+    // Validate and refresh repo when activated
+    const tab = repoTabs.find((t) => t.id === id);
+    if (tab) {
+      isGitRepository(tab.repoPath).then((ok) => {
+        if (!ok) {
+          setRepoTabs((prev) => {
+            const next = prev.filter((t) => t.id !== id);
+            saveStoredTabs(next);
+            return next;
+          });
+          setActiveRepoId((prev) => {
+            if (prev !== id) return prev;
+            const remaining = repoTabs.filter((t) => t.id !== id);
+            const newId = remaining[remaining.length - 1]?.id ?? "";
+            localStorage.setItem("activeRepoId", newId);
+            return newId;
+          });
+        } else {
+          // Trigger refresh to load latest repo info
+          setRepoTabs((prev) =>
+            prev.map((t) =>
+              t.id === id ? { ...t, refreshKey: t.refreshKey + 1 } : t
+            )
+          );
+        }
+      }).catch(() => {
+        // ignore validation errors
+      });
+    }
+  }, [repoTabs]);
 
   const handleCloseRepo = useCallback(
     (id: string) => {
