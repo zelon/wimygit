@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { remove } from "@tauri-apps/plugin-fs";
+import { confirm as tauriConfirm } from "@tauri-apps/plugin-dialog";
 import {
   getGitStatus,
   gitStage,
@@ -304,7 +305,7 @@ function UnstagedCtxMenu({
         {sep}
 
         {/* Delete Local File */}
-        <button className={dangerClass} onClick={() => { onDeleteFiles(files); onClose(); }}>
+        <button className={dangerClass} onClick={async () => { await onDeleteFiles(files); onClose(); }}>
           <span>Delete Local File</span>
         </button>
 
@@ -493,11 +494,13 @@ export function PendingTab({ repoPath, refreshKey, onFilePreview, onLfsLockCount
   };
 
   const handleDeleteFiles = async (files: string[]) => {
-    if (!confirm(`Delete ${files.length} file(s) permanently?\n\n${files.join("\n")}`)) return;
+    const sep = navigator.platform.startsWith("Win") ? "\\" : "/";
+    const absolutePaths = files.map(f => `${repoPath}${sep}${f}`);
+    const ok = await tauriConfirm(`Delete ${files.length} file(s) permanently?\n\n${absolutePaths.join("\n")}`, { title: "Delete Local File", kind: "warning" });
+    if (!ok) return;
     try {
-      const sep = navigator.platform.startsWith("Win") ? "\\" : "/";
-      for (const file of files) {
-        await remove(`${repoPath}${sep}${file}`);
+      for (const p of absolutePaths) {
+        await remove(p);
       }
       await fetchStatus();
     } catch (e) {
