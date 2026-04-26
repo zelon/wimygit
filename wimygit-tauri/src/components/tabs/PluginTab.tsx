@@ -273,6 +273,9 @@ export function PluginTab({ repoPath, onRefresh }: PluginTabProps) {
   const [error, setError] = useState<string | null>(null);
   const [operating, setOperating] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  const [manualUrl, setManualUrl] = useState("");
+  const [manualOpen, setManualOpen] = useState(false);
+  const [manualBusy, setManualBusy] = useState(false);
 
   // Fetch installed plugins from local directory
   const fetchInstalled = useCallback(async () => {
@@ -319,16 +322,20 @@ export function PluginTab({ repoPath, onRefresh }: PluginTabProps) {
   }, [fetchInstalled, fetchRemote]);
 
   // Build unified list: remote plugins + any installed plugins not in the remote list
+  // Match by git clone folder name: last segment of URL vs last segment of plugin_dir
+  const dirName = (s: string) => s.replace(/\/+$/, "").split(/[\\/]/).pop()?.toLowerCase() ?? "";
   const pluginList: PluginListItem[] = (() => {
     const items: PluginListItem[] = remotePlugins.map((rp) => {
+      const rpDir = dirName(rp.url);
       const installed = installedPlugins.find(
-        (ip) => ip.name.toLowerCase() === rp.name.toLowerCase()
+        (ip) => dirName(ip.plugin_dir) === rpDir
       ) ?? null;
       return { name: rp.name, url: rp.url, installed };
     });
     // Add locally installed plugins that aren't in the remote list
     for (const ip of installedPlugins) {
-      if (!items.find((item) => item.name.toLowerCase() === ip.name.toLowerCase())) {
+      const ipDir = dirName(ip.plugin_dir);
+      if (!items.find((item) => dirName(item.url) === ipDir)) {
         items.push({ name: ip.name, url: "", installed: ip });
       }
     }
@@ -378,6 +385,23 @@ export function PluginTab({ repoPath, onRefresh }: PluginTabProps) {
       setError(String(e));
     } finally {
       setOperating(null);
+    }
+  };
+
+  const handleManualInstall = async () => {
+    if (!manualUrl.trim() || !pluginsDir) return;
+    setManualBusy(true);
+    setError(null);
+    try {
+      await installPlugin(pluginsDir, manualUrl.trim());
+      setSuccessMsg("Plugin installed successfully.");
+      setManualUrl("");
+      setManualOpen(false);
+      await fetchInstalled();
+    } catch (e) {
+      setError(String(e));
+    } finally {
+      setManualBusy(false);
     }
   };
 
@@ -492,6 +516,44 @@ export function PluginTab({ repoPath, onRefresh }: PluginTabProps) {
             </div>
           )}
         </div>
+      </div>
+
+      {/* ── Bottom: manual install ── */}
+      <div className="shrink-0 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
+        {manualOpen ? (
+          <div className="flex items-center gap-2 p-2">
+            <input
+              type="text"
+              value={manualUrl}
+              onChange={(e) => setManualUrl(e.target.value)}
+              placeholder="https://github.com/..."
+              className="flex-1 px-3 py-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              onKeyDown={(e) => e.key === "Enter" && handleManualInstall()}
+            />
+            <button
+              onClick={handleManualInstall}
+              disabled={!manualUrl.trim() || manualBusy}
+              className="px-3 py-1.5 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+            >
+              {manualBusy ? "Installing..." : "Install"}
+            </button>
+            <button
+              onClick={() => { setManualOpen(false); setManualUrl(""); }}
+              className="px-2 py-1.5 text-xs bg-gray-200 dark:bg-gray-700 rounded hover:bg-gray-300 dark:hover:bg-gray-600"
+            >
+              Cancel
+            </button>
+          </div>
+        ) : (
+          <div className="p-2">
+            <button
+              onClick={() => setManualOpen(true)}
+              className="w-full py-1.5 text-xs bg-gray-200 dark:bg-gray-700 rounded hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300"
+            >
+              Manual Install (Git URL)
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
