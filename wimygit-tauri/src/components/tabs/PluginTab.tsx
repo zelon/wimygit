@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { fetch } from "@tauri-apps/plugin-http";
+import { open as shellOpen } from "@tauri-apps/plugin-shell";
 import {
   getPluginDir,
   loadPlugins,
@@ -12,6 +13,7 @@ import {
 } from "../../lib";
 
 const PLUGIN_LIST_URL = "https://raw.githubusercontent.com/zelon/wimygit-plugins/main/WimygitPlugins.xml";
+const PLUGIN_MANUAL_URL = "https://github.com/zelon/wimygit/wiki/How-to-install-a-plugin";
 
 interface PluginTabProps {
   repoPath: string;
@@ -403,8 +405,33 @@ export function PluginTab({ repoPath, onRefresh }: PluginTabProps) {
     );
   }
 
+  const openManualLink = async () => {
+    try {
+      await shellOpen(PLUGIN_MANUAL_URL);
+    } catch {
+      window.open(PLUGIN_MANUAL_URL, "_blank");
+    }
+  };
+
   return (
-    <div className="flex h-full overflow-hidden">
+    <div className="flex flex-col h-full overflow-hidden">
+      {/* ── Top: action buttons (matches WPF PluginManager layout) ── */}
+      <div className="flex gap-2 p-2 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 shrink-0">
+        <button
+          onClick={openManualLink}
+          className="flex-1 py-2 text-xs bg-gray-200 dark:bg-gray-700 rounded hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300"
+        >
+          How to install a plugin manually (Link)
+        </button>
+        <button
+          onClick={() => pluginsDir && openInFileManager(pluginsDir)}
+          className="flex-1 py-2 text-xs bg-gray-200 dark:bg-gray-700 rounded hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300"
+        >
+          Open Plugin Folder in Explorer
+        </button>
+      </div>
+
+    <div className="flex flex-1 overflow-hidden">
       {/* ── Left: plugin list ── */}
       <div className="w-64 shrink-0 flex flex-col border-r border-gray-200 dark:border-gray-700 overflow-hidden">
         {/* Toolbar */}
@@ -548,6 +575,7 @@ export function PluginTab({ repoPath, onRefresh }: PluginTabProps) {
           }}
         />
       )}
+    </div>
     </div>
   );
 }
