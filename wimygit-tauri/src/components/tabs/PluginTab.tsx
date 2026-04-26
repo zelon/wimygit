@@ -18,6 +18,7 @@ const PLUGIN_MANUAL_URL = "https://github.com/zelon/wimygit/wiki/How-to-install-
 interface PluginTabProps {
   repoPath: string;
   onRefresh: () => void;
+  onPluginChanged?: () => void;
 }
 
 const EXEC_TYPE_LABELS: Record<string, string> = {
@@ -263,7 +264,7 @@ function NotInstalledDetail({ name, url, operating, onInstall }: NotInstalledDet
 
 // ─── main component ──────────────────────────────────────────────────────────
 
-export function PluginTab({ repoPath, onRefresh }: PluginTabProps) {
+export function PluginTab({ repoPath, onRefresh, onPluginChanged }: PluginTabProps) {
   const [pluginsDir, setPluginsDir] = useState<string>("");
   const [installedPlugins, setInstalledPlugins] = useState<PluginInfo[]>([]);
   const [remotePlugins, setRemotePlugins] = useState<RemotePlugin[]>([]);
@@ -352,6 +353,7 @@ export function PluginTab({ repoPath, onRefresh }: PluginTabProps) {
       await installPlugin(pluginsDir, item.url);
       setSuccessMsg(`"${item.name}" installed`);
       await fetchInstalled();
+      onPluginChanged?.();
     } catch (e) {
       setError(String(e));
     } finally {
@@ -381,6 +383,7 @@ export function PluginTab({ repoPath, onRefresh }: PluginTabProps) {
       await removePluginDir(plugin.plugin_dir);
       setSuccessMsg(`"${plugin.title}" uninstalled`);
       await fetchInstalled();
+      onPluginChanged?.();
     } catch (e) {
       setError(String(e));
     } finally {
@@ -398,6 +401,7 @@ export function PluginTab({ repoPath, onRefresh }: PluginTabProps) {
       setManualUrl("");
       setManualOpen(false);
       await fetchInstalled();
+      onPluginChanged?.();
     } catch (e) {
       setError(String(e));
     } finally {

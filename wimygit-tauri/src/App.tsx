@@ -485,6 +485,7 @@ function App() {
                   handleRefresh();
                   reloadPlugins();
                 }}
+                onPluginChanged={reloadPlugins}
               />
               </Suspense>
             </div>
