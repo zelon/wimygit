@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { fetch } from "@tauri-apps/plugin-http";
 import {
   getPluginDir,
   loadPlugins,
@@ -9,6 +10,8 @@ import {
   openInFileManager,
   type PluginInfo,
 } from "../../lib";
+
+const PLUGIN_LIST_URL = "https://raw.githubusercontent.com/zelon/wimygit-plugins/main/WimygitPlugins.xml";
 
 interface PluginTabProps {
   repoPath: string;
@@ -68,16 +71,42 @@ interface InstallModalProps {
   onInstalled: () => void;
 }
 
+interface RemotePlugin {
+  name: string;
+  url: string;
+}
+
 function InstallModal({ pluginsDir, onClose, onInstalled }: InstallModalProps) {
   const [url, setUrl] = useState("");
   const [running, setRunning] = useState(false);
   const [output, setOutput] = useState("");
   const [error, setError] = useState("");
+  const [remotePlugins, setRemotePlugins] = useState<RemotePlugin[]>([]);
+  const [loadingPlugins, setLoadingPlugins] = useState(true);
 
-  const SAMPLE_PLUGINS = [
-    { name: "OpenVsCode", url: "https://github.com/zelon/wimygit-plugin-openvscode" },
-    { name: "VimGitIgnore", url: "https://github.com/zelon/wimygit-plugin-vimgitignore" },
-  ];
+  useEffect(() => {
+    (async () => {
+      try {
+        const response = await fetch(PLUGIN_LIST_URL, { method: "GET" });
+        const text = await response.text();
+        const doc = new DOMParser().parseFromString(text, "text/xml");
+        const nodes = doc.querySelectorAll("wimygit-plugins > plugin");
+        const list: RemotePlugin[] = [];
+        nodes.forEach((node) => {
+          const name = node.querySelector("name")?.textContent?.trim();
+          const pluginUrl = node.querySelector("url")?.textContent?.trim();
+          if (name && pluginUrl) {
+            list.push({ name, url: pluginUrl });
+          }
+        });
+        setRemotePlugins(list);
+      } catch {
+        // silently ignore — user can still paste a URL manually
+      } finally {
+        setLoadingPlugins(false);
+      }
+    })();
+  }, []);
 
   const handleInstall = async () => {
     if (!url.trim()) return;
@@ -121,11 +150,13 @@ function InstallModal({ pluginsDir, onClose, onInstalled }: InstallModalProps) {
             />
           </div>
 
-          {SAMPLE_PLUGINS.length > 0 && (
+          {loadingPlugins ? (
+            <p className="text-xs text-gray-400">Loading plugin list...</p>
+          ) : remotePlugins.length > 0 && (
             <div>
-              <p className="text-xs text-gray-500 mb-1">Sample plugins:</p>
+              <p className="text-xs text-gray-500 mb-1">Available plugins:</p>
               <div className="space-y-1">
-                {SAMPLE_PLUGINS.map((p) => (
+                {remotePlugins.map((p) => (
                   <button
                     key={p.url}
                     onClick={() => setUrl(p.url)}
