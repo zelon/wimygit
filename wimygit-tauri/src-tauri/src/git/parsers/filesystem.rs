@@ -136,8 +136,12 @@ pub fn open_in_terminal(path: String) -> Result<(), String> {
 
     #[cfg(target_os = "windows")]
     {
+        use std::os::windows::process::CommandExt;
+        const CREATE_NEW_CONSOLE: u32 = 0x00000010;
+
         std::process::Command::new("cmd.exe")
-            .args(["/C", &format!("start cmd.exe /K \"cd /d {}\"", dir)])
+            .current_dir(&dir)
+            .creation_flags(CREATE_NEW_CONSOLE)
             .spawn()
             .map_err(|e| format!("Failed to open terminal: {}", e))?;
     }
