@@ -169,9 +169,9 @@ pub fn get_plugin_dir() -> Result<String, String> {
 fn dirs_plugin_base() -> Result<PathBuf, String> {
     #[cfg(target_os = "windows")]
     {
-        let appdata = std::env::var("APPDATA")
-            .map_err(|_| "APPDATA not set".to_string())?;
-        Ok(PathBuf::from(appdata).join("wimygit"))
+        let local_appdata = std::env::var("LOCALAPPDATA")
+            .map_err(|_| "LOCALAPPDATA not set".to_string())?;
+        Ok(PathBuf::from(local_appdata).join("WimyGit"))
     }
     #[cfg(target_os = "macos")]
     {
