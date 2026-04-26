@@ -1,3 +1,4 @@
+use base64::{engine::general_purpose::STANDARD as BASE64, Engine as _};
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -30,6 +31,8 @@ pub struct PluginInfo {
     pub execution_type: String,
     /// Absolute path to icon file, if available
     pub icon_path: Option<String>,
+    /// Base64-encoded data URL for the icon (data:image/png;base64,...)
+    pub icon_data_url: Option<String>,
     /// Directory containing Plugin.xml
     pub plugin_dir: String,
 }
@@ -41,6 +44,21 @@ fn child_text<'a>(node: roxmltree::Node<'a, 'a>, tag: &str) -> Option<String> {
         .find(|n| n.tag_name().name() == tag)
         .and_then(|n| n.text())
         .map(|t| t.trim().to_string())
+}
+
+fn icon_to_data_url(icon_path: &str) -> Option<String> {
+    let path = Path::new(icon_path);
+    let bytes = fs::read(path).ok()?;
+    let mime = match path.extension().and_then(|e| e.to_str()) {
+        Some("png") => "image/png",
+        Some("jpg" | "jpeg") => "image/jpeg",
+        Some("svg") => "image/svg+xml",
+        Some("gif") => "image/gif",
+        Some("ico") => "image/x-icon",
+        Some("bmp") => "image/bmp",
+        _ => "image/png",
+    };
+    Some(format!("data:{};base64,{}", mime, BASE64.encode(&bytes)))
 }
 
 fn parse_plugin_xml(xml_path: &Path) -> Result<PluginInfo, String> {
@@ -97,6 +115,8 @@ fn parse_plugin_xml(xml_path: &Path) -> Result<PluginInfo, String> {
         })
         .unwrap_or_default();
 
+    let icon_data_url = icon_path.as_deref().and_then(icon_to_data_url);
+
     Ok(PluginInfo {
         name: child_text(root, "name").unwrap_or_default(),
         title: child_text(root, "title").unwrap_or_default(),
@@ -105,6 +125,7 @@ fn parse_plugin_xml(xml_path: &Path) -> Result<PluginInfo, String> {
         arguments,
         execution_type: child_text(root, "execution_type").unwrap_or_default(),
         icon_path,
+        icon_data_url,
         plugin_dir,
     })
 }

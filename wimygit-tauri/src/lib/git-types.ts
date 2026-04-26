@@ -78,6 +78,7 @@ export interface PluginInfo {
     | "KeepShellAndNoWaiting"
     | "WimyGitInnerShellAndRefreshRepositoryStatus";
   icon_path: string | null;
+  icon_data_url: string | null;
   plugin_dir: string;
   load_error?: string;
 }

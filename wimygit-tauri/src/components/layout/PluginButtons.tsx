@@ -38,6 +38,27 @@ function OutputModal({ title, output, onClose }: OutputModalProps) {
   );
 }
 
+// Default puzzle-piece icon for plugins without a custom icon
+function IconPlugin({ className = "w-6 h-6" }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 2v4" /><path d="M10 6h4" />
+      <path d="M18 8h2a1 1 0 0 1 1 1v3a3 3 0 0 1-6 0V8" />
+      <path d="M6 8H4a1 1 0 0 0-1 1v3a3 3 0 0 0 6 0V8" />
+      <path d="M6 18H4a1 1 0 0 1-1-1v-3a3 3 0 0 1 6 0v4" />
+      <path d="M18 18h2a1 1 0 0 0 1-1v-3a3 3 0 0 0-6 0v4" />
+      <path d="M10 18h4v4h-4z" />
+    </svg>
+  );
+}
+
+const BASE_BTN =
+  "flex flex-col items-center justify-center gap-0.5 px-3 py-1.5 min-w-[56px] text-[11px] rounded transition-colors shrink-0 border disabled:opacity-40";
+const IDLE_BTN =
+  "bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600";
+const BUSY_BTN =
+  "bg-blue-100 dark:bg-blue-900 border-blue-200 dark:border-blue-800 text-blue-600 dark:text-blue-300 cursor-wait";
+
 interface PluginButtonsProps {
   plugins: PluginInfo[];
   repoPath: string;
@@ -71,17 +92,24 @@ export function PluginButtons({ plugins, repoPath, onRefresh }: PluginButtonsPro
 
   if (plugins.length === 0) return null;
 
+  const isBusy = runningPlugin !== null;
+
   return (
     <>
       {plugins.filter((p) => !p.load_error).map((p) => (
         <button
           key={p.name}
           onClick={() => handleRun(p)}
-          disabled={!!runningPlugin || !repoPath}
+          disabled={isBusy || !repoPath}
           title={p.description || p.title}
-          className="px-2 py-1 text-xs bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 rounded disabled:opacity-50"
+          className={`${BASE_BTN} ${runningPlugin === p.name ? BUSY_BTN : IDLE_BTN}`}
         >
-          {runningPlugin === p.name ? "..." : p.title}
+          {p.icon_data_url ? (
+            <img src={p.icon_data_url} alt={p.title} className="w-6 h-6 object-contain" />
+          ) : (
+            <IconPlugin />
+          )}
+          <span>{runningPlugin === p.name ? `${p.title}...` : p.title}</span>
         </button>
       ))}
 
