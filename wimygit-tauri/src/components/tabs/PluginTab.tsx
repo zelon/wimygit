@@ -26,7 +26,21 @@ const EXEC_TYPE_LABELS: Record<string, string> = {
   WimyGitInnerShellAndRefreshRepositoryStatus: "Run & Refresh",
 };
 
-// ─── output modal ─────────────────────────────────────────────────────────────
+// ─── types ───────────────────────────────────────────────────────────────────
+
+interface RemotePlugin {
+  name: string;
+  url: string;
+}
+
+/** Unified item shown in the left list */
+interface PluginListItem {
+  name: string;
+  url: string;
+  installed: PluginInfo | null;
+}
+
+// ─── output modal ────────────────────────────────────────────────────────────
 
 interface OutputModalProps {
   title: string;
@@ -65,152 +79,18 @@ function OutputModal({ title, output, onClose }: OutputModalProps) {
   );
 }
 
-// ─── install modal ────────────────────────────────────────────────────────────
+// ─── installed plugin detail ─────────────────────────────────────────────────
 
-interface InstallModalProps {
-  pluginsDir: string;
-  onClose: () => void;
-  onInstalled: () => void;
-}
-
-interface RemotePlugin {
-  name: string;
-  url: string;
-}
-
-function InstallModal({ pluginsDir, onClose, onInstalled }: InstallModalProps) {
-  const [url, setUrl] = useState("");
-  const [running, setRunning] = useState(false);
-  const [output, setOutput] = useState("");
-  const [error, setError] = useState("");
-  const [remotePlugins, setRemotePlugins] = useState<RemotePlugin[]>([]);
-  const [loadingPlugins, setLoadingPlugins] = useState(true);
-
-  useEffect(() => {
-    (async () => {
-      try {
-        const response = await fetch(PLUGIN_LIST_URL, { method: "GET" });
-        const text = await response.text();
-        const doc = new DOMParser().parseFromString(text, "text/xml");
-        const nodes = doc.querySelectorAll("wimygit-plugins > plugin");
-        const list: RemotePlugin[] = [];
-        nodes.forEach((node) => {
-          const name = node.querySelector("name")?.textContent?.trim();
-          const pluginUrl = node.querySelector("url")?.textContent?.trim();
-          if (name && pluginUrl) {
-            list.push({ name, url: pluginUrl });
-          }
-        });
-        setRemotePlugins(list);
-      } catch {
-        // silently ignore — user can still paste a URL manually
-      } finally {
-        setLoadingPlugins(false);
-      }
-    })();
-  }, []);
-
-  const handleInstall = async () => {
-    if (!url.trim()) return;
-    setRunning(true);
-    setOutput("");
-    setError("");
-    try {
-      const result = await installPlugin(pluginsDir, url.trim());
-      setOutput(result || "Plugin installed successfully.");
-      onInstalled();
-    } catch (e) {
-      setError(String(e));
-    } finally {
-      setRunning(false);
-    }
-  };
-
-  return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow-2xl w-[560px] flex flex-col">
-        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700">
-          <span className="font-medium text-sm">Install Plugin</span>
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-800 dark:hover:text-gray-200 text-lg">
-            &times;
-          </button>
-        </div>
-        <div className="p-4 space-y-4">
-          <p className="text-xs text-gray-500 dark:text-gray-400">
-            Paste a Git repository URL. The plugin will be cloned into:<br />
-            <span className="font-mono text-gray-700 dark:text-gray-300 break-all">{pluginsDir}</span>
-          </p>
-          <div>
-            <label className="block text-xs text-gray-500 mb-1">Git URL</label>
-            <input
-              type="text"
-              value={url}
-              onChange={(e) => setUrl(e.target.value)}
-              placeholder="https://github.com/..."
-              className="w-full px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              onKeyDown={(e) => e.key === "Enter" && handleInstall()}
-            />
-          </div>
-
-          {loadingPlugins ? (
-            <p className="text-xs text-gray-400">Loading plugin list...</p>
-          ) : remotePlugins.length > 0 && (
-            <div>
-              <p className="text-xs text-gray-500 mb-1">Available plugins:</p>
-              <div className="space-y-1">
-                {remotePlugins.map((p) => (
-                  <button
-                    key={p.url}
-                    onClick={() => setUrl(p.url)}
-                    className="block text-xs text-blue-600 dark:text-blue-400 hover:underline text-left"
-                  >
-                    {p.name}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {error && (
-            <div className="p-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded text-xs">
-              {error}
-            </div>
-          )}
-          {output && (
-            <pre className="p-2 bg-gray-50 dark:bg-gray-800 rounded text-xs font-mono max-h-32 overflow-auto">
-              {output}
-            </pre>
-          )}
-        </div>
-        <div className="px-4 py-3 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-2">
-          <button
-            onClick={onClose}
-            className="px-4 py-1.5 text-sm bg-gray-200 dark:bg-gray-700 rounded hover:bg-gray-300 dark:hover:bg-gray-600"
-          >
-            Close
-          </button>
-          <button
-            onClick={handleInstall}
-            disabled={!url.trim() || running}
-            className="px-4 py-1.5 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
-          >
-            {running ? "Installing..." : "Install"}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ─── plugin detail ────────────────────────────────────────────────────────────
-
-interface PluginDetailProps {
+interface InstalledDetailProps {
   plugin: PluginInfo;
   repoPath: string;
-  onRunComplete: () => void;
+  operating: string | null;
+  onRefreshNeeded: () => void;
+  onUpdate: () => void;
+  onUninstall: () => void;
 }
 
-function PluginDetail({ plugin, repoPath, onRefreshNeeded, onRunComplete }: PluginDetailProps & { onRefreshNeeded: () => void }) {
+function InstalledDetail({ plugin, repoPath, operating, onRefreshNeeded, onUpdate, onUninstall }: InstalledDetailProps) {
   const [running, setRunning] = useState(false);
   const [output, setOutput] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -230,7 +110,6 @@ function PluginDetail({ plugin, repoPath, onRefreshNeeded, onRunComplete }: Plug
         setOutput(result);
         onRefreshNeeded();
       }
-      onRunComplete();
     } catch (e) {
       setError(String(e));
     } finally {
@@ -238,7 +117,6 @@ function PluginDetail({ plugin, repoPath, onRefreshNeeded, onRunComplete }: Plug
     }
   };
 
-  // Build argument preview
   const argPreview = plugin.arguments
     .map((a) =>
       a.arg_type === "repository_directory"
@@ -249,32 +127,19 @@ function PluginDetail({ plugin, repoPath, onRefreshNeeded, onRunComplete }: Plug
 
   return (
     <div className="p-4">
-      <div className="flex items-start justify-between mb-4">
-        <div>
-          <h2 className="text-base font-semibold text-gray-900 dark:text-white">
-            {plugin.title || plugin.name}
-          </h2>
-          {plugin.description && (
-            <p className="text-sm text-gray-500 mt-0.5">{plugin.description}</p>
-          )}
-        </div>
-        {!plugin.load_error && (
-          <button
-            onClick={handleRun}
-            disabled={running || !repoPath || !plugin.command}
-            className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 shrink-0 ml-4"
-          >
-            {running ? "Running..." : "Run"}
-          </button>
-        )}
-      </div>
+      <h2 className="text-base font-semibold text-gray-900 dark:text-white">
+        {plugin.title || plugin.name}
+      </h2>
+      {plugin.description && (
+        <p className="text-sm text-gray-500 mt-0.5">{plugin.description}</p>
+      )}
 
       {plugin.load_error ? (
-        <div className="p-3 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded text-sm">
+        <div className="mt-4 p-3 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded text-sm">
           <strong>Load error:</strong> {plugin.load_error}
         </div>
       ) : (
-        <div className="space-y-3 text-sm">
+        <div className="mt-4 space-y-3 text-sm">
           <div className="grid grid-cols-[120px_1fr] gap-x-4 gap-y-2">
             <span className="text-gray-500">Command</span>
             <span className="font-mono text-gray-800 dark:text-gray-200">{plugin.command}</span>
@@ -315,6 +180,33 @@ function PluginDetail({ plugin, repoPath, onRefreshNeeded, onRunComplete }: Plug
         </div>
       )}
 
+      {/* Action buttons */}
+      <div className="mt-4 flex gap-2">
+        {!plugin.load_error && (
+          <button
+            onClick={handleRun}
+            disabled={running || !repoPath || !plugin.command}
+            className="px-4 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+          >
+            {running ? "Running..." : "Run"}
+          </button>
+        )}
+        <button
+          onClick={onUpdate}
+          disabled={!!operating}
+          className="px-4 py-2 text-sm bg-gray-200 dark:bg-gray-700 rounded hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50"
+        >
+          {operating === "update" ? "Updating..." : "Update"}
+        </button>
+        <button
+          onClick={onUninstall}
+          disabled={!!operating}
+          className="px-4 py-2 text-sm text-red-600 border border-red-300 dark:border-red-700 rounded hover:bg-red-50 dark:hover:bg-red-900/30 disabled:opacity-50"
+        >
+          {operating === "uninstall" ? "Uninstalling..." : "Uninstall"}
+        </button>
+      </div>
+
       {error && (
         <div className="mt-4 p-3 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded text-sm">
           {error}
@@ -332,48 +224,141 @@ function PluginDetail({ plugin, repoPath, onRefreshNeeded, onRunComplete }: Plug
   );
 }
 
-// ─── main component ───────────────────────────────────────────────────────────
+// ─── not-installed plugin detail ─────────────────────────────────────────────
+
+interface NotInstalledDetailProps {
+  name: string;
+  url: string;
+  operating: string | null;
+  onInstall: () => void;
+}
+
+function NotInstalledDetail({ name, url, operating, onInstall }: NotInstalledDetailProps) {
+  return (
+    <div className="p-4">
+      <h2 className="text-base font-semibold text-gray-900 dark:text-white">{name}</h2>
+
+      <div className="mt-4 space-y-2 text-sm">
+        <div className="grid grid-cols-[120px_1fr] gap-x-4 gap-y-2">
+          <span className="text-gray-500">URL</span>
+          <span className="font-mono text-gray-800 dark:text-gray-200 break-all">{url}</span>
+
+          <span className="text-gray-500">Status</span>
+          <span className="text-gray-500">Not installed</span>
+        </div>
+      </div>
+
+      <div className="mt-4">
+        <button
+          onClick={onInstall}
+          disabled={!!operating}
+          className="px-4 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+        >
+          {operating === "install" ? "Installing..." : "Install"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ─── main component ──────────────────────────────────────────────────────────
 
 export function PluginTab({ repoPath, onRefresh }: PluginTabProps) {
   const [pluginsDir, setPluginsDir] = useState<string>("");
-  const [plugins, setPlugins] = useState<PluginInfo[]>([]);
-  const [selected, setSelected] = useState<PluginInfo | null>(null);
+  const [installedPlugins, setInstalledPlugins] = useState<PluginInfo[]>([]);
+  const [remotePlugins, setRemotePlugins] = useState<RemotePlugin[]>([]);
+  const [selectedName, setSelectedName] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadingRemote, setLoadingRemote] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [operating, setOperating] = useState<string | null>(null);
-  const [showInstall, setShowInstall] = useState(false);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
-  const fetchPlugins = useCallback(async () => {
-    setLoading(true);
-    setError(null);
+  // Fetch installed plugins from local directory
+  const fetchInstalled = useCallback(async () => {
     try {
       const dir = await getPluginDir();
       setPluginsDir(dir);
       const list = await loadPlugins(dir);
-      setPlugins(list);
-      // Keep selection valid
-      if (selected && !list.find((p) => p.plugin_dir === selected.plugin_dir)) {
-        setSelected(null);
+      setInstalledPlugins(list);
+    } catch (e) {
+      setError(String(e));
+    }
+  }, []);
+
+  // Fetch remote plugin list from XML
+  const fetchRemote = useCallback(async () => {
+    setLoadingRemote(true);
+    try {
+      const response = await fetch(PLUGIN_LIST_URL, { method: "GET" });
+      const text = await response.text();
+      const doc = new DOMParser().parseFromString(text, "text/xml");
+      const nodes = doc.querySelectorAll("wimygit-plugins > plugin");
+      const list: RemotePlugin[] = [];
+      nodes.forEach((node) => {
+        const name = node.querySelector("name")?.textContent?.trim();
+        const pluginUrl = node.querySelector("url")?.textContent?.trim();
+        if (name && pluginUrl) {
+          list.push({ name, url: pluginUrl });
+        }
+      });
+      setRemotePlugins(list);
+    } catch {
+      // remote list unavailable — show only installed plugins
+    } finally {
+      setLoadingRemote(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    (async () => {
+      setLoading(true);
+      await Promise.all([fetchInstalled(), fetchRemote()]);
+      setLoading(false);
+    })();
+  }, [fetchInstalled, fetchRemote]);
+
+  // Build unified list: remote plugins + any installed plugins not in the remote list
+  const pluginList: PluginListItem[] = (() => {
+    const items: PluginListItem[] = remotePlugins.map((rp) => {
+      const installed = installedPlugins.find(
+        (ip) => ip.name.toLowerCase() === rp.name.toLowerCase()
+      ) ?? null;
+      return { name: rp.name, url: rp.url, installed };
+    });
+    // Add locally installed plugins that aren't in the remote list
+    for (const ip of installedPlugins) {
+      if (!items.find((item) => item.name.toLowerCase() === ip.name.toLowerCase())) {
+        items.push({ name: ip.name, url: "", installed: ip });
       }
+    }
+    return items;
+  })();
+
+  const selectedItem = pluginList.find((p) => p.name === selectedName) ?? null;
+
+  const handleInstall = async (item: PluginListItem) => {
+    if (!item.url || !pluginsDir) return;
+    setOperating("install");
+    setError(null);
+    try {
+      await installPlugin(pluginsDir, item.url);
+      setSuccessMsg(`"${item.name}" installed`);
+      await fetchInstalled();
     } catch (e) {
       setError(String(e));
     } finally {
-      setLoading(false);
+      setOperating(null);
     }
-  }, [selected]);
-
-  useEffect(() => {
-    fetchPlugins();
-  }, []);
+  };
 
   const handleUpdate = async (plugin: PluginInfo) => {
-    setOperating(`update-${plugin.name}`);
+    setOperating("update");
     setError(null);
     try {
       const result = await updatePlugin(plugin.plugin_dir);
       setSuccessMsg(result || `"${plugin.title}" updated`);
-      await fetchPlugins();
+      await fetchInstalled();
     } catch (e) {
       setError(String(e));
     } finally {
@@ -383,17 +368,24 @@ export function PluginTab({ repoPath, onRefresh }: PluginTabProps) {
 
   const handleUninstall = async (plugin: PluginInfo) => {
     if (!confirm(`Uninstall "${plugin.title}"?\nDirectory: ${plugin.plugin_dir}`)) return;
-    setOperating(`uninstall-${plugin.name}`);
+    setOperating("uninstall");
     setError(null);
     try {
       await removePluginDir(plugin.plugin_dir);
       setSuccessMsg(`"${plugin.title}" uninstalled`);
-      if (selected?.plugin_dir === plugin.plugin_dir) setSelected(null);
-      await fetchPlugins();
+      await fetchInstalled();
     } catch (e) {
       setError(String(e));
     } finally {
       setOperating(null);
+    }
+  };
+
+  const openManualLink = async () => {
+    try {
+      await shellOpen(PLUGIN_MANUAL_URL);
+    } catch {
+      window.open(PLUGIN_MANUAL_URL, "_blank");
     }
   };
 
@@ -405,17 +397,9 @@ export function PluginTab({ repoPath, onRefresh }: PluginTabProps) {
     );
   }
 
-  const openManualLink = async () => {
-    try {
-      await shellOpen(PLUGIN_MANUAL_URL);
-    } catch {
-      window.open(PLUGIN_MANUAL_URL, "_blank");
-    }
-  };
-
   return (
     <div className="flex flex-col h-full overflow-hidden">
-      {/* ── Top: action buttons (matches WPF PluginManager layout) ── */}
+      {/* ── Top: action buttons ── */}
       <div className="flex gap-2 p-2 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 shrink-0">
         <button
           onClick={openManualLink}
@@ -431,152 +415,84 @@ export function PluginTab({ repoPath, onRefresh }: PluginTabProps) {
         </button>
       </div>
 
-    <div className="flex flex-1 overflow-hidden">
-      {/* ── Left: plugin list ── */}
-      <div className="w-64 shrink-0 flex flex-col border-r border-gray-200 dark:border-gray-700 overflow-hidden">
-        {/* Toolbar */}
-        <div className="p-2 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 flex gap-1">
-          <button
-            onClick={() => setShowInstall(true)}
-            className="flex-1 py-1.5 text-xs bg-blue-600 text-white rounded hover:bg-blue-700"
-          >
-            + Install
-          </button>
-          <button
-            onClick={() => pluginsDir && openInFileManager(pluginsDir)}
-            className="px-2 py-1.5 text-xs bg-gray-200 dark:bg-gray-700 rounded hover:bg-gray-300 dark:hover:bg-gray-600"
-            title="Open plugins folder"
-          >
-            Folder
-          </button>
-          <button
-            onClick={fetchPlugins}
-            className="px-2 py-1.5 text-xs bg-gray-200 dark:bg-gray-700 rounded hover:bg-gray-300 dark:hover:bg-gray-600"
-            title="Reload plugins"
-          >
-            ↻
-          </button>
+      <div className="flex flex-1 overflow-hidden">
+        {/* ── Left: plugin list ── */}
+        <div className="w-64 shrink-0 flex flex-col border-r border-gray-200 dark:border-gray-700 overflow-hidden">
+          {/* Error / success */}
+          {error && (
+            <div className="px-3 py-2 text-xs text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20">
+              {error}
+              <button onClick={() => setError(null)} className="ml-1 underline">×</button>
+            </div>
+          )}
+          {successMsg && (
+            <div className="px-3 py-2 text-xs text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20">
+              {successMsg}
+              <button onClick={() => setSuccessMsg(null)} className="ml-1 underline">×</button>
+            </div>
+          )}
+
+          {/* Plugin list */}
+          <div className="flex-1 overflow-y-auto">
+            {loadingRemote && pluginList.length === 0 ? (
+              <div className="flex items-center justify-center h-32 text-gray-400 text-xs">
+                Loading plugin list...
+              </div>
+            ) : pluginList.length === 0 ? (
+              <div className="flex items-center justify-center h-32 text-gray-400 text-xs">
+                No plugins available.
+              </div>
+            ) : (
+              pluginList.map((item) => {
+                const isSelected = selectedName === item.name;
+                return (
+                  <button
+                    key={item.name}
+                    onClick={() => setSelectedName(item.name)}
+                    className={`w-full text-left px-3 py-2 border-b border-gray-100 dark:border-gray-800 ${
+                      isSelected ? "bg-blue-50 dark:bg-blue-900/30" : "hover:bg-gray-50 dark:hover:bg-gray-800"
+                    }`}
+                  >
+                    <span className="text-sm font-medium text-gray-800 dark:text-gray-200 truncate block">
+                      {item.installed?.title || item.name}
+                    </span>
+                    {item.installed && (
+                      <span className="text-[10px] text-green-600 dark:text-green-400">installed</span>
+                    )}
+                  </button>
+                );
+              })
+            )}
+          </div>
         </div>
 
-        {/* Error / success */}
-        {error && (
-          <div className="px-3 py-2 text-xs text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20">
-            {error}
-            <button onClick={() => setError(null)} className="ml-1 underline">×</button>
-          </div>
-        )}
-        {successMsg && (
-          <div className="px-3 py-2 text-xs text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20">
-            {successMsg}
-            <button onClick={() => setSuccessMsg(null)} className="ml-1 underline">×</button>
-          </div>
-        )}
-
-        {/* Plugin list */}
-        <div className="flex-1 overflow-y-auto">
-          {plugins.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-32 text-center px-4 text-gray-400 text-xs">
-              <p>No plugins installed.</p>
-              <button
-                onClick={() => setShowInstall(true)}
-                className="mt-2 text-blue-500 hover:underline"
-              >
-                Install a plugin
-              </button>
-            </div>
+        {/* ── Right: plugin detail ── */}
+        <div className="flex-1 overflow-auto">
+          {selectedItem ? (
+            selectedItem.installed ? (
+              <InstalledDetail
+                plugin={selectedItem.installed}
+                repoPath={repoPath}
+                operating={operating}
+                onRefreshNeeded={onRefresh}
+                onUpdate={() => handleUpdate(selectedItem.installed!)}
+                onUninstall={() => handleUninstall(selectedItem.installed!)}
+              />
+            ) : (
+              <NotInstalledDetail
+                name={selectedItem.name}
+                url={selectedItem.url}
+                operating={operating}
+                onInstall={() => handleInstall(selectedItem)}
+              />
+            )
           ) : (
-            plugins.map((p) => {
-              const isSelected = selected?.plugin_dir === p.plugin_dir;
-              return (
-                <div
-                  key={p.plugin_dir}
-                  className={`border-b border-gray-100 dark:border-gray-800 ${
-                    isSelected ? "bg-blue-50 dark:bg-blue-900/30" : "hover:bg-gray-50 dark:hover:bg-gray-800"
-                  }`}
-                >
-                  <button
-                    onClick={() => setSelected(p)}
-                    className="w-full text-left px-3 py-2"
-                  >
-                    <div className="flex items-center gap-2">
-                      {p.load_error && (
-                        <span className="text-red-500 text-xs" title={p.load_error}>!</span>
-                      )}
-                      <span className="text-sm font-medium text-gray-800 dark:text-gray-200 truncate">
-                        {p.title || p.name}
-                      </span>
-                    </div>
-                    {p.description && (
-                      <p className="text-xs text-gray-500 truncate mt-0.5">{p.description}</p>
-                    )}
-                    <p className="text-[10px] text-gray-400 mt-0.5">
-                      {EXEC_TYPE_LABELS[p.execution_type] ?? p.execution_type}
-                    </p>
-                  </button>
-
-                  {/* Per-plugin actions (shown when selected) */}
-                  {isSelected && (
-                    <div className="flex gap-1 px-3 pb-2">
-                      <button
-                        onClick={() => handleUpdate(p)}
-                        disabled={!!operating}
-                        className="px-2 py-0.5 text-[10px] bg-gray-200 dark:bg-gray-700 rounded hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50"
-                      >
-                        {operating === `update-${p.name}` ? "Updating..." : "Update"}
-                      </button>
-                      <button
-                        onClick={() => handleUninstall(p)}
-                        disabled={!!operating}
-                        className="px-2 py-0.5 text-[10px] text-red-600 hover:bg-red-100 dark:hover:bg-red-900/30 rounded disabled:opacity-50"
-                      >
-                        Uninstall
-                      </button>
-                    </div>
-                  )}
-                </div>
-              );
-            })
+            <div className="flex items-center justify-center h-full text-gray-400 text-sm">
+              Select a plugin to view details.
+            </div>
           )}
         </div>
-
-        {/* Plugins dir path */}
-        <div className="px-3 py-2 text-[10px] text-gray-400 border-t border-gray-100 dark:border-gray-800 truncate" title={pluginsDir}>
-          {pluginsDir}
-        </div>
       </div>
-
-      {/* ── Right: plugin detail ── */}
-      <div className="flex-1 overflow-auto">
-        {selected ? (
-          <PluginDetail
-            plugin={selected}
-            repoPath={repoPath}
-            onRunComplete={() => {}}
-            onRefreshNeeded={onRefresh}
-          />
-        ) : (
-          <div className="flex flex-col items-center justify-center h-full text-gray-400 text-sm gap-2">
-            <p>Select a plugin to view details and run it.</p>
-            <p className="text-xs">
-              Plugins are loaded from <span className="font-mono">{pluginsDir}</span>
-            </p>
-          </div>
-        )}
-      </div>
-
-      {/* Modals */}
-      {showInstall && (
-        <InstallModal
-          pluginsDir={pluginsDir}
-          onClose={() => setShowInstall(false)}
-          onInstalled={async () => {
-            setShowInstall(false);
-            await fetchPlugins();
-          }}
-        />
-      )}
-    </div>
     </div>
   );
 }
-
