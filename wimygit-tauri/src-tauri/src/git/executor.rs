@@ -3,6 +3,14 @@ use std::process::Command;
 use std::sync::OnceLock;
 use serde::{Deserialize, Serialize};
 
+#[cfg(target_os = "windows")]
+use std::os::windows::process::CommandExt;
+
+/// Windows: CREATE_NO_WINDOW flag prevents a console window from flashing open
+/// when spawning child processes in a release (Windows-subsystem) build.
+#[cfg(target_os = "windows")]
+const CREATE_NO_WINDOW: u32 = 0x0800_0000;
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct GitResult {
     pub stdout: String,
@@ -18,6 +26,7 @@ fn find_git_path_inner() -> Result<String, String> {
         // Try 'where git' on Windows
         let output = Command::new("where")
             .arg("git")
+            .creation_flags(CREATE_NO_WINDOW)
             .output()
             .map_err(|e| format!("Failed to execute 'where git': {}", e))?;
 
@@ -99,9 +108,11 @@ pub fn find_git_path() -> Result<String, String> {
 pub async fn run_git(args: Vec<String>, cwd: String) -> Result<GitResult, String> {
     let git_path = find_git_path()?;
 
-    let output = Command::new(&git_path)
-        .args(&args)
-        .current_dir(&cwd)
+    let mut cmd = Command::new(&git_path);
+    cmd.args(&args).current_dir(&cwd);
+    #[cfg(target_os = "windows")]
+    cmd.creation_flags(CREATE_NO_WINDOW);
+    let output = cmd
         .output()
         .map_err(|e| format!("Failed to execute git: {}", e))?;
 
@@ -164,10 +175,11 @@ pub async fn run_difftool(cwd: String, args: Vec<String>) -> Result<(), String> 
     let mut full_args = vec!["difftool".to_string(), "--no-prompt".to_string()];
     full_args.extend(args);
 
-    std::process::Command::new(&git_path)
-        .args(&full_args)
-        .current_dir(&cwd)
-        .spawn()
+    let mut cmd = std::process::Command::new(&git_path);
+    cmd.args(&full_args).current_dir(&cwd);
+    #[cfg(target_os = "windows")]
+    cmd.creation_flags(CREATE_NO_WINDOW);
+    cmd.spawn()
         .map_err(|e| format!("Failed to run difftool: {}", e))?;
 
     Ok(())

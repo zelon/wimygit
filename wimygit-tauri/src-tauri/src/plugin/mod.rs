@@ -3,6 +3,12 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
+#[cfg(target_os = "windows")]
+use std::os::windows::process::CommandExt;
+
+#[cfg(target_os = "windows")]
+const CREATE_NO_WINDOW: u32 = 0x0800_0000;
+
 // ─── data types ───────────────────────────────────────────────────────────────
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -232,9 +238,11 @@ pub async fn run_plugin(
     match execution_type.as_str() {
         "WimyGitInnerShellAndRefreshRepositoryStatus" => {
             // Run and capture output, then return it for display
-            let output = Command::new(&command)
-                .args(&resolved)
-                .current_dir(&repo_path)
+            let mut cmd = Command::new(&command);
+            cmd.args(&resolved).current_dir(&repo_path);
+            #[cfg(target_os = "windows")]
+            cmd.creation_flags(CREATE_NO_WINDOW);
+            let output = cmd
                 .output()
                 .map_err(|e| format!("Failed to run '{}': {}", command, e))?;
 
@@ -293,10 +301,11 @@ pub async fn run_plugin(
 
         // "WithoutShellAndNoWaiting" and anything else
         _ => {
-            Command::new(&command)
-                .args(&resolved)
-                .current_dir(&repo_path)
-                .spawn()
+            let mut cmd = Command::new(&command);
+            cmd.args(&resolved).current_dir(&repo_path);
+            #[cfg(target_os = "windows")]
+            cmd.creation_flags(CREATE_NO_WINDOW);
+            cmd.spawn()
                 .map_err(|e| format!("Failed to spawn '{}': {}", command, e))?;
             Ok(String::new())
         }
