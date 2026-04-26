@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
-import { remove } from "@tauri-apps/plugin-fs";
+import { remove, writeTextFile } from "@tauri-apps/plugin-fs";
 import { confirm as tauriConfirm } from "@tauri-apps/plugin-dialog";
 import {
   getGitStatus,
@@ -219,7 +219,6 @@ function UnstagedCtxMenu({
         ? `${currentContent}${pattern}\n`
         : `${currentContent}\n${pattern}\n`;
       // Tauri fs로 .gitignore 쓰기
-      const { writeTextFile } = await import("@tauri-apps/plugin-fs");
       await writeTextFile(gitignorePath, newContent);
       onClose();
       onRefresh();
