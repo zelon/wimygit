@@ -137,13 +137,19 @@ pub async fn run_git(args: Vec<String>, cwd: String) -> Result<GitResult, String
     if let Some(handle) = APP_HANDLE.get() {
         #[derive(Clone, Serialize)]
         struct GitLogEvent {
+            repo_name: String,
             command: String,
             stdout: String,
             stderr: String,
             exit_code: i32,
             duration_ms: u64,
         }
+        let repo_name = std::path::Path::new(&cwd)
+            .file_name()
+            .map(|n| n.to_string_lossy().to_string())
+            .unwrap_or_default();
         let _ = handle.emit("git-log", GitLogEvent {
+            repo_name,
             command: format!("git {}", args.join(" ")),
             stdout: result.stdout.clone(),
             stderr: result.stderr.clone(),

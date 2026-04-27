@@ -67,6 +67,9 @@ export function GitLogPanel() {
                   <span className="shrink-0 text-gray-400">
                     [{entry.timestamp.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" })}]
                   </span>
+                  <span className="shrink-0 text-gray-400">
+                    [{entry.repoName}]
+                  </span>
                   <span className={`shrink-0 ${entry.exitCode !== 0 ? "text-red-500" : "text-green-600 dark:text-green-400"}`}>
                     {entry.exitCode !== 0 ? "✕" : "✓"}
                   </span>

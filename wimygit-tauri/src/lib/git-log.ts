@@ -3,6 +3,7 @@ import { listen } from "@tauri-apps/api/event";
 export interface GitLogEntry {
   id: number;
   timestamp: Date;
+  repoName: string;
   command: string;
   stdout: string;
   stderr: string;
@@ -25,10 +26,11 @@ function pushLog(entry: Omit<GitLogEntry, "id" | "timestamp">) {
 }
 
 // Listen for git-log events emitted by the Rust backend
-listen<{ command: string; stdout: string; stderr: string; exit_code: number; duration_ms: number }>(
+listen<{ repo_name: string; command: string; stdout: string; stderr: string; exit_code: number; duration_ms: number }>(
   "git-log",
   (event) => {
     pushLog({
+      repoName: event.payload.repo_name,
       command: event.payload.command,
       stdout: event.payload.stdout,
       stderr: event.payload.stderr,
