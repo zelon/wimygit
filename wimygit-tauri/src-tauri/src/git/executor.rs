@@ -120,9 +120,12 @@ pub async fn run_git(args: Vec<String>, cwd: String) -> Result<GitResult, String
     cmd.args(&args).current_dir(&cwd);
     #[cfg(target_os = "windows")]
     cmd.creation_flags(CREATE_NO_WINDOW);
+
+    let start = std::time::Instant::now();
     let output = cmd
         .output()
         .map_err(|e| format!("Failed to execute git: {}", e))?;
+    let duration_ms = start.elapsed().as_millis() as u64;
 
     let result = GitResult {
         stdout: String::from_utf8_lossy(&output.stdout).to_string(),
@@ -138,12 +141,14 @@ pub async fn run_git(args: Vec<String>, cwd: String) -> Result<GitResult, String
             stdout: String,
             stderr: String,
             exit_code: i32,
+            duration_ms: u64,
         }
         let _ = handle.emit("git-log", GitLogEvent {
             command: format!("git {}", args.join(" ")),
             stdout: result.stdout.clone(),
             stderr: result.stderr.clone(),
             exit_code: result.exit_code,
+            duration_ms,
         });
     }
 

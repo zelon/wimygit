@@ -7,6 +7,7 @@ export interface GitLogEntry {
   stdout: string;
   stderr: string;
   exitCode: number;
+  durationMs: number;
 }
 
 type Listener = (entries: GitLogEntry[]) => void;
@@ -24,7 +25,7 @@ function pushLog(entry: Omit<GitLogEntry, "id" | "timestamp">) {
 }
 
 // Listen for git-log events emitted by the Rust backend
-listen<{ command: string; stdout: string; stderr: string; exit_code: number }>(
+listen<{ command: string; stdout: string; stderr: string; exit_code: number; duration_ms: number }>(
   "git-log",
   (event) => {
     pushLog({
@@ -32,6 +33,7 @@ listen<{ command: string; stdout: string; stderr: string; exit_code: number }>(
       stdout: event.payload.stdout,
       stderr: event.payload.stderr,
       exitCode: event.payload.exit_code,
+      durationMs: event.payload.duration_ms,
     });
   },
 );

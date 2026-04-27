@@ -64,6 +64,9 @@ export function GitLogPanel() {
                     selectedId === entry.id ? "bg-blue-50 dark:bg-blue-900/30" : ""
                   }`}
                 >
+                  <span className="shrink-0 text-gray-400">
+                    [{entry.timestamp.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" })}]
+                  </span>
                   <span className={`shrink-0 ${entry.exitCode !== 0 ? "text-red-500" : "text-green-600 dark:text-green-400"}`}>
                     {entry.exitCode !== 0 ? "✕" : "✓"}
                   </span>
@@ -71,7 +74,7 @@ export function GitLogPanel() {
                     {entry.command}
                   </span>
                   <span className="ml-auto shrink-0 text-gray-400">
-                    {entry.timestamp.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
+                    ({entry.durationMs < 1000 ? `${entry.durationMs}ms` : `${(entry.durationMs / 1000).toFixed(1)}s`})
                   </span>
                 </div>
               ))
