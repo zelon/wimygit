@@ -2,6 +2,14 @@ use std::path::PathBuf;
 use std::process::Command;
 use std::sync::OnceLock;
 use serde::{Deserialize, Serialize};
+use tauri::{AppHandle, Emitter, Manager};
+
+static APP_HANDLE: OnceLock<AppHandle> = OnceLock::new();
+
+/// Store the app handle so run_git can emit events without requiring it as a parameter.
+pub fn init_app_handle(handle: AppHandle) {
+    let _ = APP_HANDLE.set(handle);
+}
 
 #[cfg(target_os = "windows")]
 use std::os::windows::process::CommandExt;
@@ -116,11 +124,30 @@ pub async fn run_git(args: Vec<String>, cwd: String) -> Result<GitResult, String
         .output()
         .map_err(|e| format!("Failed to execute git: {}", e))?;
 
-    Ok(GitResult {
+    let result = GitResult {
         stdout: String::from_utf8_lossy(&output.stdout).to_string(),
         stderr: String::from_utf8_lossy(&output.stderr).to_string(),
         exit_code: output.status.code().unwrap_or(-1),
-    })
+    };
+
+    // Emit event so the frontend can log every git command
+    if let Some(handle) = APP_HANDLE.get() {
+        #[derive(Clone, Serialize)]
+        struct GitLogEvent {
+            command: String,
+            stdout: String,
+            stderr: String,
+            exit_code: i32,
+        }
+        let _ = handle.emit("git-log", GitLogEvent {
+            command: format!("git {}", args.join(" ")),
+            stdout: result.stdout.clone(),
+            stderr: result.stderr.clone(),
+            exit_code: result.exit_code,
+        });
+    }
+
+    Ok(result)
 }
 
 /// Run git command and return only stdout (convenience function)

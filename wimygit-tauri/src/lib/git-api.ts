@@ -1,5 +1,4 @@
 import { invoke } from "@tauri-apps/api/core";
-import { pushLog } from "./git-log";
 import type {
   GitResult,
   GitStatus,
@@ -24,14 +23,7 @@ export async function findGitPath(): Promise<string> {
 }
 
 export async function runGit(args: string[], cwd: string): Promise<GitResult> {
-  const result = await invoke<GitResult>("run_git", { args, cwd });
-  pushLog({
-    command: `git ${args.join(" ")}`,
-    stdout: result.stdout,
-    stderr: result.stderr,
-    exitCode: result.exit_code,
-  });
-  return result;
+  return invoke<GitResult>("run_git", { args, cwd });
 }
 
 export async function runGitSimple(

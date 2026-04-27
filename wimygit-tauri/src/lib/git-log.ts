@@ -1,3 +1,5 @@
+import { listen } from "@tauri-apps/api/event";
+
 export interface GitLogEntry {
   id: number;
   timestamp: Date;
@@ -15,11 +17,24 @@ const listeners = new Set<Listener>();
 
 const MAX_ENTRIES = 200;
 
-export function pushLog(entry: Omit<GitLogEntry, "id" | "timestamp">) {
+function pushLog(entry: Omit<GitLogEntry, "id" | "timestamp">) {
   const newEntry: GitLogEntry = { ...entry, id: nextId++, timestamp: new Date() };
   entries = [...entries.slice(-(MAX_ENTRIES - 1)), newEntry];
   listeners.forEach((l) => l(entries));
 }
+
+// Listen for git-log events emitted by the Rust backend
+listen<{ command: string; stdout: string; stderr: string; exit_code: number }>(
+  "git-log",
+  (event) => {
+    pushLog({
+      command: event.payload.command,
+      stdout: event.payload.stdout,
+      stderr: event.payload.stderr,
+      exitCode: event.payload.exit_code,
+    });
+  },
+);
 
 export function subscribeLog(listener: Listener): () => void {
   listeners.add(listener);

@@ -170,6 +170,7 @@ pub fn run() {
       get_lfs_locks_for_file,
     ])
     .setup(|app| {
+      git::init_app_handle(app.handle().clone());
       if cfg!(debug_assertions) {
         app.handle().plugin(
           tauri_plugin_log::Builder::default()
