@@ -484,7 +484,7 @@ export function DirectoryTreeTab({ repoPath, refreshKey }: DirectoryTreeTabProps
           >
             <span className="text-yellow-500">[repo]</span>
             <span className="truncate font-medium">
-              {repoPath.split(/[/\\]/).pop()}
+              {repoPath.replace(/\\/g, "/")}
             </span>
           </div>
 

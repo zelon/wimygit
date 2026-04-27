@@ -135,7 +135,7 @@ function WorkspaceTree({ repoPath, refreshKey, onFileSelect, onRefresh }: Worksp
         >
           <span className="text-yellow-500 shrink-0">[repo]</span>
           <span className="truncate font-medium">
-            {repoPath.replace(/\\/g, "/").split("/").pop()}
+            {repoPath.replace(/\\/g, "/")}
           </span>
         </div>
 

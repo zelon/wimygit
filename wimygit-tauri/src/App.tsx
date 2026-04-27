@@ -454,14 +454,7 @@ function App() {
 
       <GitLogPanel />
 
-      <footer className="px-4 py-1 text-xs text-gray-500 bg-gray-100 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 shrink-0">
-        <button
-          onClick={() => handleOpenRepo()}
-          className="hover:text-blue-600 hover:underline"
-        >
-          {activeRepo.repoPath}
-        </button>
-      </footer>
+
 
       {/* Plugin modal overlay */}
       {showPluginModal && (
