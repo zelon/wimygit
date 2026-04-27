@@ -418,14 +418,17 @@ export function PendingTab({ repoPath, refreshKey, onFilePreview, onLfsLockCount
     if (!repoPath) return;
     setLoading(true);
     try {
-      const [result, locks, lockableExts] = await Promise.all([
+      const [result, lockableExts] = await Promise.all([
         getGitStatus(repoPath),
-        getLfsLocks(repoPath).catch(() => [] as LfsLock[]),
         getLfsLockableExtensions(repoPath).catch(() => [] as string[]),
       ]);
+      const hasLockable = lockableExts.length > 0;
+      const locks = hasLockable
+        ? await getLfsLocks(repoPath).catch(() => [] as LfsLock[])
+        : [];
       setStatus(result);
       setLfsLocks(locks);
-      setHasLfsLockable(lockableExts.length > 0);
+      setHasLfsLockable(hasLockable);
       onLfsLockCountChange?.(locks.length);
       setError(null);
     } catch (e) {
@@ -578,6 +581,7 @@ export function PendingTab({ repoPath, refreshKey, onFilePreview, onLfsLockCount
   };
 
   const handleShowLocks = async () => {
+    if (!hasLfsLockable) return;
     setShowLocksModal({ locks: [], loading: true });
     try {
       const locks = await getLfsLocks(repoPath);
