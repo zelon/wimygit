@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback, lazy, Suspense } from "react";
 import { open } from "@tauri-apps/plugin-dialog";
+import { getVersion } from "@tauri-apps/api/app";
+import { getCurrentWindow } from "@tauri-apps/api/window";
 import { Header, TabBar, RepoTabBar, GitLogPanel, LeftSidebar } from "./components/layout";
 import { PendingTab } from "./components/tabs";
 
@@ -80,6 +82,11 @@ function App() {
   const [lfsWarning, setLfsWarning] = useState<string | null>(null);
   const [lfsLockCount, setLfsLockCount] = useState(0);
   const [showPluginModal, setShowPluginModal] = useState(false);
+
+  // Set window title with version on startup
+  useEffect(() => {
+    getVersion().then((v) => getCurrentWindow().setTitle(`WimyGit v${v}`)).catch(console.error);
+  }, []);
 
   // Restore previously opened repos on startup
   useEffect(() => {

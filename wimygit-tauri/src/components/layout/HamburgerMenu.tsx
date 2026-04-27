@@ -1,12 +1,12 @@
 import { useState, useEffect, useRef } from "react";
 import { open as shellOpen } from "@tauri-apps/plugin-shell";
 import { fetch } from "@tauri-apps/plugin-http";
+import { getVersion } from "@tauri-apps/api/app";
 import { getExecutableDir, getConfigDir, openInFileManager } from "../../lib";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 
 const RELEASE_URL = "https://github.com/zelon/wimygit/releases";
 const LATEST_API = "https://api.github.com/repos/zelon/wimygit/releases/latest";
-const APP_VERSION = "0.1.0"; // matches tauri.conf.json
 
 interface HamburgerMenuProps {
   onPluginClick: () => void;
@@ -66,6 +66,7 @@ export function HamburgerMenu({ onPluginClick }: HamburgerMenuProps) {
   const handleCheckVersion = async () => {
     setChecking(true);
     try {
+      const appVersion = await getVersion();
       const response = await fetch(LATEST_API, {
         method: "GET",
         headers: { "User-Agent": "WimyGitUpdateChecker" },
@@ -74,9 +75,9 @@ export function HamburgerMenu({ onPluginClick }: HamburgerMenuProps) {
       const latestTag = data.tag_name ?? "unknown";
       const latestVersion = latestTag.replace(/^v/, "");
 
-      if (latestVersion > APP_VERSION) {
+      if (latestVersion > appVersion) {
         const go = confirm(
-          `New version available: ${APP_VERSION} → ${latestVersion}\nOpen download page?`
+          `New version available: ${appVersion} → ${latestVersion}\nOpen download page?`
         );
         if (go) {
           await shellOpen(data.html_url ?? RELEASE_URL).catch(() =>
@@ -84,7 +85,7 @@ export function HamburgerMenu({ onPluginClick }: HamburgerMenuProps) {
           );
         }
       } else {
-        alert(`Already up to date. Current version: ${APP_VERSION}`);
+        alert(`Already up to date. Current version: ${appVersion}`);
       }
     } catch (e) {
       alert(`Cannot check latest release: ${e}`);
