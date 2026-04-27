@@ -1,11 +1,17 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { subscribeLog, clearLog, type GitLogEntry } from "../../lib/git-log";
+
+const MIN_HEIGHT = 80;
+const MAX_HEIGHT = 600;
+const DEFAULT_HEIGHT = 160;
 
 export function GitLogPanel() {
   const [entries, setEntries] = useState<GitLogEntry[]>([]);
   const [expanded, setExpanded] = useState(false);
   const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [panelHeight, setPanelHeight] = useState(DEFAULT_HEIGHT);
   const listRef = useRef<HTMLDivElement>(null);
+  const dragging = useRef(false);
 
   useEffect(() => subscribeLog(setEntries), []);
 
@@ -16,11 +22,41 @@ export function GitLogPanel() {
     }
   }, [entries, expanded]);
 
+  const onResizeStart = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    dragging.current = true;
+    const startY = e.clientY;
+    const startH = panelHeight;
+
+    const onMouseMove = (ev: MouseEvent) => {
+      if (!dragging.current) return;
+      const delta = startY - ev.clientY;
+      setPanelHeight(Math.min(MAX_HEIGHT, Math.max(MIN_HEIGHT, startH + delta)));
+    };
+
+    const onMouseUp = () => {
+      dragging.current = false;
+      document.removeEventListener("mousemove", onMouseMove);
+      document.removeEventListener("mouseup", onMouseUp);
+    };
+
+    document.addEventListener("mousemove", onMouseMove);
+    document.addEventListener("mouseup", onMouseUp);
+  }, [panelHeight]);
+
   const selected = entries.find((e) => e.id === selectedId) ?? null;
   const latestEntry = entries[entries.length - 1] ?? null;
 
   return (
     <div className="shrink-0 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 flex flex-col">
+      {/* Resize handle */}
+      {expanded && (
+        <div
+          onMouseDown={onResizeStart}
+          className="h-1 cursor-ns-resize hover:bg-blue-400/50 active:bg-blue-500/50 transition-colors"
+        />
+      )}
+
       {/* Header bar */}
       <div
         className="flex items-center gap-2 px-3 py-1 cursor-pointer select-none hover:bg-gray-100 dark:hover:bg-gray-800"
@@ -47,7 +83,7 @@ export function GitLogPanel() {
 
       {/* Expanded panel */}
       {expanded && (
-        <div className="flex h-40 border-t border-gray-200 dark:border-gray-700">
+        <div className="flex border-t border-gray-200 dark:border-gray-700" style={{ height: panelHeight }}>
           {/* Left: command list */}
           <div
             ref={listRef}
