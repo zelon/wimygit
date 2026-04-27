@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { subscribeLog, clearLog, type GitLogEntry } from "../../lib/git-log";
 
 const MIN_HEIGHT = 80;
@@ -43,6 +44,8 @@ export function GitLogPanel() {
     document.addEventListener("mousemove", onMouseMove);
     document.addEventListener("mouseup", onMouseUp);
   }, [panelHeight]);
+
+  const [ctxMenu, setCtxMenu] = useState<{ x: number; y: number } | null>(null);
 
   const selected = entries.find((e) => e.id === selectedId) ?? null;
   const latestEntry = entries[entries.length - 1] ?? null;
@@ -108,6 +111,7 @@ export function GitLogPanel() {
           <div
             ref={listRef}
             className="w-1/2 overflow-y-auto border-r border-gray-200 dark:border-gray-700"
+            onContextMenu={(e) => { e.preventDefault(); setCtxMenu({ x: e.clientX, y: e.clientY }); }}
           >
             {entries.length === 0 ? (
               <div className="p-2 text-xs text-gray-400 italic">No commands yet</div>
@@ -152,6 +156,61 @@ export function GitLogPanel() {
           </div>
         </div>
       )}
+
+      {/* Context menu */}
+      {ctxMenu && <GitLogCtxMenu
+        x={ctxMenu.x}
+        y={ctxMenu.y}
+        onCopy={() => {
+          const sel = window.getSelection()?.toString();
+          if (sel) navigator.clipboard.writeText(sel);
+          setCtxMenu(null);
+        }}
+        hasCopy={!!window.getSelection()?.toString()}
+        onClear={() => { clearLog(); setSelectedId(null); setCtxMenu(null); }}
+        onClose={() => setCtxMenu(null)}
+      />}
     </div>
+  );
+}
+
+function GitLogCtxMenu({ x, y, onCopy, hasCopy, onClear, onClose }: {
+  x: number; y: number;
+  onCopy: () => void; hasCopy: boolean;
+  onClear: () => void; onClose: () => void;
+}) {
+  const menuRef = useRef<HTMLDivElement>(null);
+  const [pos, setPos] = useState({ top: y, left: x });
+
+  useEffect(() => {
+    if (menuRef.current) {
+      const rect = menuRef.current.getBoundingClientRect();
+      let newTop = y;
+      let newLeft = x;
+      if (y + rect.height > window.innerHeight) newTop = window.innerHeight - rect.height - 4;
+      if (x + rect.width > window.innerWidth) newLeft = window.innerWidth - rect.width - 4;
+      if (newTop !== y || newLeft !== x) setPos({ top: newTop, left: newLeft });
+    }
+  }, [x, y]);
+
+  const btnClass = "w-full text-left px-4 py-1.5 hover:bg-gray-100 dark:hover:bg-gray-700";
+
+  return createPortal(
+    <>
+      <div
+        style={{ position: "fixed", inset: 0, zIndex: 9998 }}
+        onClick={onClose}
+        onContextMenu={(e) => { e.preventDefault(); onClose(); }}
+      />
+      <div
+        ref={menuRef}
+        style={{ position: "fixed", top: pos.top, left: pos.left, zIndex: 9999 }}
+        className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded shadow-lg py-1 text-sm min-w-[120px]"
+      >
+        <button className={btnClass} onClick={onCopy} disabled={!hasCopy}>Copy</button>
+        <button className={btnClass} onClick={onClear}>Clear</button>
+      </div>
+    </>,
+    document.body
   );
 }
