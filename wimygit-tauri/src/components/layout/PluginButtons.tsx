@@ -56,8 +56,6 @@ const BASE_BTN =
   "flex flex-col items-center justify-center gap-0.5 px-3 py-1.5 min-w-[56px] text-[11px] rounded transition-colors shrink-0 border disabled:opacity-40";
 const IDLE_BTN =
   "bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600";
-const BUSY_BTN =
-  "bg-blue-100 dark:bg-blue-900 border-blue-200 dark:border-blue-800 text-blue-600 dark:text-blue-300 cursor-wait";
 
 interface PluginButtonsProps {
   plugins: PluginInfo[];
@@ -66,12 +64,10 @@ interface PluginButtonsProps {
 }
 
 export function PluginButtons({ plugins, repoPath, onRefresh }: PluginButtonsProps) {
-  const [runningPlugin, setRunningPlugin] = useState<string | null>(null);
   const [output, setOutput] = useState<{ title: string; text: string } | null>(null);
 
   const handleRun = async (plugin: PluginInfo) => {
     if (!repoPath) return;
-    setRunningPlugin(plugin.name);
     try {
       const result = await runPlugin(
         plugin.command,
@@ -85,14 +81,10 @@ export function PluginButtons({ plugins, repoPath, onRefresh }: PluginButtonsPro
       }
     } catch (e) {
       alert(`Plugin "${plugin.title}" failed:\n${String(e)}`);
-    } finally {
-      setRunningPlugin(null);
     }
   };
 
   if (plugins.length === 0) return null;
-
-  const isBusy = runningPlugin !== null;
 
   return (
     <>
@@ -100,16 +92,16 @@ export function PluginButtons({ plugins, repoPath, onRefresh }: PluginButtonsPro
         <button
           key={p.name}
           onClick={() => handleRun(p)}
-          disabled={isBusy || !repoPath}
+          disabled={!repoPath}
           title={p.description || p.title}
-          className={`${BASE_BTN} ${runningPlugin === p.name ? BUSY_BTN : IDLE_BTN}`}
+          className={`${BASE_BTN} ${IDLE_BTN}`}
         >
           {p.icon_data_url ? (
             <img src={p.icon_data_url} alt={p.title} className="w-6 h-6 object-contain" />
           ) : (
             <IconPlugin />
           )}
-          <span>{runningPlugin === p.name ? `${p.title}...` : p.title}</span>
+          <span>{p.title}</span>
         </button>
       ))}
 

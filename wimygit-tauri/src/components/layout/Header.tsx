@@ -27,9 +27,7 @@ type BusyKey =
   | "timelapse"
   | "fetchAll"
   | "pull"
-  | "push"
-  | "folder"
-  | "terminal";
+  | "push";
 
 // ─── Shared button styles ─────────────────────────────────────────────────────
 
@@ -109,14 +107,14 @@ function IconTerminal({ className = ICON_CLASS }: { className?: string }) {
 interface ToolButtonProps {
   icon: React.ReactNode;
   label: string;
-  busyLabel?: string;
+
   title: string;
   isBusy: boolean;
   disabled: boolean;
   onClick: () => void;
 }
 
-function ToolButton({ icon, label, busyLabel, title, isBusy, disabled, onClick }: ToolButtonProps) {
+function ToolButton({ icon, label, title, isBusy, disabled, onClick }: ToolButtonProps) {
   return (
     <button
       onClick={onClick}
@@ -125,7 +123,7 @@ function ToolButton({ icon, label, busyLabel, title, isBusy, disabled, onClick }
       className={`${BASE_BTN} ${isBusy ? BUSY_BTN : IDLE_BTN}`}
     >
       {icon}
-      <span>{isBusy ? (busyLabel ?? `${label}…`) : label}</span>
+      <span>{label}</span>
     </button>
   );
 }
@@ -172,7 +170,7 @@ function SplitButton({ icon, label, title, isBusy, disabled, onMain, items }: Sp
         className={`${BASE_BTN} ${isBusy ? BUSY_BTN : IDLE_BTN} rounded-r-none border-r-0`}
       >
         {icon}
-        <span>{isBusy ? `${label}…` : label}</span>
+        <span>{label}</span>
       </button>
       {/* Dropdown arrow */}
       <button
@@ -303,7 +301,7 @@ export function Header({ repoPath, refreshKey, onRefresh, plugins = [], selected
         <ToolButton
           icon={<IconRefresh />}
           label="Refresh"
-          busyLabel="Refresh…"
+
           title="Refresh repository status"
           isBusy={busy === "refresh"}
           disabled={isDisabled}
@@ -360,9 +358,9 @@ export function Header({ repoPath, refreshKey, onRefresh, plugins = [], selected
           icon={<IconFolder />}
           label="OpenFolder"
           title="Open repository in file manager"
-          isBusy={busy === "folder"}
+          isBusy={false}
           disabled={isDisabled}
-          onClick={() => run("folder", () => openInFileManager(repoPath))}
+          onClick={() => openInFileManager(repoPath).catch((e) => setLastError(String(e)))}
         />
 
         {/* ── 7. Terminal ── */}
@@ -370,9 +368,9 @@ export function Header({ repoPath, refreshKey, onRefresh, plugins = [], selected
           icon={<IconTerminal />}
           label="Terminal"
           title="Open terminal at repository path"
-          isBusy={busy === "terminal"}
+          isBusy={false}
           disabled={isDisabled}
-          onClick={() => run("terminal", () => openInTerminal(repoPath))}
+          onClick={() => openInTerminal(repoPath).catch((e) => setLastError(String(e)))}
         />
 
         {/* ── Plugin buttons ── */}
