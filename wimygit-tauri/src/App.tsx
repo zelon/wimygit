@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback, lazy, Suspense } from "react";
 import { open } from "@tauri-apps/plugin-dialog";
-import { getVersion } from "@tauri-apps/api/app";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { Header, TabBar, RepoTabBar, GitLogPanel, LeftSidebar } from "./components/layout";
 import { PendingTab } from "./components/tabs";
@@ -83,9 +82,9 @@ function App() {
   const [lfsLockCount, setLfsLockCount] = useState(0);
   const [showPluginModal, setShowPluginModal] = useState(false);
 
-  // Set window title with version on startup
+  // Set window title (visible in taskbar)
   useEffect(() => {
-    getVersion().then((v) => getCurrentWindow().setTitle(`WimyGit v${v}`)).catch(console.error);
+    getCurrentWindow().setTitle("WimyGit").catch(() => {});
   }, []);
 
   // Restore previously opened repos on startup
@@ -317,21 +316,47 @@ function App() {
   // No repos open
   if (repoTabs.length === 0 || !activeRepo) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-900">
-        <div className="text-center">
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">WimyGit</h1>
-          <p className="text-gray-600 dark:text-gray-400 mb-8">Cross-platform Git GUI Client</p>
-          {openError && (
-            <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded max-w-md">
-              {openError}
-            </div>
-          )}
+      <div className="flex flex-col min-h-screen bg-gray-50 dark:bg-gray-900">
+        {/* Titlebar for empty state */}
+        <div
+          data-tauri-drag-region
+          className="flex items-center justify-end h-9 bg-gray-100 dark:bg-gray-950 border-b border-gray-200 dark:border-gray-800 shrink-0 select-none"
+        >
           <button
-            onClick={() => handleOpenRepo()}
-            className="px-6 py-3 text-lg bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            onClick={() => getCurrentWindow().minimize()}
+            className="w-11 h-9 flex items-center justify-center text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors"
           >
-            Open Repository
+            <svg width="10" height="1" viewBox="0 0 10 1" fill="currentColor"><rect width="10" height="1" /></svg>
           </button>
+          <button
+            onClick={() => getCurrentWindow().toggleMaximize()}
+            className="w-11 h-9 flex items-center justify-center text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors"
+          >
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1"><rect x="0.5" y="0.5" width="9" height="9" rx="0.5" /></svg>
+          </button>
+          <button
+            onClick={() => getCurrentWindow().close()}
+            className="w-11 h-9 flex items-center justify-center text-gray-500 dark:text-gray-400 hover:bg-red-500 hover:text-white transition-colors"
+          >
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.2"><path d="M1 1l8 8M9 1l-8 8" /></svg>
+          </button>
+        </div>
+        <div className="flex-1 flex flex-col items-center justify-center">
+          <div className="text-center">
+            <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">WimyGit</h1>
+            <p className="text-gray-600 dark:text-gray-400 mb-8">Cross-platform Git GUI Client</p>
+            {openError && (
+              <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded max-w-md">
+                {openError}
+              </div>
+            )}
+            <button
+              onClick={() => handleOpenRepo()}
+              className="px-6 py-3 text-lg bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              Open Repository
+            </button>
+          </div>
         </div>
       </div>
     );

@@ -1,3 +1,6 @@
+import { useState, useEffect } from "react";
+import { getCurrentWindow } from "@tauri-apps/api/window";
+import { getVersion } from "@tauri-apps/api/app";
 import { HamburgerMenu } from "./HamburgerMenu";
 
 interface RepoTabItem {
@@ -16,46 +19,134 @@ interface RepoTabBarProps {
 }
 
 export function RepoTabBar({ tabs, activeId, onSelect, onClose, onAdd, onPluginClick }: RepoTabBarProps) {
-  return (
-    <div className="flex items-center bg-gray-200 dark:bg-gray-900 border-b border-gray-300 dark:border-gray-700 shrink-0">
-      <HamburgerMenu onPluginClick={onPluginClick} />
-      <div className="flex items-center overflow-x-auto flex-1">
-      {tabs.map((tab) => (
-        <div
-          key={tab.id}
-          title={tab.repoPath}
-          onClick={() => onSelect(tab.id)}
-          className={`
-            flex items-center gap-1 px-3 py-1.5 text-sm cursor-pointer select-none shrink-0
-            border-r border-gray-300 dark:border-gray-700
-            ${
-              tab.id === activeId
-                ? "bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-medium"
-                : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-750"
-            }
-          `}
-        >
-          <span className="max-w-32 truncate">{tab.repoName}</span>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onClose(tab.id);
-            }}
-            className="ml-1 w-4 h-4 flex items-center justify-center rounded hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 text-xs leading-none"
-            title="Close"
-          >
-            ×
-          </button>
-        </div>
-      ))}
+  const [isMaximized, setIsMaximized] = useState(false);
+  const [version, setVersion] = useState("");
 
-      <button
-        onClick={onAdd}
-        className="px-3 py-1.5 text-sm text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-750 hover:text-gray-800 dark:hover:text-gray-200 shrink-0"
-        title="Open Repository"
+  useEffect(() => {
+    getVersion().then(setVersion).catch(() => {});
+    const appWindow = getCurrentWindow();
+    appWindow.isMaximized().then(setIsMaximized).catch(() => {});
+
+    const unlisten = appWindow.onResized(() => {
+      appWindow.isMaximized().then(setIsMaximized).catch(() => {});
+    });
+    return () => { unlisten.then((fn) => fn()); };
+  }, []);
+
+  const handleMinimize = () => getCurrentWindow().minimize();
+  const handleToggleMaximize = () => getCurrentWindow().toggleMaximize();
+  const handleClose = () => getCurrentWindow().close();
+
+  return (
+    <div
+      data-tauri-drag-region
+      className="flex items-center h-9 bg-gray-100 dark:bg-gray-950 border-b border-gray-200 dark:border-gray-800 shrink-0 select-none"
+    >
+      {/* Left: hamburger + logo */}
+      <HamburgerMenu onPluginClick={onPluginClick} />
+      <span
+        data-tauri-drag-region
+        className="text-xs font-semibold text-gray-500 dark:text-gray-400 tracking-wide px-2 shrink-0"
       >
-        +
-      </button>
+        WimyGit
+        {version && <span className="ml-1 font-normal text-gray-400 dark:text-gray-500">v{version}</span>}
+      </span>
+
+      {/* Dot separator */}
+      {tabs.length > 0 && (
+        <span className="text-gray-300 dark:text-gray-600 mx-1 shrink-0">·</span>
+      )}
+
+      {/* Repo tabs */}
+      <div className="flex items-center overflow-x-auto flex-1 gap-0.5" data-tauri-drag-region>
+        {tabs.map((tab, idx) => (
+          <div key={tab.id} className="flex items-center shrink-0">
+            {idx > 0 && (
+              <span className="text-gray-300 dark:text-gray-600 mx-1 text-xs">·</span>
+            )}
+            <div
+              title={tab.repoPath}
+              onClick={() => onSelect(tab.id)}
+              className={`
+                group flex items-center gap-1 px-2.5 py-1 text-xs rounded-md cursor-pointer transition-all
+                ${
+                  tab.id === activeId
+                    ? "bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-medium shadow-sm"
+                    : "text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 hover:bg-gray-200/50 dark:hover:bg-gray-800/50"
+                }
+              `}
+            >
+              <span className="max-w-28 truncate">{tab.repoName}</span>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onClose(tab.id);
+                }}
+                className={`
+                  w-4 h-4 flex items-center justify-center rounded-sm text-[10px] leading-none transition-colors
+                  ${
+                    tab.id === activeId
+                      ? "text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700"
+                      : "text-transparent group-hover:text-gray-400 hover:!text-gray-700 dark:hover:!text-gray-200 hover:!bg-gray-300 dark:hover:!bg-gray-700"
+                  }
+                `}
+                title="Close"
+              >
+                ×
+              </button>
+            </div>
+          </div>
+        ))}
+
+        {/* Add repo button */}
+        <button
+          onClick={onAdd}
+          className="ml-1 w-5 h-5 flex items-center justify-center rounded text-gray-400 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-800 text-xs transition-colors shrink-0"
+          title="Open Repository"
+        >
+          +
+        </button>
+
+        {/* Drag region spacer */}
+        <div className="flex-1 h-full" data-tauri-drag-region />
+      </div>
+
+      {/* Window controls */}
+      <div className="flex items-center shrink-0">
+        <button
+          onClick={handleMinimize}
+          className="w-11 h-9 flex items-center justify-center text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors"
+          title="Minimize"
+        >
+          <svg width="10" height="1" viewBox="0 0 10 1" fill="currentColor">
+            <rect width="10" height="1" />
+          </svg>
+        </button>
+        <button
+          onClick={handleToggleMaximize}
+          className="w-11 h-9 flex items-center justify-center text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors"
+          title={isMaximized ? "Restore" : "Maximize"}
+        >
+          {isMaximized ? (
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1">
+              <rect x="2" y="0" width="8" height="8" rx="0.5" />
+              <rect x="0" y="2" width="8" height="8" rx="0.5" fill="var(--tw-bg-opacity, currentColor)" fillOpacity="0" />
+            </svg>
+          ) : (
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1">
+              <rect x="0.5" y="0.5" width="9" height="9" rx="0.5" />
+            </svg>
+          )}
+        </button>
+        <button
+          onClick={handleClose}
+          className="w-11 h-9 flex items-center justify-center text-gray-500 dark:text-gray-400 hover:bg-red-500 hover:text-white transition-colors"
+          title="Close"
+        >
+          <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.2">
+            <path d="M1 1l8 8M9 1l-8 8" />
+          </svg>
+        </button>
       </div>
     </div>
   );
