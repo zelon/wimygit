@@ -405,7 +405,7 @@ function App() {
         />
 
         {/* Right panel: tab bar + tab content */}
-        <main className="flex-1 flex flex-col overflow-hidden bg-white dark:bg-gray-900 relative">
+        <main style={{ minWidth: 200 }} className="flex-1 flex flex-col overflow-hidden bg-white dark:bg-gray-900 relative">
           <TabBar
             tabs={BASE_INNER_TABS.map((tab) =>
               tab.id === "pending" && lfsLockCount > 0

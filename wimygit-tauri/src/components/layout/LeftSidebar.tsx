@@ -649,13 +649,26 @@ export function LeftSidebar({ repoPath, refreshKey, selectedDiff, pendingFilePre
     window.addEventListener("mouseup", onUp);
   }, [width]);
 
+  // ── clamp sidebar when window shrinks ──
+  useEffect(() => {
+    const onResize = () => {
+      setWidth((prev) => {
+        const maxW = window.innerWidth - MIN_MAIN_PANEL_WIDTH;
+        if (prev > maxW) return Math.max(MIN_SIDEBAR_WIDTH, maxW);
+        return prev;
+      });
+    };
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+
   const handleTabChange = (tab: LeftTab) => {
     setActiveTab(tab);
     localStorage.setItem("sidebar_tab", tab);
   };
 
   return (
-    <div style={{ width }} className="flex shrink-0">
+    <div style={{ width, minWidth: MIN_SIDEBAR_WIDTH }} className="flex shrink-0">
       {/* Panel */}
       <div className="flex-1 flex flex-col overflow-hidden border-r border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
 
