@@ -79,6 +79,20 @@ async fn get_lfs_locks_for_file(repo_path: String, filename: String) -> Result<V
     Ok(parse_lfs_locks(&result.stdout))
 }
 
+/// Read text content from a file
+#[tauri::command]
+fn read_text_file(file_path: String) -> Result<String, String> {
+    std::fs::read_to_string(&file_path)
+        .map_err(|e| format!("Failed to read {}: {}", file_path, e))
+}
+
+/// Write text content to a file (used for .gitignore etc.)
+#[tauri::command]
+fn write_text_file(file_path: String, content: String) -> Result<(), String> {
+    std::fs::write(&file_path, &content)
+        .map_err(|e| format!("Failed to write {}: {}", file_path, e))
+}
+
 /// Returns the directory containing the running executable
 #[tauri::command]
 fn get_executable_dir() -> Result<String, String> {
@@ -158,6 +172,8 @@ pub fn run() {
       plugin::run_plugin,
       plugin::remove_plugin_dir,
       // App commands
+      read_text_file,
+      write_text_file,
       get_executable_dir,
       get_config_dir,
       // LFS commands

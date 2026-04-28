@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
-import { remove, writeTextFile } from "@tauri-apps/plugin-fs";
+import { remove } from "@tauri-apps/plugin-fs";
 import { confirm as tauriConfirm } from "@tauri-apps/plugin-dialog";
 import {
   getGitStatus,
@@ -18,6 +18,8 @@ import {
   getLfsLocks,
   getLfsLockableExtensions,
   lfsUnlockFile,
+  readTextFile,
+  writeTextFile,
   type LfsLock,
 } from "../../lib";
 
@@ -212,13 +214,11 @@ function UnstagedCtxMenu({
     try {
       const sep = navigator.platform.startsWith("Win") ? "\\" : "/";
       const gitignorePath = `${repoPath}${sep}.gitignore`;
-      // .gitignore 파일 읽기 → 패턴 추가
-      const result = await runGit(["show", `HEAD:.gitignore`], repoPath).catch(() => null);
-      const currentContent = result?.stdout ?? "";
+      // 디스크의 현재 .gitignore 읽기 (없으면 빈 문자열)
+      const currentContent = await readTextFile(gitignorePath).catch(() => "");
       const newContent = currentContent.endsWith("\n") || currentContent === ""
         ? `${currentContent}${pattern}\n`
         : `${currentContent}\n${pattern}\n`;
-      // Tauri fs로 .gitignore 쓰기
       await writeTextFile(gitignorePath, newContent);
       onClose();
       onRefresh();
@@ -308,15 +308,15 @@ function UnstagedCtxMenu({
           <span>Delete Local File{!isSingle ? ` (${files.length} files)` : ""}</span>
         </button>
 
-        {/* Add folder to .gitignore — 단일 파일이고 폴더 경로가 있는 경우 */}
-        {isSingle && folderCandidates.length > 0 && (
+        {/* Add to .gitignore — 단일 파일인 경우 */}
+        {isSingle && (
           <div
             className="relative"
             onMouseEnter={() => setShowGitignoreSub(true)}
             onMouseLeave={() => setShowGitignoreSub(false)}
           >
             <button className={btnClass}>
-              <span>Add folder to .gitignore</span>
+              <span>Add to .gitignore</span>
               <span className="ml-2 text-gray-400">▸</span>
             </button>
             {showGitignoreSub && (
@@ -324,6 +324,14 @@ function UnstagedCtxMenu({
                 style={{ position: "absolute", top: 0, left: "100%", zIndex: 10000 }}
                 className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded shadow-lg py-1 text-sm min-w-[160px]"
               >
+                {/* 파일 자체를 .gitignore에 추가 */}
+                <button
+                  className={btnClass}
+                  onClick={() => handleAddToGitignore(firstFile)}
+                >
+                  {firstFile}
+                </button>
+                {/* 폴더 경로 후보 */}
                 {folderCandidates.map((folder) => (
                   <button
                     key={folder}

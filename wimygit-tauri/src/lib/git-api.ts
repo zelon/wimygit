@@ -262,6 +262,16 @@ export async function gitDiff(
   return runGitSimple(args, cwd);
 }
 
+// ============= Filesystem =============
+
+export async function readTextFile(filePath: string): Promise<string> {
+  return invoke<string>("read_text_file", { filePath });
+}
+
+export async function writeTextFile(filePath: string, content: string): Promise<void> {
+  return invoke<void>("write_text_file", { filePath, content });
+}
+
 // ============= Git History =============
 
 export async function getHistory(
