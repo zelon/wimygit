@@ -10,7 +10,6 @@ import {
   gitCommit,
   getLastCommitMessage,
   gitDiff,
-  runGit,
   runDifftool,
   openInFileManager,
   type GitStatus,
