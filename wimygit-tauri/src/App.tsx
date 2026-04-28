@@ -414,7 +414,7 @@ function App() {
           <TabBar
             tabs={BASE_INNER_TABS.map((tab) =>
               tab.id === "pending" && lfsLockCount > 0
-                ? { ...tab, label: `Pending [${lfsLockCount} Locked]` }
+                ? { ...tab, label: `Pending Changes [${lfsLockCount} Locked]` }
                 : tab
             )}
             activeTab={activeRepo.activeTab}
