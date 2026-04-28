@@ -18,7 +18,6 @@ import { DiffViewer } from "../shared/DiffViewer";
 // ─── constants ────────────────────────────────────────────────────────────────
 
 const MIN_SIDEBAR_WIDTH = 200;
-const DEFAULT_SIDEBAR_WIDTH = 240;
 const MIN_MAIN_PANEL_WIDTH = 200;
 
 type LeftTab = "workspace" | "quickdiff";
@@ -590,9 +589,10 @@ interface LeftSidebarProps {
 }
 
 export function LeftSidebar({ repoPath, refreshKey, selectedDiff, pendingFilePreview, onFileSelect, onRefresh }: LeftSidebarProps) {
-  const [width, setWidth] = useState(() =>
-    parseInt(localStorage.getItem("sidebar_width") ?? String(DEFAULT_SIDEBAR_WIDTH))
-  );
+  const [width, setWidth] = useState(() => {
+    const quarter = Math.round(window.innerWidth / 4);
+    return Math.max(MIN_SIDEBAR_WIDTH, quarter);
+  });
   const [activeTab, setActiveTab] = useState<LeftTab>(() =>
     (localStorage.getItem("sidebar_tab") as LeftTab | null) ?? "workspace"
   );
@@ -629,7 +629,6 @@ export function LeftSidebar({ repoPath, refreshKey, selectedDiff, pendingFilePre
 
     newW = Math.max(MIN_SIDEBAR_WIDTH, Math.min(total - MIN_MAIN_PANEL_WIDTH, newW));
     setWidth(newW);
-    localStorage.setItem("sidebar_width", String(newW));
   }, [width]);
 
   // ── horizontal resize ──
@@ -641,7 +640,6 @@ export function LeftSidebar({ repoPath, refreshKey, selectedDiff, pendingFilePre
       const maxW = window.innerWidth - MIN_MAIN_PANEL_WIDTH;
       const newW = Math.max(MIN_SIDEBAR_WIDTH, Math.min(maxW, startW + ev.clientX - startX));
       setWidth(newW);
-      localStorage.setItem("sidebar_width", String(newW));
     };
     const onUp = () => {
       window.removeEventListener("mousemove", onMove);
