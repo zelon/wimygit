@@ -1,3 +1,9 @@
+// Repository state (rebase, merge, cherry-pick, etc.)
+export interface RepoState {
+  state: string;
+  detail: string | null;
+}
+
 // Git execution result
 export interface GitResult {
   stdout: string;

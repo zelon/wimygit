@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, lazy, Suspense } from "react";
 import { open } from "@tauri-apps/plugin-dialog";
 import { getCurrentWindow } from "@tauri-apps/api/window";
-import { Header, TabBar, RepoTabBar, GitLogPanel, LeftSidebar } from "./components/layout";
+import { Header, TabBar, RepoTabBar, GitLogPanel, LeftSidebar, RepoStateBanner } from "./components/layout";
 import { PendingTab } from "./components/tabs";
 
 // Lazy-loaded tabs (not needed at startup)
@@ -406,6 +406,11 @@ function App() {
 
         {/* Right panel: tab bar + tab content */}
         <main style={{ minWidth: 200 }} className="flex-1 flex flex-col overflow-hidden bg-white dark:bg-gray-900 relative">
+          <RepoStateBanner
+            repoPath={activeRepo.repoPath}
+            refreshKey={activeRepo.refreshKey}
+            onRefresh={handleRefresh}
+          />
           <TabBar
             tabs={BASE_INNER_TABS.map((tab) =>
               tab.id === "pending" && lfsLockCount > 0

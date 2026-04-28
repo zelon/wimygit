@@ -1,5 +1,6 @@
 import { invoke } from "@tauri-apps/api/core";
 import type {
+  RepoState,
   GitResult,
   GitStatus,
   BranchInfo,
@@ -35,6 +36,10 @@ export async function runGitSimple(
     throw new Error(result.stderr || `git ${args[0]} failed`);
   }
   return result.stdout;
+}
+
+export async function getRepoState(cwd: string): Promise<RepoState> {
+  return invoke<RepoState>("get_repo_state", { cwd });
 }
 
 export async function isGitRepository(path: string): Promise<boolean> {
@@ -330,6 +335,10 @@ export async function getCommitParents(cwd: string, commitId: string): Promise<s
 
 export async function runDifftool(cwd: string, args: string[]): Promise<void> {
   return invoke<void>("run_difftool", { cwd, args });
+}
+
+export async function runMergetool(cwd: string, args: string[]): Promise<void> {
+  return invoke<void>("run_mergetool", { cwd, args });
 }
 
 // ============= Git Tags =============

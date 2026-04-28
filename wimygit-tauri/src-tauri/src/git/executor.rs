@@ -20,6 +20,12 @@ use std::os::windows::process::CommandExt;
 const CREATE_NO_WINDOW: u32 = 0x0800_0000;
 
 #[derive(Debug, Serialize, Deserialize)]
+pub struct RepoState {
+    pub state: String,
+    pub detail: Option<String>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
 pub struct GitResult {
     pub stdout: String,
     pub stderr: String,
@@ -173,6 +179,154 @@ pub async fn run_git_simple(args: Vec<String>, cwd: String) -> Result<String, St
     Ok(result.stdout)
 }
 
+/// Detect special repository states (rebase, merge, cherry-pick, etc.)
+#[tauri::command]
+pub async fn get_repo_state(cwd: String) -> Result<RepoState, String> {
+    let git_dir_result = run_git(
+        vec!["rev-parse".to_string(), "--git-dir".to_string()],
+        cwd.clone(),
+    )
+    .await?;
+
+    let git_dir = if git_dir_result.exit_code == 0 {
+        let raw = git_dir_result.stdout.trim();
+        let p = std::path::PathBuf::from(raw);
+        if p.is_absolute() {
+            p
+        } else {
+            std::path::PathBuf::from(&cwd).join(p)
+        }
+    } else {
+        return Ok(RepoState {
+            state: "normal".to_string(),
+            detail: None,
+        });
+    };
+
+    // Interactive rebase
+    let rebase_merge = git_dir.join("rebase-merge");
+    if rebase_merge.is_dir() {
+        let step = std::fs::read_to_string(rebase_merge.join("msgnum"))
+            .unwrap_or_default()
+            .trim()
+            .to_string();
+        let total = std::fs::read_to_string(rebase_merge.join("end"))
+            .unwrap_or_default()
+            .trim()
+            .to_string();
+        let head_name = std::fs::read_to_string(rebase_merge.join("head-name"))
+            .unwrap_or_default()
+            .trim()
+            .replace("refs/heads/", "");
+        let onto = std::fs::read_to_string(rebase_merge.join("onto"))
+            .unwrap_or_default()
+            .trim()
+            .to_string();
+        let onto_short = if onto.len() > 7 { &onto[..7] } else { &onto };
+        let detail = if !step.is_empty() && !total.is_empty() {
+            Some(format!(
+                "Rebasing {} onto {} ({}/{})",
+                if head_name.is_empty() { "HEAD" } else { &head_name },
+                onto_short,
+                step,
+                total
+            ))
+        } else {
+            None
+        };
+        return Ok(RepoState {
+            state: "rebase-interactive".to_string(),
+            detail,
+        });
+    }
+
+    // Non-interactive rebase
+    let rebase_apply = git_dir.join("rebase-apply");
+    if rebase_apply.is_dir() {
+        let step = std::fs::read_to_string(rebase_apply.join("next"))
+            .unwrap_or_default()
+            .trim()
+            .to_string();
+        let total = std::fs::read_to_string(rebase_apply.join("last"))
+            .unwrap_or_default()
+            .trim()
+            .to_string();
+        let detail = if !step.is_empty() && !total.is_empty() {
+            Some(format!("Rebasing ({}/{})", step, total))
+        } else {
+            None
+        };
+        return Ok(RepoState {
+            state: "rebase".to_string(),
+            detail,
+        });
+    }
+
+    // Merge in progress
+    if git_dir.join("MERGE_HEAD").is_file() {
+        let merge_head = std::fs::read_to_string(git_dir.join("MERGE_HEAD"))
+            .unwrap_or_default()
+            .trim()
+            .to_string();
+        let short = if merge_head.len() > 7 {
+            &merge_head[..7]
+        } else {
+            &merge_head
+        };
+        return Ok(RepoState {
+            state: "merging".to_string(),
+            detail: Some(format!("Merging {}", short)),
+        });
+    }
+
+    // Cherry-pick in progress
+    if git_dir.join("CHERRY_PICK_HEAD").is_file() {
+        let cp_head = std::fs::read_to_string(git_dir.join("CHERRY_PICK_HEAD"))
+            .unwrap_or_default()
+            .trim()
+            .to_string();
+        let short = if cp_head.len() > 7 {
+            &cp_head[..7]
+        } else {
+            &cp_head
+        };
+        return Ok(RepoState {
+            state: "cherry-picking".to_string(),
+            detail: Some(format!("Cherry-picking {}", short)),
+        });
+    }
+
+    // Revert in progress
+    if git_dir.join("REVERT_HEAD").is_file() {
+        let rev_head = std::fs::read_to_string(git_dir.join("REVERT_HEAD"))
+            .unwrap_or_default()
+            .trim()
+            .to_string();
+        let short = if rev_head.len() > 7 {
+            &rev_head[..7]
+        } else {
+            &rev_head
+        };
+        return Ok(RepoState {
+            state: "reverting".to_string(),
+            detail: Some(format!("Reverting {}", short)),
+        });
+    }
+
+    // Bisect in progress
+    if git_dir.join("BISECT_LOG").is_file() {
+        return Ok(RepoState {
+            state: "bisecting".to_string(),
+            detail: Some("Bisecting".to_string()),
+        });
+    }
+
+    Ok(RepoState {
+        state: "normal".to_string(),
+        detail: None,
+    })
+}
+
 /// Check if a directory is a git repository
 #[tauri::command]
 pub async fn is_git_repository(path: String) -> Result<bool, String> {
@@ -213,12 +367,78 @@ pub async fn run_difftool(cwd: String, args: Vec<String>) -> Result<(), String> 
     let mut full_args = vec!["difftool".to_string(), "--no-prompt".to_string()];
     full_args.extend(args);
 
+    // Emit git-log event so the frontend can see what was launched
+    if let Some(handle) = APP_HANDLE.get() {
+        #[derive(Clone, serde::Serialize)]
+        struct GitLogEvent {
+            repo_name: String,
+            command: String,
+            stdout: String,
+            stderr: String,
+            exit_code: i32,
+            duration_ms: u64,
+        }
+        let repo_name = std::path::Path::new(&cwd)
+            .file_name()
+            .map(|n| n.to_string_lossy().to_string())
+            .unwrap_or_default();
+        let _ = handle.emit("git-log", GitLogEvent {
+            repo_name,
+            command: format!("git {}", full_args.join(" ")),
+            stdout: String::new(),
+            stderr: String::new(),
+            exit_code: 0,
+            duration_ms: 0,
+        });
+    }
+
     let mut cmd = std::process::Command::new(&git_path);
     cmd.args(&full_args).current_dir(&cwd);
     #[cfg(target_os = "windows")]
     cmd.creation_flags(CREATE_NO_WINDOW);
     cmd.spawn()
         .map_err(|e| format!("Failed to run difftool: {}", e))?;
+
+    Ok(())
+}
+
+/// Run git mergetool (spawns external tool, does not wait)
+#[tauri::command]
+pub async fn run_mergetool(cwd: String, args: Vec<String>) -> Result<(), String> {
+    let git_path = find_git_path()?;
+    let mut full_args = vec!["mergetool".to_string(), "--no-prompt".to_string()];
+    full_args.extend(args);
+
+    if let Some(handle) = APP_HANDLE.get() {
+        #[derive(Clone, serde::Serialize)]
+        struct GitLogEvent {
+            repo_name: String,
+            command: String,
+            stdout: String,
+            stderr: String,
+            exit_code: i32,
+            duration_ms: u64,
+        }
+        let repo_name = std::path::Path::new(&cwd)
+            .file_name()
+            .map(|n| n.to_string_lossy().to_string())
+            .unwrap_or_default();
+        let _ = handle.emit("git-log", GitLogEvent {
+            repo_name,
+            command: format!("git {}", full_args.join(" ")),
+            stdout: String::new(),
+            stderr: String::new(),
+            exit_code: 0,
+            duration_ms: 0,
+        });
+    }
+
+    let mut cmd = std::process::Command::new(&git_path);
+    cmd.args(&full_args).current_dir(&cwd);
+    #[cfg(target_os = "windows")]
+    cmd.creation_flags(CREATE_NO_WINDOW);
+    cmd.spawn()
+        .map_err(|e| format!("Failed to run mergetool: {}", e))?;
 
     Ok(())
 }

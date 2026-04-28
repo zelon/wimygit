@@ -126,6 +126,7 @@ pub fn run() {
       git::find_git_path,
       git::run_git,
       git::run_git_simple,
+      git::get_repo_state,
       git::is_git_repository,
       git::get_repository_root,
       git::get_git_author,
@@ -133,6 +134,7 @@ pub fn run() {
       git::get_blame_at_commit,
       git::get_commit_parents,
       git::run_difftool,
+      git::run_mergetool,
       // Git status commands
       git::parse_git_status,
       // Git branch commands

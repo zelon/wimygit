@@ -11,6 +11,7 @@ import {
   getLastCommitMessage,
   gitDiff,
   runDifftool,
+  runMergetool,
   openInFileManager,
   type GitStatus,
   type FileStatus,
@@ -240,6 +241,20 @@ function UnstagedCtxMenu({
         style={{ position: "fixed", top: pos.top, left: pos.left, zIndex: 9999 }}
         className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded shadow-lg py-1 text-sm min-w-[200px]"
       >
+        {/* MergeTool — unmerged 파일, Stage 보다 먼저 표시 */}
+        {hasUnmerged && isSingle && (
+          <>
+            <button className={btnClass} onClick={async () => {
+              try { await runMergetool(repoPath, [firstFile]); } catch { /* ignore */ }
+              onClose();
+              onRefresh();
+            }}>
+              <span>MergeTool</span>
+            </button>
+            {sep}
+          </>
+        )}
+
         {/* Stage */}
         <button className={btnClass} onClick={() => { onStage(files); onClose(); }}>
           <span>Stage{!isSingle ? ` (${files.length} files)` : ""}</span>
@@ -284,20 +299,6 @@ function UnstagedCtxMenu({
             <span>Open Explorer</span>
             <span className={kbdClass}>Ctrl+Shift+S</span>
           </button>
-        )}
-
-        {/* MergeTool — unmerged 파일만 */}
-        {hasUnmerged && isSingle && (
-          <>
-            {sep}
-            <button className={btnClass} onClick={async () => {
-              try { await runDifftool(repoPath, ["mergetool", firstFile]); } catch { /* ignore */ }
-              onClose();
-              onRefresh();
-            }}>
-              <span>MergeTool</span>
-            </button>
-          </>
         )}
 
         {sep}
@@ -937,6 +938,7 @@ export function PendingTab({ repoPath, refreshKey, onFilePreview, onLfsLockCount
                 file={file}
                 isSelected={selectedUnstaged.has(file.filename)}
                 onClick={(e) => handleUnstagedClick(file.filename, e.ctrlKey || e.metaKey, e.shiftKey)}
+                onContextMenu={(e) => handleUnstagedContextMenu(e, file.filename, file, false)}
                 actions={<></>}
               />
             </div>
