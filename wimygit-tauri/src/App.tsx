@@ -25,7 +25,7 @@ import {
 } from "./lib";
 
 const BASE_INNER_TABS = [
-  { id: "pending", label: "Pending" },
+  { id: "pending", label: "Pending Changes" },
   { id: "history", label: "History" },
   { id: "branches", label: "Branches" },
   { id: "remotes", label: "Remotes" },
