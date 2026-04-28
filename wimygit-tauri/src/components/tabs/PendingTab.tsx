@@ -372,6 +372,89 @@ function UnstagedCtxMenu({
   );
 }
 
+// ─── Staged Context Menu ──────────────────────────────────────────────────────
+
+interface StagedCtxMenuProps {
+  x: number;
+  y: number;
+  repoPath: string;
+  files: string[];
+  onClose: () => void;
+  onUnstage: (files: string[]) => void;
+  onDiff: (filename: string) => void;
+  onRefresh: () => void;
+}
+
+function StagedCtxMenu({ x, y, repoPath, files, onClose, onUnstage, onDiff, onRefresh }: StagedCtxMenuProps) {
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  const [pos, setPos] = useState({ top: y, left: x });
+  useEffect(() => {
+    if (menuRef.current) {
+      const rect = menuRef.current.getBoundingClientRect();
+      let newTop = y;
+      let newLeft = x;
+      if (y + rect.height > window.innerHeight) newTop = window.innerHeight - rect.height - 4;
+      if (x + rect.width > window.innerWidth) newLeft = window.innerWidth - rect.width - 4;
+      if (newTop !== y || newLeft !== x) setPos({ top: newTop, left: newLeft });
+    }
+  }, [x, y]);
+
+  const isSingle = files.length === 1;
+  const firstFile = files[0];
+  const btnClass = "w-full text-left px-4 py-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center justify-between";
+  const kbdClass = "ml-4 text-[11px] text-gray-400 dark:text-gray-500";
+
+  return createPortal(
+    <>
+      <div
+        style={{ position: "fixed", inset: 0, zIndex: 9998 }}
+        onClick={onClose}
+        onContextMenu={(e) => { e.preventDefault(); onClose(); }}
+      />
+      <div
+        ref={menuRef}
+        style={{ position: "fixed", top: pos.top, left: pos.left, zIndex: 9999 }}
+        className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded shadow-lg py-1 text-sm min-w-[200px]"
+      >
+        <button className={btnClass} onClick={() => { onUnstage(files); onClose(); }}>
+          <span>Unstage{!isSingle ? ` (${files.length} files)` : ""}</span>
+        </button>
+
+        {isSingle && (
+          <button className={btnClass} onClick={() => { onDiff(firstFile); onClose(); }}>
+            <span>Diff</span>
+            <span className={kbdClass}>Ctrl+D</span>
+          </button>
+        )}
+
+        <div className="border-t border-gray-200 dark:border-gray-700 my-1" />
+
+        <button className={btnClass} onClick={() => { onRefresh(); onClose(); }}>
+          <span>Refresh</span>
+        </button>
+
+        {isSingle && (
+          <button className={btnClass} onClick={async () => {
+            try {
+              const sep = navigator.platform.startsWith("Win") ? "\\" : "/";
+              const dir = firstFile.includes("/") || firstFile.includes("\\")
+                ? `${repoPath}${sep}${firstFile.substring(0, firstFile.lastIndexOf(firstFile.includes("/") ? "/" : "\\"))}`
+                : repoPath;
+              await openInFileManager(dir);
+            } catch { /* ignore */ }
+            onClose();
+          }}>
+            <span>Open Explorer</span>
+            <span className={kbdClass}>Ctrl+Shift+S</span>
+          </button>
+        )}
+      </div>
+    </>,
+    document.body
+  );
+}
+
 // ─── Section header ───────────────────────────────────────────────────────────
 
 interface SectionHeaderProps {
@@ -421,6 +504,9 @@ export function PendingTab({ repoPath, refreshKey, onFilePreview, onLfsLockCount
     x: number; y: number; files: string[];
     isLocked: boolean; isModified: boolean;
     hasUntracked: boolean; hasUnmerged: boolean;
+  } | null>(null);
+  const [stagedCtxMenu, setStagedCtxMenu] = useState<{
+    x: number; y: number; files: string[];
   } | null>(null);
 
   const fetchStatus = async () => {
@@ -554,6 +640,14 @@ export function PendingTab({ repoPath, refreshKey, onFilePreview, onLfsLockCount
     }
   };
 
+  const handleStagedDifftool = async (filename: string) => {
+    try {
+      await runDifftool(repoPath, ["--cached", filename]);
+    } catch (e) {
+      setError(String(e));
+    }
+  };
+
   const handleUnstagedContextMenu = (
     e: React.MouseEvent,
     filename: string,
@@ -590,6 +684,12 @@ export function PendingTab({ repoPath, refreshKey, onFilePreview, onLfsLockCount
       hasUntracked,
       hasUnmerged,
     });
+  };
+
+  const handleStagedContextMenu = (e: React.MouseEvent, filename: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setStagedCtxMenu({ x: e.clientX, y: e.clientY, files: [filename] });
   };
 
   const handleStageAll = () => {
@@ -768,6 +868,7 @@ export function PendingTab({ repoPath, refreshKey, onFilePreview, onLfsLockCount
                   file={file}
                   isSelected={previewKey === `s:${file.filename}`}
                   onClick={(_e) => handleFileClick(file.filename, true)}
+                  onContextMenu={(e) => handleStagedContextMenu(e, file.filename)}
                   actions={
                     <button
                       onClick={() => handleUnstage([file.filename])}
@@ -900,6 +1001,20 @@ export function PendingTab({ repoPath, refreshKey, onFilePreview, onLfsLockCount
           )}
         </div>
       </div>
+
+      {/* ── Staged Context Menu ── */}
+      {stagedCtxMenu && (
+        <StagedCtxMenu
+          x={stagedCtxMenu.x}
+          y={stagedCtxMenu.y}
+          repoPath={repoPath}
+          files={stagedCtxMenu.files}
+          onClose={() => setStagedCtxMenu(null)}
+          onUnstage={handleUnstage}
+          onDiff={handleStagedDifftool}
+          onRefresh={fetchStatus}
+        />
+      )}
 
       {/* ── Context Menu ── */}
       {ctxMenu && (
