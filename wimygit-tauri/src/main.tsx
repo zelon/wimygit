@@ -1,5 +1,6 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
+import { getCurrentWindow } from '@tauri-apps/api/window'
 import './index.css'
 import App from './App.tsx'
 
@@ -18,3 +19,8 @@ createRoot(document.getElementById('root')!).render(
     <App />
   </StrictMode>,
 )
+
+// 콘텐츠가 렌더링된 후 윈도우를 표시하여 빈 프레임이 먼저 보이는 문제 방지
+requestAnimationFrame(() => {
+  getCurrentWindow().show();
+})
