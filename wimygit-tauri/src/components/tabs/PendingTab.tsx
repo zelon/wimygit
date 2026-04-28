@@ -243,7 +243,7 @@ function UnstagedCtxMenu({
       >
         {/* Stage */}
         <button className={btnClass} onClick={() => { onStage(files); onClose(); }}>
-          <span>Stage</span>
+          <span>Stage{!isSingle ? ` (${files.length} files)` : ""}</span>
         </button>
 
         {/* Diff — 단일 파일, untracked 아닌 경우만 */}
@@ -257,7 +257,7 @@ function UnstagedCtxMenu({
         {/* Revert — untracked 아닌 경우만 */}
         {!hasUntracked && (
           <button className={dangerClass} onClick={() => { onRevert(files); onClose(); }}>
-            <span>Revert</span>
+            <span>Revert{!isSingle ? ` (${files.length} files)` : ""}</span>
             <span className={kbdClass}>Ctrl+R</span>
           </button>
         )}
@@ -305,7 +305,7 @@ function UnstagedCtxMenu({
 
         {/* Delete Local File */}
         <button className={dangerClass} onClick={async () => { await onDeleteFiles(files); onClose(); }}>
-          <span>Delete Local File</span>
+          <span>Delete Local File{!isSingle ? ` (${files.length} files)` : ""}</span>
         </button>
 
         {/* Add folder to .gitignore — 단일 파일이고 폴더 경로가 있는 경우 */}
@@ -403,6 +403,7 @@ export function PendingTab({ repoPath, refreshKey, onFilePreview, onLfsLockCount
   const [error, setError] = useState<string | null>(null);
   const [previewKey, setPreviewKey] = useState<string | null>(null);
   const [selectedUnstaged, setSelectedUnstaged] = useState<Set<string>>(new Set());
+  const lastClickedUnstagedRef = useRef<string | null>(null);
 
   // LFS state
   const [lfsLocks, setLfsLocks] = useState<LfsLock[]>([]);
@@ -451,8 +452,32 @@ export function PendingTab({ repoPath, refreshKey, onFilePreview, onLfsLockCount
     onFilePreview?.(filename, staged);
   };
 
-  const handleUnstagedClick = (filename: string, ctrlKey: boolean) => {
-    if (ctrlKey) {
+  const handleUnstagedClick = (filename: string, ctrlKey: boolean, shiftKey: boolean) => {
+    // 현재 전체 unstaged 파일 목록 (unmerged + modified + untracked)
+    const allUnstagedNames = [
+      ...(status?.unmerged ?? []),
+      ...(status?.modified ?? []),
+      ...(status?.untracked ?? []),
+    ].map((f) => f.filename);
+
+    if (shiftKey && lastClickedUnstagedRef.current) {
+      // Shift+Click: 범위 선택
+      const anchorIdx = allUnstagedNames.indexOf(lastClickedUnstagedRef.current);
+      const currentIdx = allUnstagedNames.indexOf(filename);
+      if (anchorIdx !== -1 && currentIdx !== -1) {
+        const start = Math.min(anchorIdx, currentIdx);
+        const end = Math.max(anchorIdx, currentIdx);
+        const rangeFiles = allUnstagedNames.slice(start, end + 1);
+        setSelectedUnstaged((prev) => {
+          const next = ctrlKey ? new Set(prev) : new Set<string>();
+          for (const f of rangeFiles) next.add(f);
+          return next;
+        });
+        setPreviewKey(`u:${filename}`);
+        onFilePreview?.(filename, false);
+      }
+    } else if (ctrlKey) {
+      // Ctrl+Click: 개별 토글
       setSelectedUnstaged((prev) => {
         const next = new Set(prev);
         if (next.has(filename)) {
@@ -464,10 +489,13 @@ export function PendingTab({ repoPath, refreshKey, onFilePreview, onLfsLockCount
         }
         return next;
       });
+      lastClickedUnstagedRef.current = filename;
     } else {
+      // 일반 클릭: 단일 선택
       setSelectedUnstaged(new Set([filename]));
       setPreviewKey(`u:${filename}`);
       onFilePreview?.(filename, false);
+      lastClickedUnstagedRef.current = filename;
     }
   };
 
@@ -800,7 +828,7 @@ export function PendingTab({ repoPath, refreshKey, onFilePreview, onLfsLockCount
               <FileRow
                 file={file}
                 isSelected={selectedUnstaged.has(file.filename)}
-                onClick={(e) => handleUnstagedClick(file.filename, e.ctrlKey || e.metaKey)}
+                onClick={(e) => handleUnstagedClick(file.filename, e.ctrlKey || e.metaKey, e.shiftKey)}
                 actions={<></>}
               />
             </div>
@@ -817,7 +845,7 @@ export function PendingTab({ repoPath, refreshKey, onFilePreview, onLfsLockCount
                       file={file}
                       isSelected={selectedUnstaged.has(file.filename)}
                       isLocked={isLocked}
-                      onClick={(e) => handleUnstagedClick(file.filename, e.ctrlKey || e.metaKey)}
+                      onClick={(e) => handleUnstagedClick(file.filename, e.ctrlKey || e.metaKey, e.shiftKey)}
                       onContextMenu={(e) => handleUnstagedContextMenu(e, file.filename, file, isLocked)}
                       actions={
                         <>
