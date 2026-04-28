@@ -886,7 +886,7 @@ export function PendingTab({ repoPath, refreshKey, onFilePreview, onLfsLockCount
       </div>
 
       {/* ── Stage Selected bar ── */}
-      <div className="shrink-0 flex items-center justify-end px-3 py-1 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
+      <div className="shrink-0 flex items-center justify-center px-3 py-1 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
         <button
           onClick={handleStageSelected}
           disabled={selectedUnstaged.size === 0}
@@ -895,9 +895,9 @@ export function PendingTab({ repoPath, refreshKey, onFilePreview, onLfsLockCount
               ? `Stage ${selectedUnstaged.size} selected file(s)`
               : "Select files below to stage"
           }
-          className="px-3 py-0.5 text-xs rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          className="px-6 py-1 text-xs rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
         >
-          Stage Selected{selectedUnstaged.size > 0 ? ` (${selectedUnstaged.size})` : ""}
+          ↑ Stage Selected{selectedUnstaged.size > 0 ? ` (${selectedUnstaged.size})` : ""} ↑
         </button>
       </div>
 
