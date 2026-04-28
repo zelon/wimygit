@@ -12,18 +12,17 @@ interface TabBarProps {
 
 export function TabBar({ tabs, activeTab, onTabChange }: TabBarProps) {
   return (
-    <div className="flex border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-850">
+    <div className="flex items-end border-b border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 px-1 pt-1">
       {tabs.map((tab) => (
         <button
           key={tab.id}
           onClick={() => onTabChange(tab.id)}
           className={`
-            px-4 py-2 text-sm font-medium transition-colors
-            border-b-2 -mb-px
+            px-4 text-sm transition-colors rounded-t-lg -mb-px
             ${
               activeTab === tab.id
-                ? "border-blue-500 text-blue-600 dark:text-blue-400 bg-white dark:bg-gray-800"
-                : "border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
+                ? "py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 border-b-white dark:border-b-gray-800 text-gray-900 dark:text-white"
+                : "py-2 mt-1 font-medium border border-gray-300/40 dark:border-gray-600/40 border-b-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-200/50 dark:hover:bg-gray-800/50"
             }
           `}
         >

@@ -40,39 +40,31 @@ export function RepoTabBar({ tabs, activeId, onSelect, onClose, onAdd, onPluginC
   return (
     <div
       data-tauri-drag-region
-      className="flex items-center h-9 bg-gray-100 dark:bg-gray-950 border-b border-gray-200 dark:border-gray-800 shrink-0 select-none"
+      className="flex items-end h-9 bg-gray-100 dark:bg-gray-950 border-b border-gray-200 dark:border-gray-800 shrink-0 select-none"
     >
       {/* Left: hamburger + logo */}
-      <HamburgerMenu onPluginClick={onPluginClick} />
+      <div className="self-center"><HamburgerMenu onPluginClick={onPluginClick} /></div>
       <span
         data-tauri-drag-region
-        className="text-xs font-semibold text-gray-500 dark:text-gray-400 tracking-wide px-2 shrink-0"
+        className="text-xs font-semibold text-gray-500 dark:text-gray-400 tracking-wide px-2 shrink-0 self-center"
       >
         WimyGit
         {version && <span className="ml-1 font-normal text-gray-400 dark:text-gray-500">v{version}</span>}
       </span>
 
-      {/* Dot separator */}
-      {tabs.length > 0 && (
-        <span className="text-gray-300 dark:text-gray-600 mx-1 shrink-0">·</span>
-      )}
-
       {/* Repo tabs */}
-      <div className="flex items-center overflow-x-auto flex-1 gap-0.5" data-tauri-drag-region>
-        {tabs.map((tab, idx) => (
+      <div className="flex items-end overflow-x-auto flex-1 gap-0.5 ml-1" data-tauri-drag-region>
+        {tabs.map((tab) => (
           <div key={tab.id} className="flex items-center shrink-0">
-            {idx > 0 && (
-              <span className="text-gray-300 dark:text-gray-600 mx-1 text-xs">·</span>
-            )}
             <div
               title={tab.repoPath}
               onClick={() => onSelect(tab.id)}
               className={`
-                group flex items-center gap-1 px-2.5 py-1 text-xs rounded-md cursor-pointer transition-all
+                group flex items-center gap-1 px-2.5 text-xs rounded-t-md cursor-pointer transition-all -mb-px
                 ${
                   tab.id === activeId
-                    ? "bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-medium shadow-sm"
-                    : "text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 hover:bg-gray-200/50 dark:hover:bg-gray-800/50"
+                    ? "py-1.5 bg-white dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-800 border-b-white dark:border-b-gray-800"
+                    : "py-1 mt-1 text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 hover:bg-gray-200/50 dark:hover:bg-gray-800/50 border border-gray-300/40 dark:border-gray-600/40 border-b-transparent"
                 }
               `}
             >
@@ -112,7 +104,7 @@ export function RepoTabBar({ tabs, activeId, onSelect, onClose, onAdd, onPluginC
       </div>
 
       {/* Window controls */}
-      <div className="flex items-center shrink-0">
+      <div className="flex items-center shrink-0 self-stretch">
         <button
           onClick={handleMinimize}
           className="w-11 h-9 flex items-center justify-center text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors"
