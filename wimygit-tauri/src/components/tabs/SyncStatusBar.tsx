@@ -13,6 +13,7 @@ export interface SyncStatus {
   behind: number;
   aheadCommits: SyncCommit[];
   behindCommits: SyncCommit[];
+  mergeBaseCommit: SyncCommit | null;
 }
 
 // ─── Data fetching ───────────────────────────────────────────────────────────
@@ -35,13 +36,30 @@ export async function getSyncStatus(cwd: string): Promise<SyncStatus | null> {
     const ahead = parseInt(aheadStr, 10) || 0;
     const behind = parseInt(behindStr, 10) || 0;
 
-    if (ahead === 0 && behind === 0) return { ahead: 0, behind: 0, aheadCommits: [], behindCommits: [] };
+    if (ahead === 0 && behind === 0) return { ahead: 0, behind: 0, aheadCommits: [], behindCommits: [], mergeBaseCommit: null };
 
     const parseCommits = (raw: string): SyncCommit[] =>
       raw.trim().split("\n").filter(Boolean).map((line) => {
         const [id, date, ...rest] = line.split("|");
         return { id, date, message: rest.join("|") };
       });
+
+    // Merge base commit (last synced point)
+    let mergeBaseCommit: SyncCommit | null = null;
+    try {
+      const baseHash = await runGitSimple(
+        ["merge-base", "HEAD", upstream.trim()],
+        cwd
+      );
+      if (baseHash.trim()) {
+        const baseInfo = await runGitSimple(
+          ["log", "-1", `--format=%h|%ci|%s`, baseHash.trim()],
+          cwd
+        );
+        const parsed = parseCommits(baseInfo);
+        if (parsed.length > 0) mergeBaseCommit = parsed[0];
+      }
+    } catch { /* ignore */ }
 
     // Ahead commits (oldest first)
     let aheadCommits: SyncCommit[] = [];
@@ -66,18 +84,27 @@ export async function getSyncStatus(cwd: string): Promise<SyncStatus | null> {
       }
     }
 
-    // Behind commits (newest first from remote)
+    // Behind commits (oldest first = chronological order)
     let behindCommits: SyncCommit[] = [];
     if (behind > 0) {
-      // newest 1
-      const newest = await runGitSimple(
-        ["log", `HEAD..${upstream.trim()}`, `--format=%h|%ci|%s`, "-1"],
-        cwd
-      );
-      behindCommits = parseCommits(newest);
+      if (behind <= 2) {
+        // Show all (oldest first)
+        const raw = await runGitSimple(
+          ["log", "--reverse", `HEAD..${upstream.trim()}`, `--format=%h|%ci|%s`],
+          cwd
+        );
+        behindCommits = parseCommits(raw);
+      } else {
+        // 3+: only newest 1 (shown after "...")
+        const newest = await runGitSimple(
+          ["log", `HEAD..${upstream.trim()}`, `--format=%h|%ci|%s`, "-1"],
+          cwd
+        );
+        behindCommits = parseCommits(newest);
+      }
     }
 
-    return { ahead, behind, aheadCommits, behindCommits };
+    return { ahead, behind, aheadCommits, behindCommits, mergeBaseCommit };
   } catch {
     return null;
   }
@@ -94,34 +121,46 @@ function formatSyncDate(dateStr: string): string {
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
-function CommitLine({ c }: { c: SyncCommit }) {
+function CommitRow({ c, label, labelClass }: { c: SyncCommit; label?: string; labelClass?: string }) {
   return (
-    <div className="truncate">
-      <span className="text-blue-600 dark:text-blue-400">{c.id}</span>
-      {" "}
-      <span className="text-gray-400 dark:text-gray-500">{formatSyncDate(c.date)}</span>
-      {" "}
-      <span>{c.message}</span>
+    <div className="flex items-center min-w-0">
+      {label !== undefined ? (
+        <span className={`shrink-0 w-[64px] pr-1.5 font-medium text-right ${labelClass ?? ""}`}>{label}</span>
+      ) : (
+        <span className="shrink-0 w-[64px] pr-1.5" />
+      )}
+      <span className="shrink-0 w-px self-stretch bg-gray-300 dark:bg-gray-600 mr-1.5" />
+      <span className="shrink-0 w-[56px] pr-1.5 text-blue-600 dark:text-blue-400">{c.id}</span>
+      <span className="shrink-0 w-[76px] pr-1.5 text-gray-400 dark:text-gray-500">{formatSyncDate(c.date)}</span>
+      <span className="min-w-0 truncate">{c.message}</span>
+    </div>
+  );
+}
+
+function EllipsisRow({ hasLabel }: { hasLabel?: boolean }) {
+  return (
+    <div className="flex items-center">
+      {hasLabel && <span className="shrink-0 w-[64px] pr-1.5" />}
+      <span className="text-gray-400 dark:text-gray-500">...</span>
     </div>
   );
 }
 
 const commitBoxClass =
-  "font-mono text-[11px] leading-relaxed text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-900 rounded border border-gray-200 dark:border-gray-700 px-2 py-1";
+  "font-mono text-[11px] leading-relaxed text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-900 rounded border border-gray-200 dark:border-gray-700 px-2 py-1 divide-y divide-gray-100 dark:divide-gray-800";
 
 export function SyncStatusBar({ syncStatus }: { syncStatus: SyncStatus }) {
   if (syncStatus.ahead === 0 && syncStatus.behind === 0) return null;
 
   return (
     <div className="shrink-0 px-3 py-1.5 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-850 text-xs">
-      {/* Behind commits (above the summary line) */}
-      {syncStatus.behind > 0 && syncStatus.behindCommits.length > 0 && (
+      {/* Behind section: last sync + behind commits (above the summary line) */}
+      {syncStatus.behind > 0 && syncStatus.mergeBaseCommit && (
         <div className={`mb-1 ${commitBoxClass}`}>
-          {syncStatus.behind >= 2 && (
-            <div className="text-gray-400 dark:text-gray-500">...</div>
-          )}
+          <CommitRow c={syncStatus.mergeBaseCommit} label="= synced" labelClass="text-green-600 dark:text-green-400" />
+          {syncStatus.behind >= 3 && <EllipsisRow hasLabel />}
           {syncStatus.behindCommits.map((c) => (
-            <CommitLine key={c.id} c={c} />
+            <CommitRow key={c.id} c={c} label="remote" labelClass="text-orange-600 dark:text-orange-400" />
           ))}
         </div>
       )}
@@ -141,13 +180,13 @@ export function SyncStatusBar({ syncStatus }: { syncStatus: SyncStatus }) {
         <div className={`mt-1 ${commitBoxClass}`}>
           {syncStatus.ahead <= 3 ? (
             syncStatus.aheadCommits.map((c) => (
-              <CommitLine key={c.id} c={c} />
+              <CommitRow key={c.id} c={c} label="local" labelClass="text-green-600 dark:text-green-400" />
             ))
           ) : (
             <>
-              <CommitLine c={syncStatus.aheadCommits[0]} />
-              <div className="text-gray-400 dark:text-gray-500">...</div>
-              <CommitLine c={syncStatus.aheadCommits[1]} />
+              <CommitRow c={syncStatus.aheadCommits[0]} label="local" labelClass="text-green-600 dark:text-green-400" />
+              <EllipsisRow hasLabel />
+              <CommitRow c={syncStatus.aheadCommits[1]} label="local" labelClass="text-green-600 dark:text-green-400" />
             </>
           )}
         </div>
