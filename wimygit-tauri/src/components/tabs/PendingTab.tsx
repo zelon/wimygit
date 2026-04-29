@@ -22,6 +22,7 @@ import {
   writeTextFile,
   type LfsLock,
 } from "../../lib";
+import { getSyncStatus, SyncStatusBar, type SyncStatus } from "./SyncStatusBar";
 
 const AI_API_KEY_STORAGE = "wimygit_ai_api_key";
 
@@ -485,6 +486,7 @@ function SectionHeader({ label, count, action }: SectionHeaderProps) {
 
 export function PendingTab({ repoPath, refreshKey, onFilePreview, onLfsLockCountChange }: PendingTabProps) {
   const [status, setStatus] = useState<GitStatus | null>(null);
+  const [syncStatus, setSyncStatus] = useState<SyncStatus | null>(null);
   const [loading, setLoading] = useState(true);
   const [commitMessage, setCommitMessage] = useState("");
   const [amend, setAmend] = useState(false);
@@ -513,15 +515,17 @@ export function PendingTab({ repoPath, refreshKey, onFilePreview, onLfsLockCount
     if (!repoPath) return;
     setLoading(true);
     try {
-      const [result, lockableExts] = await Promise.all([
+      const [result, lockableExts, sync] = await Promise.all([
         getGitStatus(repoPath),
         getLfsLockableExtensions(repoPath).catch(() => [] as string[]),
+        getSyncStatus(repoPath),
       ]);
       const hasLockable = lockableExts.length > 0;
       const locks = hasLockable
         ? await getLfsLocks(repoPath).catch(() => [] as LfsLock[])
         : [];
       setStatus(result);
+      setSyncStatus(sync);
       setLfsLocks(locks);
       setHasLfsLockable(hasLockable);
       onLfsLockCountChange?.(locks.length);
@@ -795,6 +799,9 @@ export function PendingTab({ repoPath, refreshKey, onFilePreview, onLfsLockCount
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
+
+      {/* ── Sync Status (ahead/behind) ── */}
+      {syncStatus && <SyncStatusBar syncStatus={syncStatus} />}
 
       {/* ── Error bar ── */}
       {error && (
