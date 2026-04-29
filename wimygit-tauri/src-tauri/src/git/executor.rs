@@ -1,0 +1,521 @@
+use std::path::PathBuf;
+use std::process::Command;
+use std::sync::OnceLock;
+use serde::{Deserialize, Serialize};
+use tauri::{AppHandle, Emitter};
+
+static APP_HANDLE: OnceLock<AppHandle> = OnceLock::new();
+
+/// Store the app handle so run_git can emit events without requiring it as a parameter.
+pub fn init_app_handle(handle: AppHandle) {
+    let _ = APP_HANDLE.set(handle);
+}
+
+#[cfg(target_os = "windows")]
+use std::os::windows::process::CommandExt;
+
+/// Windows: CREATE_NO_WINDOW flag prevents a console window from flashing open
+/// when spawning child processes in a release (Windows-subsystem) build.
+#[cfg(target_os = "windows")]
+const CREATE_NO_WINDOW: u32 = 0x0800_0000;
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct RepoState {
+    pub state: String,
+    pub detail: Option<String>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct GitResult {
+    pub stdout: String,
+    pub stderr: String,
+    pub exit_code: i32,
+}
+
+static GIT_PATH_CACHE: OnceLock<String> = OnceLock::new();
+
+fn find_git_path_inner() -> Result<String, String> {
+    #[cfg(target_os = "windows")]
+    {
+        // Try 'where git' on Windows
+        let output = Command::new("where")
+            .arg("git")
+            .creation_flags(CREATE_NO_WINDOW)
+            .output()
+            .map_err(|e| format!("Failed to execute 'where git': {}", e))?;
+
+        if output.status.success() {
+            let path = String::from_utf8_lossy(&output.stdout)
+                .lines()
+                .next()
+                .unwrap_or("")
+                .trim()
+                .to_string();
+            if !path.is_empty() {
+                return Ok(path);
+            }
+        }
+
+        // Fallback: check common Windows paths
+        let common_paths = [
+            r"C:\Program Files\Git\bin\git.exe",
+            r"C:\Program Files (x86)\Git\bin\git.exe",
+            r"C:\Git\bin\git.exe",
+        ];
+
+        for path in common_paths {
+            if PathBuf::from(path).exists() {
+                return Ok(path.to_string());
+            }
+        }
+
+        Err("Git not found".to_string())
+    }
+
+    #[cfg(not(target_os = "windows"))]
+    {
+        // Try 'which git' on Unix-like systems
+        let output = Command::new("which")
+            .arg("git")
+            .output()
+            .map_err(|e| format!("Failed to execute 'which git': {}", e))?;
+
+        if output.status.success() {
+            let path = String::from_utf8_lossy(&output.stdout).trim().to_string();
+            if !path.is_empty() {
+                return Ok(path);
+            }
+        }
+
+        // Fallback: check common Unix paths
+        let common_paths = [
+            "/usr/bin/git",
+            "/usr/local/bin/git",
+            "/opt/homebrew/bin/git",
+        ];
+
+        for path in common_paths {
+            if PathBuf::from(path).exists() {
+                return Ok(path.to_string());
+            }
+        }
+
+        Err("Git not found".to_string())
+    }
+}
+
+/// Find git executable path based on platform (cached after first call)
+#[tauri::command]
+pub fn find_git_path() -> Result<String, String> {
+    let path = GIT_PATH_CACHE.get_or_init(|| {
+        find_git_path_inner().unwrap_or_default()
+    });
+    if path.is_empty() {
+        Err("Git not found".to_string())
+    } else {
+        Ok(path.clone())
+    }
+}
+
+/// Run git command with given arguments in specified directory
+#[tauri::command]
+pub async fn run_git(args: Vec<String>, cwd: String) -> Result<GitResult, String> {
+    let git_path = find_git_path()?;
+
+    let mut cmd = Command::new(&git_path);
+    cmd.args(&args).current_dir(&cwd);
+    #[cfg(target_os = "windows")]
+    cmd.creation_flags(CREATE_NO_WINDOW);
+
+    let start = std::time::Instant::now();
+    let output = cmd
+        .output()
+        .map_err(|e| format!("Failed to execute git: {}", e))?;
+    let duration_ms = start.elapsed().as_millis() as u64;
+
+    let result = GitResult {
+        stdout: String::from_utf8_lossy(&output.stdout).to_string(),
+        stderr: String::from_utf8_lossy(&output.stderr).to_string(),
+        exit_code: output.status.code().unwrap_or(-1),
+    };
+
+    // Emit event so the frontend can log every git command
+    if let Some(handle) = APP_HANDLE.get() {
+        #[derive(Clone, Serialize)]
+        struct GitLogEvent {
+            repo_name: String,
+            command: String,
+            stdout: String,
+            stderr: String,
+            exit_code: i32,
+            duration_ms: u64,
+        }
+        let repo_name = std::path::Path::new(&cwd)
+            .file_name()
+            .map(|n| n.to_string_lossy().to_string())
+            .unwrap_or_default();
+        let _ = handle.emit("git-log", GitLogEvent {
+            repo_name,
+            command: format!("git {}", args.join(" ")),
+            stdout: result.stdout.clone(),
+            stderr: result.stderr.clone(),
+            exit_code: result.exit_code,
+            duration_ms,
+        });
+    }
+
+    Ok(result)
+}
+
+/// Run git command and return only stdout (convenience function)
+#[tauri::command]
+pub async fn run_git_simple(args: Vec<String>, cwd: String) -> Result<String, String> {
+    let result = run_git(args, cwd).await?;
+
+    if result.exit_code != 0 {
+        return Err(format!("Git command failed: {}", result.stderr));
+    }
+
+    Ok(result.stdout)
+}
+
+/// Detect special repository states (rebase, merge, cherry-pick, etc.)
+#[tauri::command]
+pub async fn get_repo_state(cwd: String) -> Result<RepoState, String> {
+    let git_dir_result = run_git(
+        vec!["rev-parse".to_string(), "--git-dir".to_string()],
+        cwd.clone(),
+    )
+    .await?;
+
+    let git_dir = if git_dir_result.exit_code == 0 {
+        let raw = git_dir_result.stdout.trim();
+        let p = std::path::PathBuf::from(raw);
+        if p.is_absolute() {
+            p
+        } else {
+            std::path::PathBuf::from(&cwd).join(p)
+        }
+    } else {
+        return Ok(RepoState {
+            state: "normal".to_string(),
+            detail: None,
+        });
+    };
+
+    // Interactive rebase
+    let rebase_merge = git_dir.join("rebase-merge");
+    if rebase_merge.is_dir() {
+        let step = std::fs::read_to_string(rebase_merge.join("msgnum"))
+            .unwrap_or_default()
+            .trim()
+            .to_string();
+        let total = std::fs::read_to_string(rebase_merge.join("end"))
+            .unwrap_or_default()
+            .trim()
+            .to_string();
+        let head_name = std::fs::read_to_string(rebase_merge.join("head-name"))
+            .unwrap_or_default()
+            .trim()
+            .replace("refs/heads/", "");
+        let onto = std::fs::read_to_string(rebase_merge.join("onto"))
+            .unwrap_or_default()
+            .trim()
+            .to_string();
+        let onto_short = if onto.len() > 7 { &onto[..7] } else { &onto };
+        let detail = if !step.is_empty() && !total.is_empty() {
+            Some(format!(
+                "Rebasing {} onto {} ({}/{})",
+                if head_name.is_empty() { "HEAD" } else { &head_name },
+                onto_short,
+                step,
+                total
+            ))
+        } else {
+            None
+        };
+        return Ok(RepoState {
+            state: "rebase-interactive".to_string(),
+            detail,
+        });
+    }
+
+    // Non-interactive rebase
+    let rebase_apply = git_dir.join("rebase-apply");
+    if rebase_apply.is_dir() {
+        let step = std::fs::read_to_string(rebase_apply.join("next"))
+            .unwrap_or_default()
+            .trim()
+            .to_string();
+        let total = std::fs::read_to_string(rebase_apply.join("last"))
+            .unwrap_or_default()
+            .trim()
+            .to_string();
+        let detail = if !step.is_empty() && !total.is_empty() {
+            Some(format!("Rebasing ({}/{})", step, total))
+        } else {
+            None
+        };
+        return Ok(RepoState {
+            state: "rebase".to_string(),
+            detail,
+        });
+    }
+
+    // Merge in progress
+    if git_dir.join("MERGE_HEAD").is_file() {
+        let merge_head = std::fs::read_to_string(git_dir.join("MERGE_HEAD"))
+            .unwrap_or_default()
+            .trim()
+            .to_string();
+        let short = if merge_head.len() > 7 {
+            &merge_head[..7]
+        } else {
+            &merge_head
+        };
+        return Ok(RepoState {
+            state: "merging".to_string(),
+            detail: Some(format!("Merging {}", short)),
+        });
+    }
+
+    // Cherry-pick in progress
+    if git_dir.join("CHERRY_PICK_HEAD").is_file() {
+        let cp_head = std::fs::read_to_string(git_dir.join("CHERRY_PICK_HEAD"))
+            .unwrap_or_default()
+            .trim()
+            .to_string();
+        let short = if cp_head.len() > 7 {
+            &cp_head[..7]
+        } else {
+            &cp_head
+        };
+        return Ok(RepoState {
+            state: "cherry-picking".to_string(),
+            detail: Some(format!("Cherry-picking {}", short)),
+        });
+    }
+
+    // Revert in progress
+    if git_dir.join("REVERT_HEAD").is_file() {
+        let rev_head = std::fs::read_to_string(git_dir.join("REVERT_HEAD"))
+            .unwrap_or_default()
+            .trim()
+            .to_string();
+        let short = if rev_head.len() > 7 {
+            &rev_head[..7]
+        } else {
+            &rev_head
+        };
+        return Ok(RepoState {
+            state: "reverting".to_string(),
+            detail: Some(format!("Reverting {}", short)),
+        });
+    }
+
+    // Bisect in progress
+    if git_dir.join("BISECT_LOG").is_file() {
+        return Ok(RepoState {
+            state: "bisecting".to_string(),
+            detail: Some("Bisecting".to_string()),
+        });
+    }
+
+    Ok(RepoState {
+        state: "normal".to_string(),
+        detail: None,
+    })
+}
+
+/// Check if a directory is a git repository
+#[tauri::command]
+pub async fn is_git_repository(path: String) -> Result<bool, String> {
+    let result = run_git(vec!["rev-parse".to_string(), "--git-dir".to_string()], path).await?;
+    Ok(result.exit_code == 0)
+}
+
+/// Get parent commit hashes of a given commit (or HEAD)
+#[tauri::command]
+pub async fn get_commit_parents(cwd: String, commit_id: String) -> Result<Vec<String>, String> {
+    let result = run_git(
+        vec![
+            "log".to_string(),
+            "-1".to_string(),
+            "--format=%P".to_string(),
+            commit_id,
+        ],
+        cwd,
+    )
+    .await?;
+
+    if result.exit_code != 0 || result.stdout.trim().is_empty() {
+        return Ok(vec![]);
+    }
+
+    Ok(result
+        .stdout
+        .trim()
+        .split_whitespace()
+        .map(|s| s.to_string())
+        .collect())
+}
+
+/// Run git difftool (spawns external tool, does not wait)
+#[tauri::command]
+pub async fn run_difftool(cwd: String, args: Vec<String>) -> Result<(), String> {
+    let git_path = find_git_path()?;
+    let mut full_args = vec!["difftool".to_string(), "--no-prompt".to_string()];
+    full_args.extend(args);
+
+    // Emit git-log event so the frontend can see what was launched
+    if let Some(handle) = APP_HANDLE.get() {
+        #[derive(Clone, serde::Serialize)]
+        struct GitLogEvent {
+            repo_name: String,
+            command: String,
+            stdout: String,
+            stderr: String,
+            exit_code: i32,
+            duration_ms: u64,
+        }
+        let repo_name = std::path::Path::new(&cwd)
+            .file_name()
+            .map(|n| n.to_string_lossy().to_string())
+            .unwrap_or_default();
+        let _ = handle.emit("git-log", GitLogEvent {
+            repo_name,
+            command: format!("git {}", full_args.join(" ")),
+            stdout: String::new(),
+            stderr: String::new(),
+            exit_code: 0,
+            duration_ms: 0,
+        });
+    }
+
+    let mut cmd = std::process::Command::new(&git_path);
+    cmd.args(&full_args).current_dir(&cwd);
+    #[cfg(target_os = "windows")]
+    cmd.creation_flags(CREATE_NO_WINDOW);
+    cmd.spawn()
+        .map_err(|e| format!("Failed to run difftool: {}", e))?;
+
+    Ok(())
+}
+
+/// Run git mergetool (spawns external tool, does not wait)
+#[tauri::command]
+pub async fn run_mergetool(cwd: String, args: Vec<String>) -> Result<(), String> {
+    let git_path = find_git_path()?;
+    let mut full_args = vec!["mergetool".to_string(), "--no-prompt".to_string()];
+    full_args.extend(args);
+
+    if let Some(handle) = APP_HANDLE.get() {
+        #[derive(Clone, serde::Serialize)]
+        struct GitLogEvent {
+            repo_name: String,
+            command: String,
+            stdout: String,
+            stderr: String,
+            exit_code: i32,
+            duration_ms: u64,
+        }
+        let repo_name = std::path::Path::new(&cwd)
+            .file_name()
+            .map(|n| n.to_string_lossy().to_string())
+            .unwrap_or_default();
+        let _ = handle.emit("git-log", GitLogEvent {
+            repo_name,
+            command: format!("git {}", full_args.join(" ")),
+            stdout: String::new(),
+            stderr: String::new(),
+            exit_code: 0,
+            duration_ms: 0,
+        });
+    }
+
+    let mut cmd = std::process::Command::new(&git_path);
+    cmd.args(&full_args).current_dir(&cwd);
+    #[cfg(target_os = "windows")]
+    cmd.creation_flags(CREATE_NO_WINDOW);
+    cmd.spawn()
+        .map_err(|e| format!("Failed to run mergetool: {}", e))?;
+
+    Ok(())
+}
+
+/// Get the root directory of a git repository
+#[tauri::command]
+pub async fn get_repository_root(path: String) -> Result<String, String> {
+    let result = run_git_simple(
+        vec!["rev-parse".to_string(), "--show-toplevel".to_string()],
+        path,
+    )
+    .await?;
+    Ok(result.trim().to_string())
+}
+
+/// Get commit history for a specific file (follows renames)
+#[tauri::command]
+pub async fn get_file_commits(cwd: String, file_path: String) -> Result<Vec<crate::git::parsers::FileCommit>, String> {
+    let result = run_git(
+        vec![
+            "log".to_string(),
+            "--follow".to_string(),
+            "--format=%H|||%s|||%an|||%ae|||%ai".to_string(),
+            "--".to_string(),
+            file_path,
+        ],
+        cwd,
+    )
+    .await?;
+
+    Ok(crate::git::parsers::parse_file_commits(&result.stdout))
+}
+
+/// Get blame info for a file at a specific commit (or HEAD if empty)
+#[tauri::command]
+pub async fn get_blame_at_commit(
+    cwd: String,
+    commit_hash: String,
+    file_path: String,
+) -> Result<Vec<crate::git::parsers::BlameEntry>, String> {
+    let mut args = vec!["blame".to_string(), "--line-porcelain".to_string()];
+    if !commit_hash.is_empty() {
+        args.push(commit_hash);
+    }
+    args.push("--".to_string());
+    args.push(file_path);
+
+    let result = run_git(args, cwd).await?;
+
+    if result.exit_code != 0 {
+        return Err(format!("git blame failed: {}", result.stderr.trim()));
+    }
+
+    Ok(crate::git::parsers::parse_blame(&result.stdout))
+}
+
+/// Get git author info (user.name and user.email) for the given repository
+#[tauri::command]
+pub async fn get_git_author(cwd: String) -> Result<(String, String), String> {
+    let result = run_git(
+        vec![
+            "config".to_string(),
+            "--get-regexp".to_string(),
+            r"^user\.(name|email)$".to_string(),
+        ],
+        cwd,
+    )
+    .await?;
+
+    let mut name = String::new();
+    let mut email = String::new();
+    for line in result.stdout.lines() {
+        if let Some(val) = line.strip_prefix("user.name ") {
+            name = val.to_string();
+        } else if let Some(val) = line.strip_prefix("user.email ") {
+            email = val.to_string();
+        }
+    }
+    Ok((name, email))
+}

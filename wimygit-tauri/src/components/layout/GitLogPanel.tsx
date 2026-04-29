@@ -1,0 +1,216 @@
+import { useState, useEffect, useRef, useCallback } from "react";
+import { createPortal } from "react-dom";
+import { subscribeLog, clearLog, type GitLogEntry } from "../../lib/git-log";
+
+const MIN_HEIGHT = 80;
+const MAX_HEIGHT = 600;
+const DEFAULT_HEIGHT = 160;
+
+export function GitLogPanel() {
+  const [entries, setEntries] = useState<GitLogEntry[]>([]);
+  const [expanded, setExpanded] = useState(false);
+  const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [panelHeight, setPanelHeight] = useState(DEFAULT_HEIGHT);
+  const listRef = useRef<HTMLDivElement>(null);
+  const dragging = useRef(false);
+
+  useEffect(() => subscribeLog(setEntries), []);
+
+  // Auto-scroll to bottom when new entry arrives and panel is expanded
+  useEffect(() => {
+    if (expanded && listRef.current) {
+      listRef.current.scrollTop = listRef.current.scrollHeight;
+    }
+  }, [entries, expanded]);
+
+  const onResizeStart = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    dragging.current = true;
+    const startY = e.clientY;
+    const startH = panelHeight;
+
+    const onMouseMove = (ev: MouseEvent) => {
+      if (!dragging.current) return;
+      const delta = startY - ev.clientY;
+      setPanelHeight(Math.min(MAX_HEIGHT, Math.max(MIN_HEIGHT, startH + delta)));
+    };
+
+    const onMouseUp = () => {
+      dragging.current = false;
+      document.removeEventListener("mousemove", onMouseMove);
+      document.removeEventListener("mouseup", onMouseUp);
+    };
+
+    document.addEventListener("mousemove", onMouseMove);
+    document.addEventListener("mouseup", onMouseUp);
+  }, [panelHeight]);
+
+  const [ctxMenu, setCtxMenu] = useState<{ x: number; y: number } | null>(null);
+
+  const selected = entries.find((e) => e.id === selectedId) ?? null;
+  const latestEntry = entries[entries.length - 1] ?? null;
+
+  return (
+    <div className="shrink-0 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 flex flex-col">
+      {/* Resize handle */}
+      {expanded && (
+        <div
+          onMouseDown={onResizeStart}
+          className="h-1 cursor-ns-resize hover:bg-blue-400/50 active:bg-blue-500/50 transition-colors"
+        />
+      )}
+
+      {/* Header bar */}
+      <div
+        className="flex items-center gap-2 px-3 py-1 cursor-pointer select-none hover:bg-gray-100 dark:hover:bg-gray-800"
+        onClick={() => setExpanded((v) => !v)}
+      >
+        <svg className="w-4 h-4 shrink-0 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          {expanded ? (
+            <polyline points="6 9 12 15 18 9" />
+          ) : (
+            <polyline points="18 15 12 9 6 15" />
+          )}
+        </svg>
+        <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
+          Git Log
+        </span>
+        {!expanded && latestEntry && (
+          <span className={`text-xs font-mono truncate flex-1 ${latestEntry.exitCode !== 0 ? "text-red-500" : "text-gray-500 dark:text-gray-400"}`}>
+            $ git {latestEntry.command.replace(/^git /, "")}
+          </span>
+        )}
+        {entries.length > 0 && (
+          <button
+            onClick={(e) => { e.stopPropagation(); clearLog(); setSelectedId(null); }}
+            className="ml-auto text-xs text-gray-400 hover:text-red-500"
+            title="Clear log"
+          >
+            Clear
+          </button>
+        )}
+        <button
+          onClick={(e) => { e.stopPropagation(); setExpanded((v) => !v); }}
+          className="shrink-0 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+          title={expanded ? "Collapse" : "Expand"}
+        >
+          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            {expanded ? (
+              <polyline points="6 9 12 15 18 9" />
+            ) : (
+              <polyline points="18 15 12 9 6 15" />
+            )}
+          </svg>
+        </button>
+      </div>
+
+      {/* Expanded panel */}
+      {expanded && (
+        <div className="flex border-t border-gray-200 dark:border-gray-700" style={{ height: panelHeight }}>
+          {/* Left: command list */}
+          <div
+            ref={listRef}
+            className="w-1/2 overflow-y-auto border-r border-gray-200 dark:border-gray-700"
+            onContextMenu={(e) => { e.preventDefault(); setCtxMenu({ x: e.clientX, y: e.clientY }); }}
+          >
+            {entries.length === 0 ? (
+              <div className="p-2 text-xs text-gray-400 italic">No commands yet</div>
+            ) : (
+              entries.map((entry) => (
+                <div
+                  key={entry.id}
+                  onClick={() => setSelectedId(entry.id)}
+                  className={`flex items-center gap-2 px-2 py-0.5 cursor-pointer text-xs font-mono hover:bg-gray-100 dark:hover:bg-gray-800 ${
+                    selectedId === entry.id ? "bg-blue-50 dark:bg-blue-900/30" : ""
+                  }`}
+                >
+                  <span className="shrink-0 text-gray-400">
+                    [{entry.timestamp.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" })}]
+                  </span>
+                  <span className="shrink-0 text-gray-400">
+                    [{entry.repoName}]
+                  </span>
+                  <span className={`shrink-0 ${entry.exitCode !== 0 ? "text-red-500" : "text-green-600 dark:text-green-400"}`}>
+                    {entry.exitCode !== 0 ? "✕" : "✓"}
+                  </span>
+                  <span className="truncate text-gray-700 dark:text-gray-300">
+                    {entry.command}
+                  </span>
+                  <span className="ml-auto shrink-0 text-gray-400">
+                    ({entry.durationMs < 1000 ? `${entry.durationMs}ms` : `${(entry.durationMs / 1000).toFixed(1)}s`})
+                  </span>
+                </div>
+              ))
+            )}
+          </div>
+
+          {/* Right: output detail */}
+          <div className="w-1/2 overflow-auto p-2">
+            {selected ? (
+              <pre className="text-xs font-mono whitespace-pre-wrap text-gray-700 dark:text-gray-300">
+                {[selected.stdout, selected.stderr].filter(Boolean).join("\n") || "(no output)"}
+              </pre>
+            ) : (
+              <div className="text-xs text-gray-400 italic">Select a command to view output</div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Context menu */}
+      {ctxMenu && <GitLogCtxMenu
+        x={ctxMenu.x}
+        y={ctxMenu.y}
+        onCopy={() => {
+          const sel = window.getSelection()?.toString();
+          if (sel) navigator.clipboard.writeText(sel);
+          setCtxMenu(null);
+        }}
+        hasCopy={!!window.getSelection()?.toString()}
+        onClear={() => { clearLog(); setSelectedId(null); setCtxMenu(null); }}
+        onClose={() => setCtxMenu(null)}
+      />}
+    </div>
+  );
+}
+
+function GitLogCtxMenu({ x, y, onCopy, hasCopy, onClear, onClose }: {
+  x: number; y: number;
+  onCopy: () => void; hasCopy: boolean;
+  onClear: () => void; onClose: () => void;
+}) {
+  const menuRef = useRef<HTMLDivElement>(null);
+  const [pos, setPos] = useState({ top: y, left: x });
+
+  useEffect(() => {
+    if (menuRef.current) {
+      const rect = menuRef.current.getBoundingClientRect();
+      let newTop = y;
+      let newLeft = x;
+      if (y + rect.height > window.innerHeight) newTop = window.innerHeight - rect.height - 4;
+      if (x + rect.width > window.innerWidth) newLeft = window.innerWidth - rect.width - 4;
+      if (newTop !== y || newLeft !== x) setPos({ top: newTop, left: newLeft });
+    }
+  }, [x, y]);
+
+  const btnClass = "w-full text-left px-4 py-1.5 hover:bg-gray-100 dark:hover:bg-gray-700";
+
+  return createPortal(
+    <>
+      <div
+        style={{ position: "fixed", inset: 0, zIndex: 9998 }}
+        onClick={onClose}
+        onContextMenu={(e) => { e.preventDefault(); onClose(); }}
+      />
+      <div
+        ref={menuRef}
+        style={{ position: "fixed", top: pos.top, left: pos.left, zIndex: 9999 }}
+        className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded shadow-lg py-1 text-sm min-w-[120px]"
+      >
+        <button className={btnClass} onClick={onCopy} disabled={!hasCopy}>Copy</button>
+        <button className={btnClass} onClick={onClear}>Clear</button>
+      </div>
+    </>,
+    document.body
+  );
+}
