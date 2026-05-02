@@ -283,9 +283,10 @@ export async function getHistory(
   cwd: string,
   path: string = "",
   skip: number = 0,
-  count: number = 100
+  count: number = 100,
+  all: boolean = true
 ): Promise<CommitInfo[]> {
-  return invoke<CommitInfo[]>("get_history", { cwd, path, skip, count });
+  return invoke<CommitInfo[]>("get_history", { cwd, path, skip, count, all });
 }
 
 export async function getCommitFiles(

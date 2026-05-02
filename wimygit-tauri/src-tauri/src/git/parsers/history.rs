@@ -111,19 +111,22 @@ pub async fn get_history(
     path: String,
     skip: u32,
     count: u32,
+    all: bool,
 ) -> Result<Vec<CommitInfo>, String> {
     let format_str = format!("{}%H||%h||%an||%at||%s||%D", COMMIT_MARKER);
     let mut args = vec![
         "log".to_string(),
-        "--all".to_string(),
         "--graph".to_string(),
         format!("--pretty=format:{}", format_str),
         format!("-{}", count),
         format!("--skip={}", skip),
     ];
 
+    if all {
+        args.insert(1, "--all".to_string());
+    }
+
     if !path.is_empty() {
-        args.retain(|a| a != "--all");
         args.push("--".to_string());
         args.push(path);
     }

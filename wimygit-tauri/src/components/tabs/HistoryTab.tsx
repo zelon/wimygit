@@ -143,6 +143,7 @@ export function HistoryTab({ repoPath, filePath, refreshKey, onRefresh, onFileSe
   const [selectedFile, setSelectedFile] = useState<CommitFile | null>(null);
 
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; commit: CommitInfo } | null>(null);
+  const [allBranches, setAllBranches] = useState(true);
 
   // ── load history ──────────────────────────────────────────────────────────
 
@@ -150,7 +151,7 @@ export function HistoryTab({ repoPath, filePath, refreshKey, onRefresh, onFileSe
     if (!repoPath) return;
     skip === 0 ? setLoading(true) : setLoadingMore(true);
     try {
-      const result = await getHistory(repoPath, filePath ?? "", skip, PAGE_SIZE);
+      const result = await getHistory(repoPath, filePath ?? "", skip, PAGE_SIZE, allBranches);
       setCommits((prev) => skip === 0 ? result : [...prev, ...result]);
       setHasMore(result.length === PAGE_SIZE);
       setError(null);
@@ -160,7 +161,7 @@ export function HistoryTab({ repoPath, filePath, refreshKey, onRefresh, onFileSe
       setLoading(false);
       setLoadingMore(false);
     }
-  }, [repoPath, filePath]);
+  }, [repoPath, filePath, allBranches]);
 
   useEffect(() => {
     setSelectedCommit(null);
@@ -217,10 +218,14 @@ export function HistoryTab({ repoPath, filePath, refreshKey, onRefresh, onFileSe
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
-      {/* ── Path indicator ── */}
+      {/* ── Path indicator + options ── */}
       <div className="flex items-center gap-2 px-3 py-1.5 text-xs border-b border-gray-200 dark:border-gray-700 shrink-0">
         <span className="text-gray-500 dark:text-gray-400">Path:</span>
         <span className="font-mono text-gray-700 dark:text-gray-300 truncate">{displayPath}</span>
+        <label className="ml-auto flex items-center gap-1 cursor-pointer shrink-0 select-none text-gray-600 dark:text-gray-400">
+          <input type="checkbox" checked={allBranches} onChange={(e) => setAllBranches(e.target.checked)} className="cursor-pointer" />
+          All Branches
+        </label>
       </div>
       {/* ── Top: commit list ── */}
       <div className="flex-[3] overflow-y-auto border-b border-gray-200 dark:border-gray-700">
