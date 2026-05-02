@@ -75,7 +75,7 @@ function WorkspaceTree({ repoPath, refreshKey, onFileSelect, onRefresh }: Worksp
 
   const handleSelect = useCallback((path: string, isDir: boolean) => {
     setSelectedPath(path);
-    onFileSelect?.(isDir ? null : path);
+    onFileSelect?.(path);
   }, [onFileSelect]);
 
   useEffect(() => {

@@ -432,6 +432,7 @@ function App() {
           {activeRepo.activeTab === "history" && (
             <HistoryTab
               repoPath={activeRepo.repoPath}
+              filePath={selectedFilePath}
               refreshKey={activeRepo.refreshKey}
               onRefresh={handleRefresh}
               onFileSelect={setSelectedDiff}

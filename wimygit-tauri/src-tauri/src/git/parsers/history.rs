@@ -115,6 +115,7 @@ pub async fn get_history(
     let format_str = format!("{}%H||%h||%an||%at||%s||%D", COMMIT_MARKER);
     let mut args = vec![
         "log".to_string(),
+        "--all".to_string(),
         "--graph".to_string(),
         format!("--pretty=format:{}", format_str),
         format!("-{}", count),
@@ -122,6 +123,7 @@ pub async fn get_history(
     ];
 
     if !path.is_empty() {
+        args.retain(|a| a != "--all");
         args.push("--".to_string());
         args.push(path);
     }

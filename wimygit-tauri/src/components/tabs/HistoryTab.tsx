@@ -11,6 +11,7 @@ import { invoke } from "@tauri-apps/api/core";
 
 interface HistoryTabProps {
   repoPath: string;
+  filePath?: string | null;
   refreshKey: number;
   onRefresh: () => void;
   onFileSelect?: (info: SelectedDiffInfo) => void;
@@ -128,7 +129,7 @@ function ContextMenu({ x, y, commit, repoPath, onClose, onRefresh }: ContextMenu
 
 const PAGE_SIZE = 100;
 
-export function HistoryTab({ repoPath, refreshKey, onRefresh, onFileSelect }: HistoryTabProps) {
+export function HistoryTab({ repoPath, filePath, refreshKey, onRefresh, onFileSelect }: HistoryTabProps) {
   const [commits, setCommits] = useState<CommitInfo[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -149,7 +150,7 @@ export function HistoryTab({ repoPath, refreshKey, onRefresh, onFileSelect }: Hi
     if (!repoPath) return;
     skip === 0 ? setLoading(true) : setLoadingMore(true);
     try {
-      const result = await getHistory(repoPath, "", skip, PAGE_SIZE);
+      const result = await getHistory(repoPath, filePath ?? "", skip, PAGE_SIZE);
       setCommits((prev) => skip === 0 ? result : [...prev, ...result]);
       setHasMore(result.length === PAGE_SIZE);
       setError(null);
@@ -159,7 +160,7 @@ export function HistoryTab({ repoPath, refreshKey, onRefresh, onFileSelect }: Hi
       setLoading(false);
       setLoadingMore(false);
     }
-  }, [repoPath]);
+  }, [repoPath, filePath]);
 
   useEffect(() => {
     setSelectedCommit(null);
@@ -210,8 +211,17 @@ export function HistoryTab({ repoPath, refreshKey, onRefresh, onFileSelect }: Hi
     return <div className="p-4 text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20">{error}</div>;
   }
 
+  const displayPath = filePath
+    ? filePath.replace(/\\/g, "/").replace(repoPath.replace(/\\/g, "/"), "") || "/"
+    : "/";
+
   return (
     <div className="flex flex-col h-full overflow-hidden">
+      {/* ── Path indicator ── */}
+      <div className="flex items-center gap-2 px-3 py-1.5 text-xs border-b border-gray-200 dark:border-gray-700 shrink-0">
+        <span className="text-gray-500 dark:text-gray-400">Path:</span>
+        <span className="font-mono text-gray-700 dark:text-gray-300 truncate">{displayPath}</span>
+      </div>
       {/* ── Top: commit list ── */}
       <div className="flex-[3] overflow-y-auto border-b border-gray-200 dark:border-gray-700">
         {commits.map((commit) => {
