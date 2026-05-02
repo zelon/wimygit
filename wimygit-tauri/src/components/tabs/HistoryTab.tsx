@@ -47,6 +47,16 @@ function formatDate(ts: number) {
   return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
 }
 
+function formatRelativeTime(ts: number): string | null {
+  const diffMs = Date.now() - ts * 1000;
+  if (diffMs < 0 || diffMs >= 8 * 60 * 60 * 1000) return null;
+  const diffMin = Math.floor(diffMs / 60000);
+  if (diffMin < 1) return "(just now)";
+  if (diffMin < 60) return `(${diffMin} minute${diffMin === 1 ? "" : "s"} ago)`;
+  const diffHr = Math.floor(diffMin / 60);
+  return `(${diffHr} hour${diffHr === 1 ? "" : "s"} ago)`;
+}
+
 const FILE_STATUS_ICON: Record<string, { icon: string; cls: string }> = {
   M: { icon: "M", cls: "text-yellow-600 dark:text-yellow-400" },
   A: { icon: "+", cls: "text-green-600 dark:text-green-400" },
@@ -232,31 +242,36 @@ export function HistoryTab({ repoPath, filePath, refreshKey, onRefresh, onFileSe
         {commits.map((commit) => {
           const refs = parseRefNames(commit.ref_names);
           const isSelected = selectedCommit?.hash === commit.hash;
+          const relative = formatRelativeTime(commit.timestamp);
           return (
             <div
               key={commit.hash}
               onClick={() => handleSelectCommit(commit)}
               onContextMenu={(e) => { e.preventDefault(); setContextMenu({ x: e.clientX, y: e.clientY, commit }); }}
-              className={`flex items-start gap-2 px-2 py-1.5 cursor-pointer border-b border-gray-100 dark:border-gray-800 ${
+              className={`flex items-center gap-2 px-2 py-1 cursor-pointer border-b border-gray-100 dark:border-gray-800 ${
                 isSelected ? "bg-blue-50 dark:bg-blue-900/30" : "hover:bg-gray-50 dark:hover:bg-gray-800"
               }`}
             >
-              <span className="font-mono text-xs text-gray-400 shrink-0 leading-5 select-none" style={{ minWidth: "1.5rem" }}>
+              {/* Graph */}
+              <span className="font-mono text-xs text-gray-400 shrink-0 grow-0 select-none whitespace-pre" style={{ width: "1.5rem" }}>
                 {commit.graph}
               </span>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-1 flex-wrap">
-                  <span className="font-mono text-xs text-blue-600 dark:text-blue-400 shrink-0">{commit.short_hash}</span>
-                  {refs.map((r, i) => (
-                    <span key={i} className={`text-[10px] px-1 rounded leading-4 shrink-0 ${REF_BADGE[r.kind]}`}>{r.label}</span>
-                  ))}
-                </div>
-                <div className="text-xs text-gray-800 dark:text-gray-200 truncate">{commit.message}</div>
-                <div className="text-[10px] text-gray-400 flex gap-2">
-                  <span>{commit.author}</span>
-                  <span>{formatDate(commit.timestamp)}</span>
-                </div>
+              {/* CommitId */}
+              <span className="font-mono text-xs text-blue-600 dark:text-blue-400 shrink-0 grow-0" style={{ width: "4.5rem" }}>{commit.short_hash}</span>
+              {/* Message (with inline refs) */}
+              <div className="flex-1 min-w-0 flex items-center gap-1">
+                {refs.map((r, i) => (
+                  <span key={i} className={`text-[10px] px-1 rounded leading-4 shrink-0 ${REF_BADGE[r.kind]}`}>{r.label}</span>
+                ))}
+                <span className="text-xs text-gray-800 dark:text-gray-200 truncate">{commit.message}</span>
               </div>
+              {/* Author */}
+              <span className="text-xs text-gray-500 dark:text-gray-400 shrink-0 grow-0 truncate text-right" style={{ width: "8rem" }}>{commit.author}</span>
+              {/* DateTime (right-aligned) */}
+              <span className="text-xs text-gray-400 shrink-0 grow-0 text-right" style={{ width: "13rem" }}>
+                {relative && <span className="text-gray-500 dark:text-gray-400 mr-1">{relative}</span>}
+                {formatDate(commit.timestamp)}
+              </span>
             </div>
           );
         })}
