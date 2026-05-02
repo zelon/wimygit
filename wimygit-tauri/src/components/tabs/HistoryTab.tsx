@@ -94,7 +94,12 @@ function ContextMenu({ x, y, commit, repoPath, onClose, onRefresh }: ContextMenu
         try { await invoke("run_git_simple", { args: ["tag", name.trim(), commit.hash], cwd: repoPath }); onRefresh(); }
         catch (e) { alert(String(e)); }
     }},
-    { label: "Cherry-pick",       action: () => run(["cherry-pick", commit.hash]) },
+    { label: "Cherry-pick",       action: async () => {
+        onClose();
+        try { await invoke("run_git", { args: ["cherry-pick", commit.hash], cwd: repoPath }); }
+        catch { /* run_git only fails if git is not found; conflicts are non-throwing */ }
+        onRefresh();
+    }},
     { label: "──", action: () => {} },
     { label: "Reset Soft",        action: () => { if (confirm(`Reset soft to ${commit.short_hash}?`)) run(["reset", "--soft", commit.hash]); } },
     { label: "Reset Mixed",       action: () => { if (confirm(`Reset mixed to ${commit.short_hash}?`)) run(["reset", "--mixed", commit.hash]); } },
