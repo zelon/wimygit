@@ -32,6 +32,7 @@ export interface GraphRow {
   color: string;         // node color
   lines: GraphLine[];    // lines going DOWN from this row to next
   maxCol: number;        // max column index (for SVG width)
+  isMerge: boolean;      // true if commit has 2+ parents
 }
 
 // ─── layout algorithm ────────────────────────────────────────────────────────
@@ -115,7 +116,7 @@ export function computeGraphLayout(commits: CommitInfo[]): GraphRow[] {
 
     const maxCol = Math.max(col, lanes.length - 1, ...lines.map(l => Math.max(l.fromCol, l.toCol)));
 
-    rows.push({ col, color, lines, maxCol: Math.max(maxCol, 0) });
+    rows.push({ col, color, lines, maxCol: Math.max(maxCol, 0), isMerge: parentHashes.length >= 2 });
   }
 
   return rows;
@@ -155,7 +156,15 @@ export function GraphSvg({ row }: { row: GraphRow }) {
         }
       })}
       {/* Commit node */}
-      <circle cx={cx} cy={cy} r={NODE_R} fill={row.color} />
+      {row.isMerge ? (
+        <>
+          <circle cx={cx} cy={cy} r={NODE_R + 2} className="fill-white dark:fill-gray-900" />
+          <circle cx={cx} cy={cy} r={NODE_R + 1} fill="none" stroke={row.color} strokeWidth={2} />
+          <circle cx={cx} cy={cy} r={1.5} fill={row.color} />
+        </>
+      ) : (
+        <circle cx={cx} cy={cy} r={NODE_R} fill={row.color} />
+      )}
     </svg>
   );
 }
