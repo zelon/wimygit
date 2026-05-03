@@ -122,6 +122,19 @@ export function computeGraphLayout(commits: CommitInfo[]): GraphRow[] {
   return rows;
 }
 
+// ─── linear layout (path-filtered history) ───────────────────────────────────
+
+export function computeLinearLayout(count: number): GraphRow[] {
+  const color = GRAPH_COLORS[0];
+  return Array.from({ length: count }, (_, i) => ({
+    col: 0,
+    color,
+    lines: i < count - 1 ? [{ fromCol: 0, toCol: 0, color }] : [],
+    maxCol: 0,
+    isMerge: false,
+  }));
+}
+
 // ─── SVG component ───────────────────────────────────────────────────────────
 
 export function GraphSvg({ row }: { row: GraphRow }) {

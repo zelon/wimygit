@@ -8,7 +8,7 @@ import {
   type SelectedDiffInfo,
 } from "../../lib";
 import { invoke } from "@tauri-apps/api/core";
-import { computeGraphLayout, GraphSvg, ROW_H } from "./GitGraph";
+import { computeGraphLayout, computeLinearLayout, GraphSvg, ROW_H } from "./GitGraph";
 
 interface HistoryTabProps {
   repoPath: string;
@@ -216,7 +216,14 @@ export function HistoryTab({ repoPath, filePath, refreshKey, onRefresh, onFileSe
 
   // ── graph layout ──────────────────────────────────────────────────────────
 
-  const graphRows = useMemo(() => computeGraphLayout(commits), [commits]);
+  const isPathFiltered = !!filePath && (
+    filePath.replace(/\\/g, "/").replace(repoPath.replace(/\\/g, "/"), "") || "/"
+  ) !== "/";
+
+  const graphRows = useMemo(
+    () => isPathFiltered ? computeLinearLayout(commits.length) : computeGraphLayout(commits),
+    [commits, isPathFiltered]
+  );
 
   // ── render ────────────────────────────────────────────────────────────────
 
