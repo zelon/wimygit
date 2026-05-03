@@ -832,6 +832,7 @@ export function PendingTab({ repoPath, refreshKey, onFilePreview, onLfsLockCount
           <label className="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-400 cursor-pointer select-none">
             <input
               type="checkbox"
+              tabIndex={-1}
               checked={amend}
               onChange={(e) => handleAmendToggle(e.target.checked)}
               className="w-3 h-3 accent-blue-600"
@@ -840,6 +841,7 @@ export function PendingTab({ repoPath, refreshKey, onFilePreview, onLfsLockCount
           </label>
           <div className="flex items-center gap-1.5">
             <button
+              tabIndex={-1}
               onClick={handleAiCommitMessage}
               disabled={aiGenerating || stagedFiles.length === 0}
               title={apiKey ? "Generate AI commit message (Gemini)" : "Set Gemini API key first"}
