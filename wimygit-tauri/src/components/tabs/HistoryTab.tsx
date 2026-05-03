@@ -261,8 +261,6 @@ export function HistoryTab({ repoPath, filePath, refreshKey, onRefresh, onFileSe
             >
               {/* Graph (SVG) */}
               {graphRow && <GraphSvg row={graphRow} />}
-              {/* CommitId */}
-              <span className="font-mono text-xs text-blue-600 dark:text-blue-400 shrink-0 grow-0" style={{ width: "4.5rem" }}>{commit.short_hash}</span>
               {/* Message (with inline refs) */}
               <div className="flex-1 min-w-0 flex items-center gap-1">
                 {refs.map((r, i) => (
@@ -284,11 +282,13 @@ export function HistoryTab({ repoPath, filePath, refreshKey, onRefresh, onFileSe
               </div>
               {/* Author */}
               <span className="text-xs text-gray-500 dark:text-gray-400 shrink-0 grow-0 truncate text-right" style={{ width: "8rem" }}>{commit.author}</span>
-              {/* DateTime (right-aligned) */}
+              {/* DateTime */}
               <span className="text-xs text-gray-400 shrink-0 grow-0 text-right" style={{ width: "13rem" }}>
                 {relative && <span className="text-gray-500 dark:text-gray-400 mr-1">{relative}</span>}
                 {formatDate(commit.timestamp)}
               </span>
+              {/* CommitId (right end) */}
+              <span className="font-mono text-xs text-blue-600 dark:text-blue-400 shrink-0 grow-0 text-right" style={{ width: "4.5rem" }}>{commit.short_hash}</span>
             </div>
           );
         })}
