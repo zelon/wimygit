@@ -4,12 +4,9 @@ import {
   listDirEntries,
   getDiff,
   getCommitDiff,
-  getGitStatus,
-  getCommitParents,
   runDifftool,
   getLfsLockableExtensions,
   lfsLockFile,
-  type FileStatus,
   type SelectedDiffInfo,
 } from "../../lib";
 import { type TreeNode, makeNode, patchNode } from "../tabs/DirectoryTreeTab";
@@ -265,36 +262,16 @@ function WorkspaceCtxMenu({ x, y, node, isLfsLockable, onClose, onLfsLock }: Wor
 const DEFAULT_CONTEXT = 3;
 const CONTEXT_STEP = 5;
 
-type DiffModeKind = "staged" | "working" | "combined" | `parent${number}`;
+type DiffModeKind = "combined" | `parent${number}`;
 
 interface DiffMode {
   kind: DiffModeKind;
   label: string;
-  /** For working tree: ref like "HEAD^1". For commit mode: actual parent hash. */
-  parentRef?: string;
-  staged?: boolean;
+  parentRef?: string; // actual parent hash for getCommitDiff / difftool
 }
 
-/** Modes for working tree (HEAD may be a merge commit). */
-function buildWorkingModes(parents: string[]): DiffMode[] {
-  if (parents.length >= 2) {
-    return [
-      { kind: "combined", label: "Combined Diff" },
-      ...parents.map((_, i) => ({
-        kind: `parent${i}` as DiffModeKind,
-        label: `Diff ^${i + 1}`,
-        parentRef: `HEAD^${i + 1}`,
-      })),
-    ];
-  }
-  return [
-    { kind: "working", label: "Working", staged: false },
-    { kind: "staged", label: "Staged", staged: true },
-  ];
-}
-
-/** Modes for a selected commit from History. */
-function buildCommitModes(parents: string[]): DiffMode[] {
+/** Returns diff modes based on parent count — one "Diff" tab for single-parent, Combined+parent tabs for merges. */
+function buildDiffModes(parents: string[]): DiffMode[] {
   if (parents.length >= 2) {
     return [
       { kind: "combined", label: "Combined Diff" },
@@ -305,8 +282,7 @@ function buildCommitModes(parents: string[]): DiffMode[] {
       })),
     ];
   }
-  // Single parent or initial commit — just one "Diff" tab
-  return [{ kind: "combined", label: "Diff" }];
+  return [{ kind: "combined", label: "Diff", parentRef: parents[0] }];
 }
 
 interface PendingFilePreview {
@@ -316,60 +292,52 @@ interface PendingFilePreview {
 
 interface SidebarQuickDiffProps {
   repoPath: string;
-  refreshKey: number;
   selectedDiff?: SelectedDiffInfo | null;
   pendingFilePreview?: PendingFilePreview | null;
 }
 
-function SidebarQuickDiff({ repoPath, refreshKey, selectedDiff, pendingFilePreview }: SidebarQuickDiffProps) {
-  const [modes, setModes] = useState<DiffMode[]>(buildWorkingModes([]));
-  const [activeMode, setActiveMode] = useState<DiffModeKind>("working");
+function SidebarQuickDiff({ repoPath, selectedDiff, pendingFilePreview }: SidebarQuickDiffProps) {
+  const [modes, setModes] = useState<DiffMode[]>([{ kind: "combined", label: "Diff" }]);
+  const [activeMode, setActiveMode] = useState<DiffModeKind>("combined");
   const [contextLines, setContextLines] = useState(DEFAULT_CONTEXT);
-  // Working-tree only: file list + internal selection
-  const [files, setFiles] = useState<FileStatus[]>([]);
-  const [selectedFile, setSelectedFile] = useState<FileStatus | null>(null);
   const [diff, setDiff] = useState("");
-  const [fullDiff, setFullDiff] = useState("");
   const [loadingDiff, setLoadingDiff] = useState(false);
-  // Pending file preview (from PendingTab clicks) — separate state to avoid conflicts
   const [pendingDiff, setPendingDiff] = useState("");
   const [pendingLoading, setPendingLoading] = useState(false);
-  // When user clicks a file in the internal list, override pending preview
-  const [internalOverride, setInternalOverride] = useState(false);
 
   const isCommitMode = !!selectedDiff;
-
-  // ── Rebuild modes when commit selection or repo changes ──
-  useEffect(() => {
-    if (selectedDiff) {
-      const newModes = buildCommitModes(selectedDiff.parents);
-      setModes(newModes);
-      setActiveMode(newModes[0].kind);
-    } else {
-      if (!repoPath) return;
-      getCommitParents(repoPath, "HEAD")
-        .then((parents) => {
-          const newModes = buildWorkingModes(parents);
-          setModes(newModes);
-          setActiveMode(newModes[0].kind);
-        })
-        .catch(() => {
-          const fallback = buildWorkingModes([]);
-          setModes(fallback);
-          setActiveMode(fallback[0].kind);
-        });
-    }
-  }, [selectedDiff, repoPath, refreshKey]);
-
+  const showingPendingPreview = !isCommitMode && !!pendingFilePreview;
   const currentMode = modes.find((m) => m.kind === activeMode) ?? modes[0];
+
+  // ── Rebuild commit modes when selection changes ──
+  useEffect(() => {
+    if (!selectedDiff) return;
+    const newModes = buildDiffModes(selectedDiff.parents);
+    setModes(newModes);
+    setActiveMode(newModes[0].kind);
+  }, [selectedDiff]);
+
+  // ── Commit diff (from History tab) ──
+  useEffect(() => {
+    if (!selectedDiff || !repoPath) { setDiff(""); return; }
+    setLoadingDiff(true);
+    getCommitDiff(
+      repoPath,
+      selectedDiff.commitId,
+      selectedDiff.file.filename,
+      selectedDiff.file.filename2 ?? undefined,
+      currentMode.parentRef,
+      contextLines,
+    )
+      .then((d) => setDiff(d))
+      .catch(() => setDiff(""))
+      .finally(() => setLoadingDiff(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [repoPath, selectedDiff, activeMode, contextLines]);
 
   // ── Pending file preview (from PendingTab) ──
   useEffect(() => {
-    if (!pendingFilePreview || isCommitMode || !repoPath) {
-      setPendingDiff("");
-      return;
-    }
-    setInternalOverride(false); // reset override when new external preview arrives
+    if (!pendingFilePreview || isCommitMode || !repoPath) { setPendingDiff(""); return; }
     setPendingLoading(true);
     getDiff(repoPath, pendingFilePreview.staged, pendingFilePreview.filename, contextLines)
       .then((d) => setPendingDiff(d))
@@ -377,118 +345,52 @@ function SidebarQuickDiff({ repoPath, refreshKey, selectedDiff, pendingFilePrevi
       .finally(() => setPendingLoading(false));
   }, [pendingFilePreview, isCommitMode, repoPath, contextLines]);
 
-  // ── Working tree: refresh file list ──
-  useEffect(() => {
-    if (isCommitMode || !repoPath) return;
-    setSelectedFile(null);
-    setDiff("");
-    setFullDiff("");
-    getGitStatus(repoPath)
-      .then((status) => {
-        const staged = currentMode?.staged === true;
-        setFiles(staged ? status.staged : [...status.modified, ...status.untracked]);
-      })
-      .catch(() => setFiles([]));
-  }, [repoPath, refreshKey, activeMode, isCommitMode]);
-
-  // ── Fetch diff ──
-  useEffect(() => {
-    if (!repoPath) return;
-    setLoadingDiff(true);
-
-    if (isCommitMode && selectedDiff) {
-      // Commit mode: get diff for the selected file
-      getCommitDiff(
-        repoPath,
-        selectedDiff.commitId,
-        selectedDiff.file.filename,
-        selectedDiff.file.filename2 ?? undefined,
-        currentMode?.parentRef,
-        contextLines,
-      )
-        .then((d) => setDiff(d))
-        .catch(() => setDiff(""))
-        .finally(() => setLoadingDiff(false));
-    } else {
-      // Working tree mode
-      getDiff(repoPath, currentMode?.staged ?? false, undefined, contextLines, currentMode?.parentRef)
-        .then((d) => {
-          setFullDiff(d);
-          if (!selectedFile) setDiff(d);
-        })
-        .catch(() => { setFullDiff(""); setDiff(""); })
-        .finally(() => setLoadingDiff(false));
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [repoPath, refreshKey, activeMode, contextLines, selectedDiff]);
-
-  // ── Working tree: select file ──
-  const handleSelectFile = async (file: FileStatus | null) => {
-    setInternalOverride(true); // user clicked internally → override pending preview
-    setSelectedFile(file);
-    if (!file) { setDiff(fullDiff); return; }
-    setLoadingDiff(true);
-    try {
-      const d = await getDiff(repoPath, currentMode?.staged ?? false, file.filename, contextLines, currentMode?.parentRef);
-      setDiff(d);
-    } catch { setDiff(""); }
-    finally { setLoadingDiff(false); }
-  };
-
   // ── Diff Tool ──
   const handleDiffTool = async () => {
     const args: string[] = [];
     if (isCommitMode && selectedDiff) {
-      if (currentMode?.parentRef) {
-        args.push(currentMode.parentRef, selectedDiff.commitId);
-      } else if (selectedDiff.parents.length > 0) {
-        args.push(selectedDiff.parents[0], selectedDiff.commitId);
-      } else {
-        args.push(selectedDiff.commitId);
-      }
+      if (currentMode.parentRef) args.push(currentMode.parentRef, selectedDiff.commitId);
+      else args.push(selectedDiff.commitId);
       args.push("--", selectedDiff.file.filename);
     } else if (showingPendingPreview && pendingFilePreview) {
       if (pendingFilePreview.staged) args.push("--cached");
       args.push("--", pendingFilePreview.filename);
     } else {
-      if (!selectedFile) return;
-      if (currentMode?.parentRef) args.push(currentMode.parentRef);
-      else if (currentMode?.staged) args.push("--cached");
-      args.push("--", selectedFile.filename);
+      return;
     }
     try { await runDifftool(repoPath, args); } catch { /* ignore */ }
   };
 
   const changeContext = (delta: number) => setContextLines((prev) => Math.max(0, prev + delta));
 
-  // ── Derived display state ──
-  const showingPendingPreview = !isCommitMode && !!pendingFilePreview && !internalOverride;
   const displayDiff = showingPendingPreview ? pendingDiff : diff;
   const displayLoading = showingPendingPreview ? pendingLoading : loadingDiff;
-  const diffToolEnabled = isCommitMode || showingPendingPreview || !!selectedFile;
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
       {/* ── Toolbar ── */}
       <div className="shrink-0 flex items-center gap-0.5 px-1 py-1 bg-gray-100 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex-wrap">
-        <div className="flex gap-0.5 flex-1 min-w-0 overflow-x-auto">
-          {modes.map((m) => (
-            <button
-              key={m.kind}
-              onClick={() => setActiveMode(m.kind)}
-              className={`shrink-0 px-1.5 py-0.5 text-xs rounded transition-colors whitespace-nowrap ${activeMode === m.kind
-                ? "bg-white dark:bg-gray-600 shadow text-gray-900 dark:text-white"
-                : "text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700"
-                }`}
-            >
-              {m.label}
-            </button>
-          ))}
-        </div>
+        {/* Commit parent mode buttons — only shown for merge commits */}
+        {isCommitMode && modes.length > 1 && (
+          <div className="flex gap-0.5 flex-1 min-w-0 overflow-x-auto">
+            {modes.map((m) => (
+              <button
+                key={m.kind}
+                onClick={() => setActiveMode(m.kind)}
+                className={`shrink-0 px-1.5 py-0.5 text-xs rounded transition-colors whitespace-nowrap ${activeMode === m.kind
+                  ? "bg-white dark:bg-gray-600 shadow text-gray-900 dark:text-white"
+                  : "text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700"
+                  }`}
+              >
+                {m.label}
+              </button>
+            ))}
+          </div>
+        )}
         <div className="flex gap-0.5 shrink-0 ml-auto">
           <button
             onClick={handleDiffTool}
-            disabled={!diffToolEnabled}
+            disabled={!isCommitMode && !showingPendingPreview}
             title="Open in Diff Tool (git difftool)"
             className="px-1.5 py-0.5 text-xs rounded bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-40"
           >
@@ -512,7 +414,7 @@ function SidebarQuickDiff({ repoPath, refreshKey, selectedDiff, pendingFilePrevi
         </div>
       </div>
 
-      {/* ── File header (commit mode or pending preview) ── */}
+      {/* ── File header ── */}
       {isCommitMode && selectedDiff && (
         <div className="shrink-0 px-2 py-1 text-xs border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-850 text-gray-700 dark:text-gray-300 truncate">
           <span className="text-gray-400 mr-1">{selectedDiff.commit.short_hash}</span>
@@ -526,34 +428,6 @@ function SidebarQuickDiff({ repoPath, refreshKey, selectedDiff, pendingFilePrevi
         </div>
       )}
 
-      {/* ── Working tree file list (only when not in pending preview) ── */}
-      {!isCommitMode && !showingPendingPreview && files.length > 0 && (
-        <div className="shrink-0 max-h-24 overflow-y-auto border-b border-gray-200 dark:border-gray-700">
-          <button
-            onClick={() => handleSelectFile(null)}
-            className={`w-full text-left px-2 py-0.5 text-xs border-b border-gray-100 dark:border-gray-800 ${!selectedFile
-              ? "bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300"
-              : "text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800"
-              }`}
-          >
-            ≡ All ({files.length})
-          </button>
-          {files.map((f) => (
-            <button
-              key={f.filename}
-              onClick={() => handleSelectFile(f)}
-              className={`w-full text-left px-2 py-0.5 text-xs border-b border-gray-100 dark:border-gray-800 truncate ${selectedFile?.filename === f.filename
-                ? "bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300"
-                : "hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300"
-                }`}
-              title={f.filename}
-            >
-              {f.filename}
-            </button>
-          ))}
-        </div>
-      )}
-
       {/* ── Diff viewer ── */}
       <div className="flex-1 overflow-hidden">
         {displayLoading ? (
@@ -561,16 +435,14 @@ function SidebarQuickDiff({ repoPath, refreshKey, selectedDiff, pendingFilePrevi
         ) : (
           <DiffViewer
             diff={displayDiff}
-            placeholder={isCommitMode ? "No diff available" : "No changes"}
+            placeholder={isCommitMode ? "No diff available" : showingPendingPreview ? "No changes" : "Select a file from History or Pending Changes"}
           />
         )}
       </div>
 
       {/* ── Footer ── */}
       <div className="shrink-0 px-2 py-0.5 text-xs text-gray-400 dark:text-gray-500 bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 flex justify-between">
-        <span>
-          {isCommitMode ? "Commit diff" : showingPendingPreview ? "Pending preview" : "Working tree"}
-        </span>
+        <span>{isCommitMode ? "Commit diff" : showingPendingPreview ? "Pending preview" : "—"}</span>
         <span>Context: {contextLines} lines</span>
       </div>
     </div>
@@ -702,7 +574,6 @@ export function LeftSidebar({ repoPath, refreshKey, selectedDiff, pendingFilePre
           {activeTab === "quickdiff" && (
             <SidebarQuickDiff
               repoPath={repoPath}
-              refreshKey={refreshKey}
               selectedDiff={selectedDiff}
               pendingFilePreview={pendingFilePreview}
             />
