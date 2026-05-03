@@ -545,7 +545,7 @@ export function LeftSidebar({ repoPath, refreshKey, selectedDiff, pendingFilePre
     (localStorage.getItem("sidebar_tab") as LeftTab | null) ?? "workspace"
   );
 
-  // Auto-switch to Quick Diff when a commit file is selected
+  // Auto-switch to Quick Diff when a commit file or pending file is selected
   const prevSelectedDiff = useRef<SelectedDiffInfo | null | undefined>(undefined);
   useEffect(() => {
     if (selectedDiff && selectedDiff !== prevSelectedDiff.current) {
@@ -554,6 +554,15 @@ export function LeftSidebar({ repoPath, refreshKey, selectedDiff, pendingFilePre
     }
     prevSelectedDiff.current = selectedDiff;
   }, [selectedDiff]);
+
+  const prevPendingFilePreview = useRef<PendingFilePreview | null | undefined>(undefined);
+  useEffect(() => {
+    if (pendingFilePreview && pendingFilePreview !== prevPendingFilePreview.current) {
+      setActiveTab("quickdiff");
+      localStorage.setItem("sidebar_tab", "quickdiff");
+    }
+    prevPendingFilePreview.current = pendingFilePreview;
+  }, [pendingFilePreview]);
 
   // Auto-switch to Workspace tab when highlightPath is set
   useEffect(() => {
