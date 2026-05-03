@@ -430,7 +430,7 @@ function App() {
             <PendingTab
               repoPath={activeRepo.repoPath}
               refreshKey={activeRepo.refreshKey}
-              onFilePreview={(filename, staged) => { setSelectedDiff(null); setPendingFilePreview({ filename, staged }); }}
+              onFilePreview={(filename, staged, isUntracked) => { setSelectedDiff(null); setPendingFilePreview({ filename, staged, isUntracked }); }}
               onLfsLockCountChange={setLfsLockCount}
             />
           )}

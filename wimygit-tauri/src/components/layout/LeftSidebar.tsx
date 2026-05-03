@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { createPortal } from "react-dom";
+import { readFile } from "@tauri-apps/plugin-fs";
 import {
   listDirEntries,
   getDiff,
@@ -7,6 +8,7 @@ import {
   runDifftool,
   getLfsLockableExtensions,
   lfsLockFile,
+  readTextFile,
   type SelectedDiffInfo,
 } from "../../lib";
 import { type TreeNode, makeNode, patchNode } from "../tabs/DirectoryTreeTab";
@@ -363,7 +365,15 @@ function buildDiffModes(parents: string[]): DiffMode[] {
 interface PendingFilePreview {
   filename: string;
   staged: boolean;
+  isUntracked?: boolean;
 }
+
+const IMAGE_EXTS = new Set([".png", ".jpg", ".jpeg", ".gif", ".svg", ".webp", ".bmp", ".ico", ".tiff", ".avif"]);
+const IMAGE_MIME: Record<string, string> = {
+  ".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg",
+  ".gif": "image/gif", ".svg": "image/svg+xml", ".webp": "image/webp",
+  ".bmp": "image/bmp", ".ico": "image/x-icon", ".tiff": "image/tiff", ".avif": "image/avif",
+};
 
 interface SidebarQuickDiffProps {
   repoPath: string;
@@ -379,6 +389,7 @@ function SidebarQuickDiff({ repoPath, selectedDiff, pendingFilePreview }: Sideba
   const [loadingDiff, setLoadingDiff] = useState(false);
   const [pendingDiff, setPendingDiff] = useState("");
   const [pendingLoading, setPendingLoading] = useState(false);
+  const [imagePreviewSrc, setImagePreviewSrc] = useState<string | null>(null);
 
   const isCommitMode = !!selectedDiff;
   const showingPendingPreview = !isCommitMode && !!pendingFilePreview;
@@ -412,7 +423,44 @@ function SidebarQuickDiff({ repoPath, selectedDiff, pendingFilePreview }: Sideba
 
   // ── Pending file preview (from PendingTab) ──
   useEffect(() => {
-    if (!pendingFilePreview || isCommitMode || !repoPath) { setPendingDiff(""); return; }
+    if (!pendingFilePreview || isCommitMode || !repoPath) {
+      setPendingDiff(""); setImagePreviewSrc(null); return;
+    }
+
+    if (pendingFilePreview.isUntracked) {
+      const absPath = repoPath.replace(/\\/g, "/") + "/" + pendingFilePreview.filename;
+      const ext = ("." + pendingFilePreview.filename.split(".").pop()).toLowerCase();
+
+      setPendingLoading(true);
+      setImagePreviewSrc(null);
+      setPendingDiff("");
+
+      if (IMAGE_EXTS.has(ext)) {
+        readFile(absPath)
+          .then((bytes) => {
+            const mime = IMAGE_MIME[ext] ?? "application/octet-stream";
+            let binary = "";
+            for (let i = 0; i < bytes.length; i += 8192) {
+              binary += String.fromCharCode(...bytes.subarray(i, i + 8192));
+            }
+            setImagePreviewSrc(`data:${mime};base64,${btoa(binary)}`);
+          })
+          .catch(() => setImagePreviewSrc(null))
+          .finally(() => setPendingLoading(false));
+      } else {
+        readTextFile(absPath)
+          .then((content) => {
+            const lines = content.split("\n");
+            const header = `--- /dev/null\n+++ b/${pendingFilePreview.filename}\n@@ -0,0 +1,${lines.length} @@\n`;
+            setPendingDiff(header + lines.map((l) => `+${l}`).join("\n"));
+          })
+          .catch(() => setPendingDiff(""))
+          .finally(() => setPendingLoading(false));
+      }
+      return;
+    }
+
+    setImagePreviewSrc(null);
     setPendingLoading(true);
     getDiff(repoPath, pendingFilePreview.staged, pendingFilePreview.filename, contextLines)
       .then((d) => setPendingDiff(d))
@@ -503,10 +551,14 @@ function SidebarQuickDiff({ repoPath, selectedDiff, pendingFilePreview }: Sideba
         </div>
       )}
 
-      {/* ── Diff viewer ── */}
+      {/* ── Diff viewer / Image preview ── */}
       <div className="flex-1 overflow-hidden">
         {displayLoading ? (
           <div className="p-2 text-xs text-gray-400">Loading...</div>
+        ) : showingPendingPreview && imagePreviewSrc ? (
+          <div className="flex items-center justify-center h-full p-4 overflow-auto bg-gray-50 dark:bg-gray-900">
+            <img src={imagePreviewSrc} alt={pendingFilePreview?.filename} className="max-w-full max-h-full object-contain" />
+          </div>
         ) : (
           <DiffViewer
             diff={displayDiff}

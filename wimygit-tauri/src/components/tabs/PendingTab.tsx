@@ -54,7 +54,7 @@ async function generateAiCommitMessage(stagedDiff: string, apiKey: string): Prom
 interface PendingTabProps {
   repoPath: string;
   refreshKey: number;
-  onFilePreview?: (filename: string, staged: boolean) => void;
+  onFilePreview?: (filename: string, staged: boolean, isUntracked?: boolean) => void;
   onLfsLockCountChange?: (count: number) => void;
 }
 
@@ -558,6 +558,8 @@ export function PendingTab({ repoPath, refreshKey, onFilePreview, onLfsLockCount
       ...(status?.untracked ?? []),
     ].map((f) => f.filename);
 
+    const isUntracked = status?.untracked?.some((f) => f.filename === filename) ?? false;
+
     if (shiftKey && lastClickedUnstagedRef.current) {
       // Shift+Click: 범위 선택
       const anchorIdx = allUnstagedNames.indexOf(lastClickedUnstagedRef.current);
@@ -572,7 +574,7 @@ export function PendingTab({ repoPath, refreshKey, onFilePreview, onLfsLockCount
           return next;
         });
         setPreviewKey(`u:${filename}`);
-        onFilePreview?.(filename, false);
+        onFilePreview?.(filename, false, isUntracked);
       }
     } else if (ctrlKey) {
       // Ctrl+Click: 개별 토글
@@ -583,7 +585,7 @@ export function PendingTab({ repoPath, refreshKey, onFilePreview, onLfsLockCount
         } else {
           next.add(filename);
           setPreviewKey(`u:${filename}`);
-          onFilePreview?.(filename, false);
+          onFilePreview?.(filename, false, isUntracked);
         }
         return next;
       });
@@ -592,7 +594,7 @@ export function PendingTab({ repoPath, refreshKey, onFilePreview, onLfsLockCount
       // 일반 클릭: 단일 선택
       setSelectedUnstaged(new Set([filename]));
       setPreviewKey(`u:${filename}`);
-      onFilePreview?.(filename, false);
+      onFilePreview?.(filename, false, isUntracked);
       lastClickedUnstagedRef.current = filename;
     }
   };
