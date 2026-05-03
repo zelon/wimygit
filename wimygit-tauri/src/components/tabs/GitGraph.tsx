@@ -24,6 +24,7 @@ interface GraphLine {
   toCol: number;
   color: string;
   convergent?: boolean; // ends at node (cy) instead of bottom (ROW_H)
+  noTop?: boolean;      // vertical line starts at cy instead of y=0 (first commit in lane)
 }
 
 export interface GraphRow {
@@ -47,8 +48,10 @@ export function computeGraphLayout(commits: CommitInfo[]): GraphRow[] {
 
     // Find which lane this commit occupies
     let col = lanes.indexOf(hash);
+    let isNewLane = false;
     if (col === -1) {
       // New branch: find first empty slot or append
+      isNewLane = true;
       const empty = lanes.indexOf(null);
       col = empty !== -1 ? empty : lanes.length;
       lanes[col] = hash;
@@ -102,7 +105,7 @@ export function computeGraphLayout(commits: CommitInfo[]): GraphRow[] {
     }
     // The current lane also continues if it has a parent
     if (parentHashes.length > 0) {
-      lines.push({ fromCol: col, toCol: col, color });
+      lines.push({ fromCol: col, toCol: col, color, noTop: isNewLane });
     }
 
     // Trim trailing nulls from lanes
@@ -132,8 +135,9 @@ export function GraphSvg({ row }: { row: GraphRow }) {
         const x1 = line.fromCol * COL_W + COL_W / 2;
         const x2 = line.toCol * COL_W + COL_W / 2;
         if (x1 === x2) {
-          // Straight vertical line
-          return <line key={i} x1={x1} y1={0} x2={x2} y2={ROW_H} stroke={line.color} strokeWidth={2} />;
+          // Straight vertical line (noTop: start at node instead of top)
+          const y1 = line.noTop ? cy : 0;
+          return <line key={i} x1={x1} y1={y1} x2={x2} y2={ROW_H} stroke={line.color} strokeWidth={2} />;
         } else if (line.convergent) {
           // Convergence: lane from above (y=0) curves into the commit node (cy)
           return (
