@@ -266,7 +266,19 @@ export function HistoryTab({ repoPath, filePath, refreshKey, onRefresh, onFileSe
               {/* Message (with inline refs) */}
               <div className="flex-1 min-w-0 flex items-center gap-1">
                 {refs.map((r, i) => (
-                  <span key={i} className={`text-[10px] px-1 rounded leading-4 shrink-0 ${REF_BADGE[r.kind]}`}>{r.label}</span>
+                  <span key={i} className={`text-[10px] px-1 rounded leading-4 shrink-0 inline-flex items-center gap-0.5 ${REF_BADGE[r.kind]}`}>
+                    {(r.kind === "head" || r.kind === "branch" || r.kind === "remote") && (
+                      <svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor" className="shrink-0">
+                        <path d="M11.75 2.5a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5zm-2.25.75a2.25 2.25 0 1 1 3 2.122V6A2.5 2.5 0 0 1 10 8.5H6a1 1 0 0 0-1 1v1.128a2.251 2.251 0 1 1-1.5 0V5.372a2.25 2.25 0 1 1 1.5 0v1.836A2.493 2.493 0 0 1 6 7h4a1 1 0 0 0 1-1v-.628A2.25 2.25 0 0 1 9.5 3.25zM4.25 12a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5zM3.5 3.25a.75.75 0 1 1 1.5 0 .75.75 0 0 1-1.5 0z" />
+                      </svg>
+                    )}
+                    {r.kind === "tag" && (
+                      <svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor" className="shrink-0">
+                        <path d="M1 7.775V2.75C1 1.784 1.784 1 2.75 1h5.025c.464 0 .91.184 1.238.513l6.25 6.25a1.75 1.75 0 0 1 0 2.474l-5.026 5.026a1.75 1.75 0 0 1-2.474 0l-6.25-6.25A1.752 1.752 0 0 1 1 7.775zM6 5a1 1 0 1 0 0 2 1 1 0 0 0 0-2z" />
+                      </svg>
+                    )}
+                    {r.label}
+                  </span>
                 ))}
                 <span className="text-xs text-gray-800 dark:text-gray-200 truncate">{commit.message}</span>
               </div>
