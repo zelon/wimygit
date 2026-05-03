@@ -72,12 +72,12 @@ export async function getSyncStatus(cwd: string): Promise<SyncStatus | null> {
         aheadCommits = parseCommits(raw);
       } else {
         // oldest 1 + newest 1
-        const oldest = await runGitSimple(
-          ["log", "--reverse", `${upstream.trim()}..HEAD`, `--format=%h|%ci|%s`, "-1"],
-          cwd
-        );
         const newest = await runGitSimple(
           ["log", `${upstream.trim()}..HEAD`, `--format=%h|%ci|%s`, "-1"],
+          cwd
+        );
+        const oldest = await runGitSimple(
+          ["log", `${upstream.trim()}..HEAD`, `--format=%h|%ci|%s`, `--skip=${ahead - 1}`, "-1"],
           cwd
         );
         aheadCommits = [...parseCommits(oldest), ...parseCommits(newest)];
