@@ -16,6 +16,8 @@ interface HistoryTabProps {
   refreshKey: number;
   onRefresh: () => void;
   onFileSelect?: (info: SelectedDiffInfo) => void;
+  onClearPath?: () => void;
+  onShowInWorkspace?: () => void;
 }
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
@@ -140,7 +142,7 @@ function ContextMenu({ x, y, commit, repoPath, onClose, onRefresh }: ContextMenu
 
 const PAGE_SIZE = 100;
 
-export function HistoryTab({ repoPath, filePath, refreshKey, onRefresh, onFileSelect }: HistoryTabProps) {
+export function HistoryTab({ repoPath, filePath, refreshKey, onRefresh, onFileSelect, onClearPath, onShowInWorkspace }: HistoryTabProps) {
   const [commits, setCommits] = useState<CommitInfo[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -244,6 +246,26 @@ export function HistoryTab({ repoPath, filePath, refreshKey, onRefresh, onFileSe
       <div className="flex items-center gap-2 px-3 py-1.5 text-xs border-b border-gray-200 dark:border-gray-700 shrink-0">
         <span className="text-gray-500 dark:text-gray-400">Path:</span>
         <span className="font-mono text-gray-700 dark:text-gray-300 truncate">{displayPath}</span>
+        {displayPath !== "/" && (
+          <>
+            {onShowInWorkspace && (
+              <button
+                onClick={onShowInWorkspace}
+                className="ml-6 shrink-0 px-2 py-0.5 rounded border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 active:bg-gray-200 dark:active:bg-gray-600 transition-colors"
+              >
+                Show in Workspace
+              </button>
+            )}
+            {onClearPath && (
+              <button
+                onClick={onClearPath}
+                className="ml-1 shrink-0 px-2 py-0.5 rounded border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 active:bg-gray-200 dark:active:bg-gray-600 transition-colors"
+              >
+                Clear Path
+              </button>
+            )}
+          </>
+        )}
         <label className="ml-auto flex items-center gap-1 cursor-pointer shrink-0 select-none text-gray-600 dark:text-gray-400">
           <input type="checkbox" checked={allBranches} onChange={(e) => setAllBranches(e.target.checked)} className="cursor-pointer" />
           All Branches

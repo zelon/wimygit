@@ -77,6 +77,7 @@ function App() {
   const [selectedDiff, setSelectedDiff] = useState<SelectedDiffInfo | null>(null);
   const [pendingFilePreview, setPendingFilePreview] = useState<{ filename: string; staged: boolean } | null>(null);
   const [selectedFilePath, setSelectedFilePath] = useState<string | null>(null);
+  const [workspaceHighlightPath, setWorkspaceHighlightPath] = useState<string | null>(null);
   const [showTimeLapse, setShowTimeLapse] = useState(false);
   const [lfsWarning, setLfsWarning] = useState<string | null>(null);
   const [lfsLockCount, setLfsLockCount] = useState(0);
@@ -403,6 +404,7 @@ function App() {
           pendingFilePreview={pendingFilePreview}
           onFileSelect={setSelectedFilePath}
           onRefresh={handleRefresh}
+          highlightPath={workspaceHighlightPath}
         />
 
         {/* Right panel: tab bar + tab content */}
@@ -439,6 +441,8 @@ function App() {
               refreshKey={activeRepo.refreshKey}
               onRefresh={handleRefresh}
               onFileSelect={setSelectedDiff}
+              onClearPath={() => setSelectedFilePath(null)}
+              onShowInWorkspace={() => setWorkspaceHighlightPath(selectedFilePath)}
             />
           )}
           {activeRepo.activeTab === "branches" && (

@@ -26,9 +26,10 @@ interface WorkspaceTreeProps {
   refreshKey: number;
   onFileSelect?: (path: string | null) => void;
   onRefresh?: () => void;
+  selectPath?: string | null;
 }
 
-function WorkspaceTree({ repoPath, refreshKey, onFileSelect, onRefresh }: WorkspaceTreeProps) {
+function WorkspaceTree({ repoPath, refreshKey, onFileSelect, onRefresh, selectPath }: WorkspaceTreeProps) {
   const [rootNodes, setRootNodes] = useState<TreeNode[]>([]);
   const [selectedPath, setSelectedPath] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -75,18 +76,32 @@ function WorkspaceTree({ repoPath, refreshKey, onFileSelect, onRefresh }: Worksp
     onFileSelect?.(path);
   }, [onFileSelect]);
 
+  // Track the latest selectPath in a ref so async callbacks can read it
+  const selectPathRef = useRef<string | null | undefined>(selectPath);
+  selectPathRef.current = selectPath;
+
+  useEffect(() => {
+    // Only update local highlight — do NOT call onFileSelect to avoid resetting selectedFilePath in parent
+    if (selectPath) setSelectedPath(selectPath);
+  }, [selectPath]);
+
   useEffect(() => {
     if (!repoPath) return;
     setLoading(true);
     listDirEntries(repoPath)
       .then((entries) => {
         setRootNodes(entries.map(makeNode));
-        setSelectedPath(repoPath);
-        onFileSelect?.(null); // repo root selected = no file
+        if (selectPathRef.current) {
+          // External highlight is active: select the target file, don't reset parent's selectedFilePath
+          setSelectedPath(selectPathRef.current);
+        } else {
+          setSelectedPath(repoPath);
+          onFileSelect?.(null); // repo root selected = no file
+        }
       })
       .catch(() => setRootNodes([]))
       .finally(() => setLoading(false));
-  }, [repoPath, refreshKey]);
+  }, [repoPath, refreshKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleToggle = useCallback(async (target: TreeNode) => {
     if (!target.is_dir) return;
@@ -458,9 +473,10 @@ interface LeftSidebarProps {
   pendingFilePreview?: PendingFilePreview | null;
   onFileSelect?: (path: string | null) => void;
   onRefresh?: () => void;
+  highlightPath?: string | null;
 }
 
-export function LeftSidebar({ repoPath, refreshKey, selectedDiff, pendingFilePreview, onFileSelect, onRefresh }: LeftSidebarProps) {
+export function LeftSidebar({ repoPath, refreshKey, selectedDiff, pendingFilePreview, onFileSelect, onRefresh, highlightPath }: LeftSidebarProps) {
   const [width, setWidth] = useState(() => {
     const quarter = Math.round(window.innerWidth / 4);
     return Math.max(MIN_SIDEBAR_WIDTH, quarter);
@@ -478,6 +494,14 @@ export function LeftSidebar({ repoPath, refreshKey, selectedDiff, pendingFilePre
     }
     prevSelectedDiff.current = selectedDiff;
   }, [selectedDiff]);
+
+  // Auto-switch to Workspace tab when highlightPath is set
+  useEffect(() => {
+    if (highlightPath) {
+      setActiveTab("workspace");
+      localStorage.setItem("sidebar_tab", "workspace");
+    }
+  }, [highlightPath]);
 
   // ── double-click to toggle 3:1 / 1:3 ratio ──
   const handleDoubleClick = useCallback(() => {
@@ -569,7 +593,7 @@ export function LeftSidebar({ repoPath, refreshKey, selectedDiff, pendingFilePre
         {/* ── Content ── */}
         <div className="flex-1 overflow-hidden flex flex-col">
           {activeTab === "workspace" && (
-            <WorkspaceTree repoPath={repoPath} refreshKey={refreshKey} onFileSelect={onFileSelect} onRefresh={onRefresh} />
+            <WorkspaceTree repoPath={repoPath} refreshKey={refreshKey} onFileSelect={onFileSelect} onRefresh={onRefresh} selectPath={highlightPath} />
           )}
           {activeTab === "quickdiff" && (
             <SidebarQuickDiff
