@@ -80,6 +80,7 @@ function App() {
   const [showTimeLapse, setShowTimeLapse] = useState(false);
   const [lfsWarning, setLfsWarning] = useState<string | null>(null);
   const [lfsLockCount, setLfsLockCount] = useState(0);
+  const [worktreeCount, setWorktreeCount] = useState(0);
   const [showPluginModal, setShowPluginModal] = useState(false);
 
   // Set window title (visible in taskbar)
@@ -412,11 +413,13 @@ function App() {
             onRefresh={handleRefresh}
           />
           <TabBar
-            tabs={BASE_INNER_TABS.map((tab) =>
-              tab.id === "pending" && lfsLockCount > 0
-                ? { ...tab, label: `Pending Changes [${lfsLockCount} Locked]` }
-                : tab
-            )}
+            tabs={BASE_INNER_TABS.map((tab) => {
+              if (tab.id === "pending" && lfsLockCount > 0)
+                return { ...tab, label: `Pending Changes [${lfsLockCount} Locked]` };
+              if (tab.id === "worktrees" && worktreeCount >= 2)
+                return { ...tab, label: `Worktrees [+${worktreeCount}]` };
+              return tab;
+            })}
             activeTab={activeRepo.activeTab}
             onTabChange={handleTabChange}
           />
@@ -465,6 +468,7 @@ function App() {
               refreshKey={activeRepo.refreshKey}
               onRefresh={handleRefresh}
               onOpenRepo={(path) => handleOpenRepo(path)}
+              onWorktreeCountChange={setWorktreeCount}
             />
           )}
           {activeRepo.activeTab === "stash" && (

@@ -14,9 +14,10 @@ interface WorktreeTabProps {
   refreshKey: number;
   onRefresh: () => void;
   onOpenRepo?: (path: string) => void;
+  onWorktreeCountChange?: (count: number) => void;
 }
 
-export function WorktreeTab({ repoPath, refreshKey, onRefresh, onOpenRepo }: WorktreeTabProps) {
+export function WorktreeTab({ repoPath, refreshKey, onRefresh, onOpenRepo, onWorktreeCountChange }: WorktreeTabProps) {
   const [worktrees, setWorktrees] = useState<WorktreeInfo[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -45,6 +46,7 @@ export function WorktreeTab({ repoPath, refreshKey, onRefresh, onOpenRepo }: Wor
     try {
       const list = await getWorktrees(repoPath);
       setWorktrees(list);
+      onWorktreeCountChange?.(list.length);
       setError(null);
     } catch (e) {
       setError(String(e));
