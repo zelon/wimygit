@@ -53,7 +53,7 @@ export function RepoTabBar({ tabs, activeId, onSelect, onClose, onAdd, onPluginC
       </span>
 
       {/* Repo tabs */}
-      <div className="flex items-end overflow-x-auto flex-1 gap-0.5 ml-1" data-tauri-drag-region>
+      <div className="flex items-end overflow-x-auto overflow-y-hidden flex-1 gap-0.5 ml-1" data-tauri-drag-region>
         {tabs.map((tab) => (
           <div key={tab.id} className="flex items-center shrink-0">
             <div
