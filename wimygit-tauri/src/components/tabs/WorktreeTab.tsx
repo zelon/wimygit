@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { resolve } from "@tauri-apps/api/path";
 import {
   getWorktrees,
   addWorktree,
@@ -26,6 +27,17 @@ export function WorktreeTab({ repoPath, refreshKey, onRefresh, onOpenRepo }: Wor
   const [addPath, setAddPath] = useState("");
   const [addBranch, setAddBranch] = useState("");
   const [isNewBranch, setIsNewBranch] = useState(false);
+
+  const [resolvedPath, setResolvedPath] = useState<string | null>(null);
+
+  useEffect(() => {
+    const trimmed = addPath.trim();
+    if (!trimmed) {
+      setResolvedPath(null);
+      return;
+    }
+    resolve(repoPath, trimmed, ".git").then(setResolvedPath);
+  }, [addPath, repoPath]);
 
   const fetchWorktrees = async () => {
     if (!repoPath) return;
@@ -152,7 +164,14 @@ export function WorktreeTab({ repoPath, refreshKey, onRefresh, onOpenRepo }: Wor
         <div className="mb-6 p-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800 space-y-3">
           <h3 className="text-sm font-medium">New Worktree</h3>
           <div>
-            <label className="block text-xs text-gray-500 mb-1">Path *</label>
+            <div className="flex items-baseline gap-2 mb-1">
+              <label className="text-xs text-gray-500">Path *</label>
+              {resolvedPath && (
+                <span className="text-xs text-gray-400 dark:text-gray-500 truncate" title={resolvedPath}>
+                  {resolvedPath}
+                </span>
+              )}
+            </div>
             <input
               type="text"
               value={addPath}
