@@ -18,8 +18,9 @@ pub struct BranchInfo {
 pub fn parse_branches(output: &str) -> Vec<BranchInfo> {
     let mut branches = Vec::new();
 
-    // Pattern: (* or space) branch_name commit_id [upstream: ahead/behind] message
-    let re = Regex::new(r"^([\s\*])\s+(\S+)\s+([a-f0-9]+)\s*(.*)$").unwrap();
+    // Pattern: (* or space or +) branch_name commit_id [upstream: ahead/behind] message
+    // + indicates branch is linked to a worktree
+    let re = Regex::new(r"^([\s\*\+])\s+(\S+)\s+([a-f0-9]+)\s*(.*)$").unwrap();
     let upstream_re = Regex::new(r"\[([^\]]+)\]").unwrap();
     let ahead_behind_re = Regex::new(r"ahead (\d+)|behind (\d+)").unwrap();
 
