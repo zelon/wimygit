@@ -73,7 +73,7 @@ function WorkspaceTree({ repoPath, refreshKey, onFileSelect, onRefresh }: Worksp
     }
   }, [repoPath, onRefresh]);
 
-  const handleSelect = useCallback((path: string, isDir: boolean) => {
+  const handleSelect = useCallback((path: string) => {
     setSelectedPath(path);
     onFileSelect?.(path);
   }, [onFileSelect]);
@@ -126,10 +126,10 @@ function WorkspaceTree({ repoPath, refreshKey, onFileSelect, onRefresh }: Worksp
       <div className="flex-1 overflow-y-auto py-1 text-xs select-none">
         {/* Repo root */}
         <div
-          onClick={() => handleSelect(repoPath, true)}
+          onClick={() => handleSelect(repoPath)}
           className={`flex items-center gap-1 px-2 py-0.5 cursor-pointer rounded-sm ${selectedPath === repoPath
-              ? "bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-200"
-              : "hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300"
+            ? "bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-200"
+            : "hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300"
             }`}
         >
           <span className="text-yellow-500 shrink-0">[repo]</span>
@@ -183,8 +183,8 @@ function TreeRow({ node, depth, selectedPath, onSelect, onToggle, onContextMenu 
         onContextMenu={(e) => { e.preventDefault(); onContextMenu(e, node); }}
         style={{ paddingLeft: `${depth * 12 + 6}px` }}
         className={`flex items-center gap-1 py-0.5 pr-1 cursor-pointer text-xs rounded-sm ${isSelected
-            ? "bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-200"
-            : "hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300"
+          ? "bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-200"
+          : "hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300"
           }`}
       >
         {node.is_dir ? (
@@ -477,8 +477,8 @@ function SidebarQuickDiff({ repoPath, refreshKey, selectedDiff, pendingFilePrevi
               key={m.kind}
               onClick={() => setActiveMode(m.kind)}
               className={`shrink-0 px-1.5 py-0.5 text-xs rounded transition-colors whitespace-nowrap ${activeMode === m.kind
-                  ? "bg-white dark:bg-gray-600 shadow text-gray-900 dark:text-white"
-                  : "text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700"
+                ? "bg-white dark:bg-gray-600 shadow text-gray-900 dark:text-white"
+                : "text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700"
                 }`}
             >
               {m.label}
@@ -532,8 +532,8 @@ function SidebarQuickDiff({ repoPath, refreshKey, selectedDiff, pendingFilePrevi
           <button
             onClick={() => handleSelectFile(null)}
             className={`w-full text-left px-2 py-0.5 text-xs border-b border-gray-100 dark:border-gray-800 ${!selectedFile
-                ? "bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300"
-                : "text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800"
+              ? "bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300"
+              : "text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800"
               }`}
           >
             ≡ All ({files.length})
@@ -543,8 +543,8 @@ function SidebarQuickDiff({ repoPath, refreshKey, selectedDiff, pendingFilePrevi
               key={f.filename}
               onClick={() => handleSelectFile(f)}
               className={`w-full text-left px-2 py-0.5 text-xs border-b border-gray-100 dark:border-gray-800 truncate ${selectedFile?.filename === f.filename
-                  ? "bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300"
-                  : "hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300"
+                ? "bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300"
+                : "hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300"
                 }`}
               title={f.filename}
             >
