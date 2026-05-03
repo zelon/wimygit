@@ -240,14 +240,15 @@ export function WorktreeTab({ repoPath, refreshKey, onRefresh, onOpenRepo, onWor
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
                   {wt.is_main && (
-                    <span className="text-xs px-1.5 py-0.5 bg-blue-500 text-white rounded">main</span>
+                    <span className="text-xs px-1.5 py-0.5 bg-blue-500 text-white rounded">main worktree</span>
                   )}
                   {wt.is_locked && (
                     <span className="text-xs px-1.5 py-0.5 bg-yellow-500 text-white rounded">locked</span>
                   )}
-                  <span
-                    className="text-xs px-1.5 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded font-medium"
-                  >
+                  <span className="text-[10px] px-1 rounded leading-4 shrink-0 inline-flex items-center gap-0.5 bg-blue-500 text-white">
+                    <svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor" className="shrink-0">
+                      <path d="M11.75 2.5a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5zm-2.25.75a2.25 2.25 0 1 1 3 2.122V6A2.5 2.5 0 0 1 10 8.5H6a1 1 0 0 0-1 1v1.128a2.251 2.251 0 1 1-1.5 0V5.372a2.25 2.25 0 1 1 1.5 0v1.836A2.493 2.493 0 0 1 6 7h4a1 1 0 0 0 1-1v-.628A2.25 2.25 0 0 1 9.5 3.25zM4.25 12a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5zM3.5 3.25a.75.75 0 1 1 1.5 0 .75.75 0 0 1-1.5 0z" />
+                    </svg>
                     {wt.branch}
                   </span>
                   {wt.commit_hash && (
