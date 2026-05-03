@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import {
   getHistory,
   getCommitFiles,
@@ -8,6 +8,7 @@ import {
   type SelectedDiffInfo,
 } from "../../lib";
 import { invoke } from "@tauri-apps/api/core";
+import { computeGraphLayout, GraphSvg, ROW_H } from "./GitGraph";
 
 interface HistoryTabProps {
   repoPath: string;
@@ -213,6 +214,10 @@ export function HistoryTab({ repoPath, filePath, refreshKey, onRefresh, onFileSe
     });
   }, [selectedCommit, parents, onFileSelect]);
 
+  // ── graph layout ──────────────────────────────────────────────────────────
+
+  const graphRows = useMemo(() => computeGraphLayout(commits), [commits]);
+
   // ── render ────────────────────────────────────────────────────────────────
 
   if (loading) {
@@ -239,23 +244,23 @@ export function HistoryTab({ repoPath, filePath, refreshKey, onRefresh, onFileSe
       </div>
       {/* ── Top: commit list ── */}
       <div className="flex-[3] overflow-y-auto border-b border-gray-200 dark:border-gray-700">
-        {commits.map((commit) => {
+        {commits.map((commit, idx) => {
           const refs = parseRefNames(commit.ref_names);
           const isSelected = selectedCommit?.hash === commit.hash;
           const relative = formatRelativeTime(commit.timestamp);
+          const graphRow = graphRows[idx];
           return (
             <div
               key={commit.hash}
               onClick={() => handleSelectCommit(commit)}
               onContextMenu={(e) => { e.preventDefault(); setContextMenu({ x: e.clientX, y: e.clientY, commit }); }}
-              className={`flex items-center gap-2 px-2 py-1 cursor-pointer border-b border-gray-100 dark:border-gray-800 ${
+              className={`flex items-center gap-2 px-2 cursor-pointer border-b border-gray-100 dark:border-gray-800 ${
                 isSelected ? "bg-blue-50 dark:bg-blue-900/30" : "hover:bg-gray-50 dark:hover:bg-gray-800"
               }`}
+              style={{ height: ROW_H }}
             >
-              {/* Graph */}
-              <span className="font-mono text-xs text-gray-400 shrink-0 grow-0 select-none whitespace-pre" style={{ width: "1.5rem" }}>
-                {commit.graph}
-              </span>
+              {/* Graph (SVG) */}
+              {graphRow && <GraphSvg row={graphRow} />}
               {/* CommitId */}
               <span className="font-mono text-xs text-blue-600 dark:text-blue-400 shrink-0 grow-0" style={{ width: "4.5rem" }}>{commit.short_hash}</span>
               {/* Message (with inline refs) */}

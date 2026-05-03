@@ -12,6 +12,7 @@ pub struct CommitInfo {
     pub message: String,
     pub ref_names: String,
     pub graph: String,
+    pub parents: Vec<String>,
 }
 
 /// Represents a file changed in a commit
@@ -23,8 +24,7 @@ pub struct CommitFile {
     pub display: String,
 }
 
-/// Parse `git log --graph --pretty=format:"COMMIT||%H||%h||%an||%at||%s||%D"` output.
-/// Lines with COMMIT_MARKER contain commit data; other lines are graph-only (skipped).
+/// Parse `git log --pretty=format:"COMMIT||%H||%h||%an||%at||%s||%D||%P"` output.
 pub fn parse_history_output(output: &str) -> Vec<CommitInfo> {
     let mut commits = Vec::new();
 
@@ -32,7 +32,7 @@ pub fn parse_history_output(output: &str) -> Vec<CommitInfo> {
         if let Some(pos) = line.find(COMMIT_MARKER) {
             let graph = line[..pos].to_string();
             let data = &line[pos + COMMIT_MARKER.len()..];
-            let parts: Vec<&str> = data.splitn(6, "||").collect();
+            let parts: Vec<&str> = data.splitn(7, "||").collect();
 
             if parts.len() >= 5 {
                 commits.push(CommitInfo {
@@ -45,6 +45,11 @@ pub fn parse_history_output(output: &str) -> Vec<CommitInfo> {
                         parts[5].trim().to_string()
                     } else {
                         String::new()
+                    },
+                    parents: if parts.len() >= 7 && !parts[6].trim().is_empty() {
+                        parts[6].trim().split_whitespace().map(|s| s.to_string()).collect()
+                    } else {
+                        Vec::new()
                     },
                     graph,
                 });
@@ -113,10 +118,9 @@ pub async fn get_history(
     count: u32,
     all: bool,
 ) -> Result<Vec<CommitInfo>, String> {
-    let format_str = format!("{}%H||%h||%an||%at||%s||%D", COMMIT_MARKER);
+    let format_str = format!("{}%H||%h||%an||%at||%s||%D||%P", COMMIT_MARKER);
     let mut args = vec![
         "log".to_string(),
-        "--graph".to_string(),
         format!("--pretty=format:{}", format_str),
         format!("-{}", count),
         format!("--skip={}", skip),

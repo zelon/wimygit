@@ -131,6 +131,7 @@ export interface CommitInfo {
   message: string;
   ref_names: string;
   graph: string;
+  parents: string[];
 }
 
 // File changed in a commit
