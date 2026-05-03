@@ -15,9 +15,10 @@ interface WorktreeTabProps {
   onRefresh: () => void;
   onOpenRepo?: (path: string) => void;
   onWorktreeCountChange?: (count: number) => void;
+  onCloseRepoByPath?: (path: string) => void;
 }
 
-export function WorktreeTab({ repoPath, refreshKey, onRefresh, onOpenRepo, onWorktreeCountChange }: WorktreeTabProps) {
+export function WorktreeTab({ repoPath, refreshKey, onRefresh, onOpenRepo, onWorktreeCountChange, onCloseRepoByPath }: WorktreeTabProps) {
   const [worktrees, setWorktrees] = useState<WorktreeInfo[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -106,6 +107,7 @@ export function WorktreeTab({ repoPath, refreshKey, onRefresh, onOpenRepo, onWor
     setOperating(`remove-${worktree.path}`);
     try {
       await removeWorktree(repoPath, worktree.path);
+      onCloseRepoByPath?.(worktree.path);
       setSuccess(`Worktree removed`);
       await fetchWorktrees();
       onRefresh();

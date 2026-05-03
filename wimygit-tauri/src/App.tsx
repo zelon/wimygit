@@ -469,6 +469,10 @@ function App() {
               onRefresh={handleRefresh}
               onOpenRepo={(path) => handleOpenRepo(path)}
               onWorktreeCountChange={setWorktreeCount}
+              onCloseRepoByPath={(path) => {
+                const tab = repoTabs.find((t) => t.repoPath.replace(/\\/g, "/") === path.replace(/\\/g, "/"));
+                if (tab) handleCloseRepo(tab.id);
+              }}
             />
           )}
           {activeRepo.activeTab === "stash" && (
