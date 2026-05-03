@@ -18,6 +18,8 @@ interface HistoryTabProps {
   onFileSelect?: (info: SelectedDiffInfo) => void;
   onClearPath?: () => void;
   onShowInWorkspace?: () => void;
+  onShowInWorkspaceFile?: (absolutePath: string) => void;
+  onShowInHistoryFile?: (absolutePath: string) => void;
 }
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
@@ -138,11 +140,46 @@ function ContextMenu({ x, y, commit, repoPath, onClose, onRefresh }: ContextMenu
   );
 }
 
+// ─── file context menu ────────────────────────────────────────────────────────
+
+interface FileContextMenuProps {
+  x: number;
+  y: number;
+  absolutePath: string;
+  onClose: () => void;
+  onShowInWorkspace: (absolutePath: string) => void;
+  onShowInHistory: (absolutePath: string) => void;
+}
+
+function FileContextMenu({ x, y, absolutePath, onClose, onShowInWorkspace, onShowInHistory }: FileContextMenuProps) {
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const h = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) onClose(); };
+    document.addEventListener("mousedown", h);
+    return () => document.removeEventListener("mousedown", h);
+  }, [onClose]);
+
+  return (
+    <div ref={ref} style={{ position: "fixed", top: y, left: x, zIndex: 9999 }}
+      className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded shadow-lg py-1 min-w-[180px] text-sm">
+      <button onClick={() => { onClose(); onShowInWorkspace(absolutePath); }}
+        className="w-full text-left px-4 py-1.5 hover:bg-gray-100 dark:hover:bg-gray-700">
+        Show in Workspace
+      </button>
+      <button onClick={() => { onClose(); onShowInHistory(absolutePath); }}
+        className="w-full text-left px-4 py-1.5 hover:bg-gray-100 dark:hover:bg-gray-700">
+        Show in History
+      </button>
+    </div>
+  );
+}
+
 // ─── main component ───────────────────────────────────────────────────────────
 
 const PAGE_SIZE = 100;
 
-export function HistoryTab({ repoPath, filePath, refreshKey, onRefresh, onFileSelect, onClearPath, onShowInWorkspace }: HistoryTabProps) {
+export function HistoryTab({ repoPath, filePath, refreshKey, onRefresh, onFileSelect, onClearPath, onShowInWorkspace, onShowInWorkspaceFile, onShowInHistoryFile }: HistoryTabProps) {
   const [commits, setCommits] = useState<CommitInfo[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -156,6 +193,7 @@ export function HistoryTab({ repoPath, filePath, refreshKey, onRefresh, onFileSe
   const [selectedFile, setSelectedFile] = useState<CommitFile | null>(null);
 
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; commit: CommitInfo } | null>(null);
+  const [fileCtxMenu, setFileCtxMenu] = useState<{ x: number; y: number; absolutePath: string } | null>(null);
   const [allBranches, setAllBranches] = useState(true);
 
   // ── load history ──────────────────────────────────────────────────────────
@@ -378,8 +416,11 @@ export function HistoryTab({ repoPath, filePath, refreshKey, onRefresh, onFileSe
               commitFiles.map((file, i) => {
                 const si = FILE_STATUS_ICON[file.status] ?? { icon: file.status, cls: "text-gray-500" };
                 const isSelected = selectedFile?.filename === file.filename;
+                const absPath = repoPath.replace(/\\/g, "/") + "/" + file.filename;
                 return (
-                  <div key={i} onClick={() => handleSelectFile(file)}
+                  <div key={i}
+                    onClick={() => handleSelectFile(file)}
+                    onContextMenu={(e) => { e.preventDefault(); setFileCtxMenu({ x: e.clientX, y: e.clientY, absolutePath: absPath }); }}
                     className={`flex items-center gap-2 px-3 py-1 text-xs cursor-pointer border-b border-gray-50 dark:border-gray-800 ${
                       isSelected ? "bg-blue-50 dark:bg-blue-900/30" : "hover:bg-gray-50 dark:hover:bg-gray-800"
                     }`}
@@ -394,6 +435,15 @@ export function HistoryTab({ repoPath, filePath, refreshKey, onRefresh, onFileSe
         </div>
       </div>
 
+      {fileCtxMenu && onShowInWorkspaceFile && onShowInHistoryFile && (
+        <FileContextMenu
+          x={fileCtxMenu.x} y={fileCtxMenu.y}
+          absolutePath={fileCtxMenu.absolutePath}
+          onClose={() => setFileCtxMenu(null)}
+          onShowInWorkspace={onShowInWorkspaceFile}
+          onShowInHistory={onShowInHistoryFile}
+        />
+      )}
       {contextMenu && (
         <ContextMenu x={contextMenu.x} y={contextMenu.y} commit={contextMenu.commit}
           repoPath={repoPath} onClose={() => setContextMenu(null)}

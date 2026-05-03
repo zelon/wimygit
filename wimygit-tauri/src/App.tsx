@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, lazy, Suspense } from "react";
 import { open } from "@tauri-apps/plugin-dialog";
+import { exists } from "@tauri-apps/plugin-fs";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { Header, TabBar, RepoTabBar, GitLogPanel, LeftSidebar, RepoStateBanner } from "./components/layout";
 import { PendingTab } from "./components/tabs";
@@ -77,7 +78,7 @@ function App() {
   const [selectedDiff, setSelectedDiff] = useState<SelectedDiffInfo | null>(null);
   const [pendingFilePreview, setPendingFilePreview] = useState<{ filename: string; staged: boolean } | null>(null);
   const [selectedFilePath, setSelectedFilePath] = useState<string | null>(null);
-  const [workspaceHighlightPath, setWorkspaceHighlightPath] = useState<string | null>(null);
+  const [workspaceHighlight, setWorkspaceHighlight] = useState<{ path: string; triggerCount: number } | null>(null);
   const [showTimeLapse, setShowTimeLapse] = useState(false);
   const [lfsWarning, setLfsWarning] = useState<string | null>(null);
   const [lfsLockCount, setLfsLockCount] = useState(0);
@@ -404,7 +405,7 @@ function App() {
           pendingFilePreview={pendingFilePreview}
           onFileSelect={setSelectedFilePath}
           onRefresh={handleRefresh}
-          highlightPath={workspaceHighlightPath}
+          highlightPath={workspaceHighlight}
         />
 
         {/* Right panel: tab bar + tab content */}
@@ -442,7 +443,18 @@ function App() {
               onRefresh={handleRefresh}
               onFileSelect={setSelectedDiff}
               onClearPath={() => setSelectedFilePath(null)}
-              onShowInWorkspace={() => setWorkspaceHighlightPath(selectedFilePath)}
+              onShowInWorkspace={() => selectedFilePath && setWorkspaceHighlight(prev => ({ path: selectedFilePath, triggerCount: (prev?.triggerCount ?? 0) + 1 }))}
+              onShowInWorkspaceFile={(absolutePath) => {
+                (async () => {
+                  const fileExists = await exists(absolutePath);
+                  if (!fileExists) {
+                    alert("The file does not exist in the current workspace.");
+                    return;
+                  }
+                  setWorkspaceHighlight(prev => ({ path: absolutePath, triggerCount: (prev?.triggerCount ?? 0) + 1 }));
+                })();
+              }}
+              onShowInHistoryFile={(absolutePath) => setSelectedFilePath(absolutePath)}
             />
           )}
           {activeRepo.activeTab === "branches" && (

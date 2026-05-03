@@ -19,6 +19,25 @@ const MIN_MAIN_PANEL_WIDTH = 200;
 
 type LeftTab = "workspace" | "quickdiff";
 
+// ─── path helpers ─────────────────────────────────────────────────────────────
+
+const normalizeSlashes = (p: string) => p.replace(/\\/g, "/");
+
+/** Like patchNode but uses normalized path comparison (handles \ vs / on Windows) */
+function patchNodeNorm(
+  nodes: TreeNode[],
+  targetPath: string,
+  updater: (n: TreeNode) => TreeNode
+): TreeNode[] {
+  const normTarget = normalizeSlashes(targetPath);
+  return nodes.map((n) => {
+    if (normalizeSlashes(n.path) === normTarget) return updater(n);
+    if (n.children.length > 0)
+      return { ...n, children: patchNodeNorm(n.children, targetPath, updater) };
+    return n;
+  });
+}
+
 // ─── Workspace tree ───────────────────────────────────────────────────────────
 
 interface WorkspaceTreeProps {
@@ -26,7 +45,7 @@ interface WorkspaceTreeProps {
   refreshKey: number;
   onFileSelect?: (path: string | null) => void;
   onRefresh?: () => void;
-  selectPath?: string | null;
+  selectPath?: { path: string; triggerCount: number } | null;
 }
 
 function WorkspaceTree({ repoPath, refreshKey, onFileSelect, onRefresh, selectPath }: WorkspaceTreeProps) {
@@ -76,24 +95,65 @@ function WorkspaceTree({ repoPath, refreshKey, onFileSelect, onRefresh, selectPa
     onFileSelect?.(path);
   }, [onFileSelect]);
 
-  // Track the latest selectPath in a ref so async callbacks can read it
-  const selectPathRef = useRef<string | null | undefined>(selectPath);
-  selectPathRef.current = selectPath;
+  // Track the latest selectPath in a ref so async callbacks can read it without deps
+  const selectPathRef = useRef<string | null | undefined>(selectPath?.path);
+  selectPathRef.current = selectPath?.path;
 
+  // Expands all ancestor directories of targetPath and selects the file.
+  // Must be called only after root nodes are loaded.
+  const expandToPath = useCallback(async (targetPath: string) => {
+    const normRepo = normalizeSlashes(repoPath);
+    const normTarget = normalizeSlashes(targetPath);
+    if (!normTarget.startsWith(normRepo + "/")) return;
+
+    const relative = normTarget.slice(normRepo.length + 1);
+    const segments = relative.split("/");
+
+    // Expand each ancestor directory from root down (all but the last segment = the file)
+    for (let i = 0; i < segments.length - 1; i++) {
+      const dirNorm = normRepo + "/" + segments.slice(0, i + 1).join("/");
+      try {
+        const entries = await listDirEntries(dirNorm);
+        setRootNodes(prev =>
+          patchNodeNorm(prev, dirNorm, node => ({
+            ...node,
+            children: node.loaded ? node.children : entries.map(makeNode),
+            loaded: true,
+            expanded: true,
+          }))
+        );
+      } catch {
+        break;
+      }
+    }
+
+    setSelectedPath(normTarget);
+  }, [repoPath]);
+
+  // Ref so the load effect can call the latest expandToPath without it being a dep
+  const expandToPathRef = useRef(expandToPath);
+  expandToPathRef.current = expandToPath;
+
+  // When selectPath changes on an already-mounted tree, expand immediately.
+  // (Fresh-mount case is handled inside the load effect below.)
+  const rootLoadedRef = useRef(false);
   useEffect(() => {
-    // Only update local highlight — do NOT call onFileSelect to avoid resetting selectedFilePath in parent
-    if (selectPath) setSelectedPath(selectPath);
-  }, [selectPath]);
+    if (selectPath && rootLoadedRef.current) {
+      expandToPath(selectPath.path);
+    }
+  }, [selectPath, expandToPath]);
 
   useEffect(() => {
     if (!repoPath) return;
+    rootLoadedRef.current = false;
     setLoading(true);
     listDirEntries(repoPath)
       .then((entries) => {
         setRootNodes(entries.map(makeNode));
+        rootLoadedRef.current = true;
         if (selectPathRef.current) {
-          // External highlight is active: select the target file, don't reset parent's selectedFilePath
-          setSelectedPath(selectPathRef.current);
+          // External highlight: expand the tree to the file without resetting parent's selectedFilePath
+          expandToPathRef.current(selectPathRef.current);
         } else {
           setSelectedPath(repoPath);
           onFileSelect?.(null); // repo root selected = no file
@@ -139,7 +199,7 @@ function WorkspaceTree({ repoPath, refreshKey, onFileSelect, onRefresh, selectPa
         {/* Repo root */}
         <div
           onClick={() => handleSelect(repoPath)}
-          className={`flex items-center gap-1 px-2 py-0.5 cursor-pointer rounded-sm ${selectedPath === repoPath
+          className={`flex items-center gap-1 px-2 py-0.5 cursor-pointer rounded-sm ${normalizeSlashes(selectedPath ?? "") === normalizeSlashes(repoPath)
             ? "bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-200"
             : "hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300"
             }`}
@@ -187,7 +247,7 @@ interface TreeRowProps {
 }
 
 function TreeRow({ node, depth, selectedPath, onSelect, onToggle, onContextMenu }: TreeRowProps) {
-  const isSelected = selectedPath === node.path;
+  const isSelected = normalizeSlashes(selectedPath ?? "") === normalizeSlashes(node.path);
   return (
     <>
       <div
@@ -473,7 +533,7 @@ interface LeftSidebarProps {
   pendingFilePreview?: PendingFilePreview | null;
   onFileSelect?: (path: string | null) => void;
   onRefresh?: () => void;
-  highlightPath?: string | null;
+  highlightPath?: { path: string; triggerCount: number } | null;
 }
 
 export function LeftSidebar({ repoPath, refreshKey, selectedDiff, pendingFilePreview, onFileSelect, onRefresh, highlightPath }: LeftSidebarProps) {
@@ -501,7 +561,7 @@ export function LeftSidebar({ repoPath, refreshKey, selectedDiff, pendingFilePre
       setActiveTab("workspace");
       localStorage.setItem("sidebar_tab", "workspace");
     }
-  }, [highlightPath]);
+  }, [highlightPath]); // object reference always changes on each click, so effect always fires
 
   // ── double-click to toggle 3:1 / 1:3 ratio ──
   const handleDoubleClick = useCallback(() => {
