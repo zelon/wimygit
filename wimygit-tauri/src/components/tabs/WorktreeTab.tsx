@@ -239,8 +239,11 @@ export function WorktreeTab({ repoPath, refreshKey, onRefresh, onOpenRepo, onWor
             <div className="flex items-start justify-between">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
-                  {wt.is_main && (
-                    <span className="text-xs px-1.5 py-0.5 bg-blue-500 text-white rounded">main worktree</span>
+                  <span className="text-xs px-1.5 py-0.5 bg-blue-500 text-white rounded">
+                    {wt.is_main ? "main worktree" : "linked worktree"}
+                  </span>
+                  {wt.path.replace(/\\/g, "/") === repoPath.replace(/\\/g, "/") && (
+                    <span className="text-xs px-1.5 py-0.5 bg-green-600 text-white rounded">current worktree</span>
                   )}
                   {wt.is_locked && (
                     <span className="text-xs px-1.5 py-0.5 bg-yellow-500 text-white rounded">locked</span>
@@ -261,6 +264,15 @@ export function WorktreeTab({ repoPath, refreshKey, onRefresh, onOpenRepo, onWor
               </div>
 
               <div className="flex gap-1 ml-4 shrink-0">
+                {onOpenRepo && (
+                  <button
+                    onClick={() => onOpenRepo(wt.path)}
+                    className="px-2 py-1 text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded hover:bg-blue-200 dark:hover:bg-blue-900/50"
+                    title="Open as repository tab"
+                  >
+                    Open in wimygit
+                  </button>
+                )}
                 <button
                   onClick={() => handleOpenInExplorer(wt.path)}
                   className="px-2 py-1 text-xs bg-gray-200 dark:bg-gray-700 rounded hover:bg-gray-300 dark:hover:bg-gray-600"
@@ -268,15 +280,6 @@ export function WorktreeTab({ repoPath, refreshKey, onRefresh, onOpenRepo, onWor
                 >
                   Open
                 </button>
-                {onOpenRepo && (
-                  <button
-                    onClick={() => onOpenRepo(wt.path)}
-                    className="px-2 py-1 text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded hover:bg-blue-200 dark:hover:bg-blue-900/50"
-                    title="Open as repository"
-                  >
-                    Switch
-                  </button>
-                )}
                 {!wt.is_main && (
                   <button
                     onClick={() => handleRemove(wt)}
