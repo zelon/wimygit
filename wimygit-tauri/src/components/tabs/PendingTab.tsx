@@ -615,11 +615,46 @@ export function PendingTab({ repoPath, refreshKey, onFilePreview, onLfsLockCount
     catch (e) { setError(String(e)); }
   };
 
+  const buildRevertMessage = (files: string[], rp: string) => {
+    const sep = navigator.platform.startsWith("Win") ? "\\" : "/";
+    const MAX = 20;
+    const shown = files.length <= MAX ? files : files.slice(0, MAX);
+    const lines = shown.map((f) => `${rp}${sep}${f}`);
+    if (files.length > MAX) lines.push("...");
+    return `Revert changes to ${files.length} file(s)?\n\n${lines.join("\n")}`;
+  };
+
   const handleDiscard = async (files: string[]) => {
-    if (!confirm(`Discard changes to ${files.length} file(s)?`)) return;
+    const ok = await tauriConfirm(
+      buildRevertMessage(files, repoPath),
+      { title: "Revert", kind: "warning" }
+    );
+    if (!ok) return;
     try { await gitDiscard(repoPath, files); await fetchStatus(); }
     catch (e) { setError(String(e)); }
   };
+
+  // Ctrl+R: 선택된 unstaged 파일 중 untracked 제외하고 revert
+  const ctrlRStateRef = useRef({ selectedUnstaged, status, repoPath });
+  ctrlRStateRef.current = { selectedUnstaged, status, repoPath };
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.ctrlKey && e.key === "r") {
+        e.preventDefault();
+        e.stopPropagation();
+        const { selectedUnstaged: sel, status: st, repoPath: rp } = ctrlRStateRef.current;
+        if (sel.size === 0) return;
+        const untrackedNames = new Set((st?.untracked ?? []).map((f) => f.filename));
+        const revertable = [...sel].filter((f) => !untrackedNames.has(f));
+        if (revertable.length === 0) return;
+        tauriConfirm(buildRevertMessage(revertable, rp), { title: "Revert", kind: "warning" })
+          .then((ok) => { if (ok) gitDiscard(rp, revertable).then(() => fetchStatus()).catch((e) => setError(String(e))); })
+          .catch(() => {});
+      }
+    };
+    window.addEventListener("keydown", onKeyDown, { capture: true });
+    return () => window.removeEventListener("keydown", onKeyDown, { capture: true });
+  }, []);
 
   const handleDeleteFiles = async (files: string[]) => {
     const sep = navigator.platform.startsWith("Win") ? "\\" : "/";
