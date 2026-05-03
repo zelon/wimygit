@@ -99,7 +99,9 @@ pub async fn add_worktree(
         args.push(path);
     } else {
         args.push(path);
-        args.push(branch);
+        if !branch.is_empty() {
+            args.push(branch);
+        }
     }
 
     let result = crate::git::run_git(args, cwd).await?;

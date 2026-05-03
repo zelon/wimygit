@@ -6,7 +6,9 @@ import {
   removeWorktree,
   openInFileManager,
   getCurrentBranch,
+  getBranches,
   type WorktreeInfo,
+  type BranchInfo,
 } from "../../lib";
 
 interface WorktreeTabProps {
@@ -29,6 +31,7 @@ export function WorktreeTab({ repoPath, refreshKey, onRefresh, onOpenRepo, onWor
   const [addPath, setAddPath] = useState("");
   const [addBranch, setAddBranch] = useState("");
   const [isNewBranch, setIsNewBranch] = useState(false);
+  const [existingBranches, setExistingBranches] = useState<BranchInfo[]>([]);
 
   const [resolvedPath, setResolvedPath] = useState<string | null>(null);
 
@@ -60,30 +63,37 @@ export function WorktreeTab({ repoPath, refreshKey, onRefresh, onOpenRepo, onWor
     fetchWorktrees();
   }, [repoPath, refreshKey]);
 
-  // Pre-fill current branch when opening the add form
   const handleOpenAdd = async () => {
     setShowAdd(true);
     try {
-      const branch = await getCurrentBranch(repoPath);
+      const [branch, branches] = await Promise.all([
+        getCurrentBranch(repoPath),
+        getBranches(repoPath),
+      ]);
       setAddBranch(branch);
+      setExistingBranches(branches);
     } catch {
       // ignore
     }
   };
+
+  const branchAlreadyExists = isNewBranch && existingBranches.some(b => b.name === addBranch.trim());
 
   const handleAdd = async () => {
     if (!addPath.trim()) {
       setError("Worktree path is required");
       return;
     }
-    if (!addBranch.trim()) {
+    if (isNewBranch && !addBranch.trim()) {
       setError("Branch name is required");
       return;
     }
+    if (branchAlreadyExists) return;
     setOperating("add");
     setError(null);
     try {
-      await addWorktree(repoPath, addPath.trim(), addBranch.trim(), isNewBranch);
+      const branch = isNewBranch ? addBranch.trim() : "";
+      await addWorktree(repoPath, addPath.trim(), branch, isNewBranch);
       setSuccess(`Worktree added at "${addPath.trim()}"`);
       setAddPath("");
       setAddBranch("");
@@ -197,22 +207,34 @@ export function WorktreeTab({ repoPath, refreshKey, onRefresh, onOpenRepo, onWor
             </label>
           </div>
           <div>
-            <label className="block text-xs text-gray-500 mb-1">
-              {isNewBranch ? "New Branch Name *" : "Existing Branch *"}
-            </label>
+            <div className="flex items-baseline gap-2 mb-1">
+              <label className="text-xs text-gray-500">
+                {isNewBranch ? "New Branch Name *" : "Base Branch"}
+              </label>
+              {branchAlreadyExists && (
+                <span className="text-xs text-red-500">
+                  Branch '{addBranch.trim()}' already exists
+                </span>
+              )}
+            </div>
             <input
               type="text"
               value={addBranch}
+              readOnly={!isNewBranch}
               onChange={(e) => setAddBranch(e.target.value)}
-              placeholder={isNewBranch ? "feature/new-branch" : "existing-branch"}
-              className="w-full px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder={isNewBranch ? "feature/new-branch" : ""}
+              className={`w-full px-3 py-1.5 text-sm border rounded focus:outline-none ${
+                isNewBranch
+                  ? "border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 focus:ring-2 focus:ring-blue-500"
+                  : "border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-default"
+              } ${branchAlreadyExists ? "border-red-400 dark:border-red-500" : ""}`}
               onKeyDown={(e) => e.key === "Enter" && handleAdd()}
             />
           </div>
           <div className="flex gap-2">
             <button
               onClick={handleAdd}
-              disabled={!!operating}
+              disabled={!!operating || branchAlreadyExists}
               className="px-4 py-1.5 text-sm bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
             >
               {operating === "add" ? "Adding..." : "Add"}
