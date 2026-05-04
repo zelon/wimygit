@@ -975,6 +975,7 @@ export function PendingTab({ repoPath, refreshKey, onFilePreview, onLfsLockCount
             ))
           )}
         </div>
+        <div className="h-2.5 shrink-0" />
       </div>
 
       {/* ── Stage Selected bar ── */}
@@ -998,7 +999,7 @@ export function PendingTab({ repoPath, refreshKey, onFilePreview, onLfsLockCount
 
         {/* ── Unstaged files ── */}
         <div
-          className={`flex flex-col overflow-hidden${hasLfsLockable && lfsLocks.length > 0 ? " border-b border-gray-200 dark:border-gray-700" : " flex-1"}`}
+          className={`flex flex-col overflow-hidden${hasLfsLockable && lfsLocks.length > 0 ? "" : " flex-1"}`}
           style={hasLfsLockable && lfsLocks.length > 0 ? { maxHeight: "60%" } : undefined}
         >
           <SectionHeader
@@ -1068,10 +1069,11 @@ export function PendingTab({ repoPath, refreshKey, onFilePreview, onLfsLockCount
             )}
           </div>
         </div>
+        <div className="h-2.5 shrink-0" />
 
         {/* ── Locked files (LFS) ── */}
         {hasLfsLockable && lfsLocks.length > 0 && (
-          <div className="flex flex-col border-t border-gray-200 dark:border-gray-700 overflow-hidden" style={{ maxHeight: "40%" }}>
+          <div className="flex flex-col overflow-hidden" style={{ maxHeight: "40%" }}>
             <SectionHeader
               label="Locked files"
               count={lfsLocks.length}
