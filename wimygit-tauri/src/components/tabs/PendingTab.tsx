@@ -56,6 +56,7 @@ interface PendingTabProps {
   refreshKey: number;
   onFilePreview?: (filename: string, staged: boolean, isUntracked?: boolean) => void;
   onLfsLockCountChange?: (count: number) => void;
+  onShowInWorkspaceFile?: (absolutePath: string) => void;
 }
 
 function statusIcon(file: FileStatus): { icon: string; cls: string } {
@@ -171,12 +172,14 @@ interface UnstagedCtxMenuProps {
   onDiff: (filename: string) => void;
   onDeleteFiles: (files: string[]) => void;
   onUnlockLfs: () => void;
+  onShowInWorkspaceFile?: (absolutePath: string) => void;
 }
 
 function UnstagedCtxMenu({
   x, y, repoPath, files, hasUntracked, hasUnmerged,
   isLocked, isModified,
   onClose, onStage, onRevert, onRefresh, onDiff, onDeleteFiles, onUnlockLfs,
+  onShowInWorkspaceFile,
 }: UnstagedCtxMenuProps) {
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -302,6 +305,18 @@ function UnstagedCtxMenu({
           </button>
         )}
 
+        {/* Show in workspace — 단일 파일만 */}
+        {isSingle && onShowInWorkspaceFile && (
+          <button className={btnClass} onClick={() => {
+            const sep = navigator.platform.startsWith("Win") ? "\\" : "/";
+            const fullPath = `${repoPath}${sep}${firstFile.replace(/\//g, sep)}`;
+            onShowInWorkspaceFile(fullPath);
+            onClose();
+          }}>
+            <span>Show in workspace</span>
+          </button>
+        )}
+
         {sep}
 
         {/* Delete Local File */}
@@ -384,9 +399,10 @@ interface StagedCtxMenuProps {
   onUnstage: (files: string[]) => void;
   onDiff: (filename: string) => void;
   onRefresh: () => void;
+  onShowInWorkspaceFile?: (absolutePath: string) => void;
 }
 
-function StagedCtxMenu({ x, y, repoPath, files, onClose, onUnstage, onDiff, onRefresh }: StagedCtxMenuProps) {
+function StagedCtxMenu({ x, y, repoPath, files, onClose, onUnstage, onDiff, onRefresh, onShowInWorkspaceFile }: StagedCtxMenuProps) {
   const menuRef = useRef<HTMLDivElement>(null);
 
   const [pos, setPos] = useState({ top: y, left: x });
@@ -450,6 +466,17 @@ function StagedCtxMenu({ x, y, repoPath, files, onClose, onUnstage, onDiff, onRe
             <span className={kbdClass}>Ctrl+Shift+S</span>
           </button>
         )}
+
+        {isSingle && onShowInWorkspaceFile && (
+          <button className={btnClass} onClick={() => {
+            const sep = navigator.platform.startsWith("Win") ? "\\" : "/";
+            const fullPath = `${repoPath}${sep}${firstFile.replace(/\//g, sep)}`;
+            onShowInWorkspaceFile(fullPath);
+            onClose();
+          }}>
+            <span>Show in workspace</span>
+          </button>
+        )}
       </div>
     </>,
     document.body
@@ -484,7 +511,7 @@ function SectionHeader({ label, count, action }: SectionHeaderProps) {
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
-export function PendingTab({ repoPath, refreshKey, onFilePreview, onLfsLockCountChange }: PendingTabProps) {
+export function PendingTab({ repoPath, refreshKey, onFilePreview, onLfsLockCountChange, onShowInWorkspaceFile }: PendingTabProps) {
   const [status, setStatus] = useState<GitStatus | null>(null);
   const [syncStatus, setSyncStatus] = useState<SyncStatus | null>(null);
   const [loading, setLoading] = useState(true);
@@ -1058,6 +1085,7 @@ export function PendingTab({ repoPath, refreshKey, onFilePreview, onLfsLockCount
           onUnstage={handleUnstage}
           onDiff={handleStagedDifftool}
           onRefresh={fetchStatus}
+          onShowInWorkspaceFile={onShowInWorkspaceFile}
         />
       )}
 
@@ -1079,6 +1107,7 @@ export function PendingTab({ repoPath, refreshKey, onFilePreview, onLfsLockCount
           onDiff={handleDifftool}
           onDeleteFiles={handleDeleteFiles}
           onUnlockLfs={() => handleUnlockLfs(ctxMenu.files[0])}
+          onShowInWorkspaceFile={onShowInWorkspaceFile}
         />
       )}
 

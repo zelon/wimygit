@@ -467,6 +467,16 @@ function App() {
               refreshKey={activeRepo.refreshKey}
               onFilePreview={(filename, staged, isUntracked) => { setSelectedDiff(null); setPendingFilePreview({ filename, staged, isUntracked }); }}
               onLfsLockCountChange={setLfsLockCount}
+              onShowInWorkspaceFile={(absolutePath) => {
+                (async () => {
+                  const fileExists = await exists(absolutePath);
+                  if (!fileExists) {
+                    alert("The file does not exist in the current workspace.");
+                    return;
+                  }
+                  setWorkspaceHighlight(prev => ({ path: absolutePath, triggerCount: (prev?.triggerCount ?? 0) + 1 }));
+                })();
+              }}
             />
           </div>
           <Suspense fallback={null}>
