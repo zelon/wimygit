@@ -14,11 +14,7 @@ $newVersion = [regex]::Replace($content, $pattern, {
 
 Set-Content $versionFilePath $newVersion -Encoding UTF8
 
-# Update Version String
-$versionFilePath = "$PSScriptRoot\..\WimyGit\Properties\AssemblyInfo.cs"
-$content = Get-Content $versionFilePath -Raw
-$content = $content -replace 'AssemblyInformationalVersion\(".*?"\)', "AssemblyInformationalVersion(""$newVersion"")"
-Set-Content $versionFilePath $content -Encoding UTF8
+&"$PSScriptRoot\SetVersion.ps1" $newVersion
 
-# Update Icon
-Copy-Item .\WimyGit\IconNightly.ico .\WimyGit\Icon.ico
+# Update Icon to nightly version
+Copy-Item "$PSScriptRoot\..\wimygit-tauri\src-tauri\icons-nightly\*" "$PSScriptRoot\..\wimygit-tauri\src-tauri\icons" -Recurse -Force
