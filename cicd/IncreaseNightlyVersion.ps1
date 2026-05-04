@@ -15,6 +15,3 @@ $newVersion = [regex]::Replace($content, $pattern, {
 Set-Content $versionFilePath $newVersion -Encoding UTF8
 
 &"$PSScriptRoot\SetVersion.ps1" $newVersion
-
-# Update Icon to nightly version
-Copy-Item "$PSScriptRoot\..\wimygit-tauri\src-tauri\icons-nightly\*" "$PSScriptRoot\..\wimygit-tauri\src-tauri\icons" -Recurse -Force
