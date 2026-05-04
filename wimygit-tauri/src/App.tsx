@@ -98,7 +98,7 @@ function App() {
 
   // Set window title (visible in taskbar)
   useEffect(() => {
-    getCurrentWindow().setTitle("WimyGit").catch(() => {});
+    getCurrentWindow().setTitle("WimyGit").catch(() => { });
   }, []);
 
   // Restore previously opened repos on startup
@@ -465,7 +465,7 @@ function App() {
             <PendingTab
               repoPath={activeRepo.repoPath}
               refreshKey={activeRepo.refreshKey}
-              onFilePreview={(filename, staged, isUntracked) => { setSelectedDiff(null); setPendingFilePreview({ filename, staged, isUntracked }); }}
+              onFilePreview={(filename, staged) => { setSelectedDiff(null); setPendingFilePreview({ filename, staged }); }}
               onLfsLockCountChange={setLfsLockCount}
               onShowInWorkspaceFile={(absolutePath) => {
                 (async () => {
@@ -484,81 +484,81 @@ function App() {
             />
           </div>
           <Suspense fallback={null}>
-          {activeRepo.activeTab === "history" && (
-            <HistoryTab
-              repoPath={activeRepo.repoPath}
-              filePath={selectedFilePath}
-              refreshKey={activeRepo.refreshKey}
-              onRefresh={handleRefresh}
-              onFileSelect={setSelectedDiff}
-              onClearPath={() => setSelectedFilePath(null)}
-              onShowInWorkspace={() => selectedFilePath && setWorkspaceHighlight(prev => ({ path: selectedFilePath, triggerCount: (prev?.triggerCount ?? 0) + 1 }))}
-              onShowInWorkspaceFile={(absolutePath) => {
-                (async () => {
-                  const fileExists = await exists(absolutePath);
-                  if (!fileExists) {
-                    alert("The file does not exist in the current workspace.");
-                    return;
-                  }
-                  setWorkspaceHighlight(prev => ({ path: absolutePath, triggerCount: (prev?.triggerCount ?? 0) + 1 }));
-                })();
-              }}
-              onShowInHistoryFile={(absolutePath) => setSelectedFilePath(absolutePath)}
-            />
-          )}
-          {activeRepo.activeTab === "branches" && (
-            <BranchTab
-              repoPath={activeRepo.repoPath}
-              refreshKey={activeRepo.refreshKey}
-              onRefresh={handleRefresh}
-            />
-          )}
-          {activeRepo.activeTab === "remotes" && (
-            <RemoteTab
-              repoPath={activeRepo.repoPath}
-              refreshKey={activeRepo.refreshKey}
-              onRefresh={handleRefresh}
-              onPushSuccess={() => handleAfterPush(activeRepo.repoPath)}
-            />
-          )}
-          {activeRepo.activeTab === "tags" && (
-            <TagTab
-              repoPath={activeRepo.repoPath}
-              refreshKey={activeRepo.refreshKey}
-              onRefresh={handleRefresh}
-            />
-          )}
-          {activeRepo.activeTab === "worktrees" && (
-            <WorktreeTab
-              repoPath={activeRepo.repoPath}
-              refreshKey={activeRepo.refreshKey}
-              onRefresh={handleRefresh}
-              onOpenRepo={(path) => handleOpenRepo(path)}
-              onWorktreeCountChange={setWorktreeCount}
-              onCloseRepoByPath={(path) => {
-                const tab = repoTabs.find((t) => t.repoPath.replace(/\\/g, "/") === path.replace(/\\/g, "/"));
-                if (tab) handleCloseRepo(tab.id);
-              }}
-            />
-          )}
-          {activeRepo.activeTab === "stash" && (
-            <StashTab
-              repoPath={activeRepo.repoPath}
-              refreshKey={activeRepo.refreshKey}
-              onRefresh={handleRefresh}
-            />
-          )}
+            {activeRepo.activeTab === "history" && (
+              <HistoryTab
+                repoPath={activeRepo.repoPath}
+                filePath={selectedFilePath}
+                refreshKey={activeRepo.refreshKey}
+                onRefresh={handleRefresh}
+                onFileSelect={setSelectedDiff}
+                onClearPath={() => setSelectedFilePath(null)}
+                onShowInWorkspace={() => selectedFilePath && setWorkspaceHighlight(prev => ({ path: selectedFilePath, triggerCount: (prev?.triggerCount ?? 0) + 1 }))}
+                onShowInWorkspaceFile={(absolutePath) => {
+                  (async () => {
+                    const fileExists = await exists(absolutePath);
+                    if (!fileExists) {
+                      alert("The file does not exist in the current workspace.");
+                      return;
+                    }
+                    setWorkspaceHighlight(prev => ({ path: absolutePath, triggerCount: (prev?.triggerCount ?? 0) + 1 }));
+                  })();
+                }}
+                onShowInHistoryFile={(absolutePath) => setSelectedFilePath(absolutePath)}
+              />
+            )}
+            {activeRepo.activeTab === "branches" && (
+              <BranchTab
+                repoPath={activeRepo.repoPath}
+                refreshKey={activeRepo.refreshKey}
+                onRefresh={handleRefresh}
+              />
+            )}
+            {activeRepo.activeTab === "remotes" && (
+              <RemoteTab
+                repoPath={activeRepo.repoPath}
+                refreshKey={activeRepo.refreshKey}
+                onRefresh={handleRefresh}
+                onPushSuccess={() => handleAfterPush(activeRepo.repoPath)}
+              />
+            )}
+            {activeRepo.activeTab === "tags" && (
+              <TagTab
+                repoPath={activeRepo.repoPath}
+                refreshKey={activeRepo.refreshKey}
+                onRefresh={handleRefresh}
+              />
+            )}
+            {activeRepo.activeTab === "worktrees" && (
+              <WorktreeTab
+                repoPath={activeRepo.repoPath}
+                refreshKey={activeRepo.refreshKey}
+                onRefresh={handleRefresh}
+                onOpenRepo={(path) => handleOpenRepo(path)}
+                onWorktreeCountChange={setWorktreeCount}
+                onCloseRepoByPath={(path) => {
+                  const tab = repoTabs.find((t) => t.repoPath.replace(/\\/g, "/") === path.replace(/\\/g, "/"));
+                  if (tab) handleCloseRepo(tab.id);
+                }}
+              />
+            )}
+            {activeRepo.activeTab === "stash" && (
+              <StashTab
+                repoPath={activeRepo.repoPath}
+                refreshKey={activeRepo.refreshKey}
+                onRefresh={handleRefresh}
+              />
+            )}
           </Suspense>
           {/* TimeLapse overlay */}
           {showTimeLapse && selectedFilePath && (
             <Suspense fallback={null}>
-            <div className="absolute inset-0 z-40">
-              <TimeLapsePanel
-                repoPath={activeRepo.repoPath}
-                filePath={selectedFilePath}
-                onClose={() => setShowTimeLapse(false)}
-              />
-            </div>
+              <div className="absolute inset-0 z-40">
+                <TimeLapsePanel
+                  repoPath={activeRepo.repoPath}
+                  filePath={selectedFilePath}
+                  onClose={() => setShowTimeLapse(false)}
+                />
+              </div>
             </Suspense>
           )}
         </main>
@@ -595,14 +595,14 @@ function App() {
             </div>
             <div className="flex-1 overflow-hidden">
               <Suspense fallback={null}>
-              <PluginTab
-                repoPath={activeRepo.repoPath}
-                onRefresh={() => {
-                  handleRefresh();
-                  reloadPlugins();
-                }}
-                onPluginChanged={reloadPlugins}
-              />
+                <PluginTab
+                  repoPath={activeRepo.repoPath}
+                  onRefresh={() => {
+                    handleRefresh();
+                    reloadPlugins();
+                  }}
+                  onPluginChanged={reloadPlugins}
+                />
               </Suspense>
             </div>
           </div>
