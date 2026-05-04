@@ -897,7 +897,7 @@ export function PendingTab({ repoPath, refreshKey, onFilePreview, onLfsLockCount
           count={stagedFiles.length}
           action={stagedFiles.length > 0 ? { label: "Unstage All", onClick: handleUnstageAll } : undefined}
         />
-        <div className="overflow-y-auto">
+        <div className="overflow-y-auto min-h-[2.5rem]">
           {stagedFiles.length === 0 ? (
             <div className="px-3 py-1.5 text-xs text-gray-400 italic">No staged files</div>
           ) : (
@@ -940,104 +940,112 @@ export function PendingTab({ repoPath, refreshKey, onFilePreview, onLfsLockCount
         </button>
       </div>
 
-      {/* ── Unstaged files ── */}
+      {/* ── Unstaged files + Locked files ── */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        <SectionHeader
-          label="Unstaged files"
-          count={unstagedFiles.length + unmergedFiles.length}
-          action={
-            unstagedFiles.length > 0
-              ? { label: "Stage All", onClick: handleStageAll }
-              : undefined
-          }
-        />
 
-        <div className="flex-1 overflow-y-auto">
-          {unmergedFiles.length > 0 && (
-            <div className="px-3 py-0.5 text-xs font-medium text-yellow-700 dark:text-yellow-400 bg-yellow-50 dark:bg-yellow-900/20 border-b border-yellow-200 dark:border-yellow-800">
-              {unmergedFiles.length} conflict{unmergedFiles.length > 1 ? "s" : ""}
-            </div>
-          )}
-          {unmergedFiles.map((file) => (
-            <div key={file.filename} className="group">
-              <FileRow
-                file={file}
-                isSelected={selectedUnstaged.has(file.filename)}
-                onClick={(e) => handleUnstagedClick(file.filename, e.ctrlKey || e.metaKey, e.shiftKey)}
-                onContextMenu={(e) => handleUnstagedContextMenu(e, file.filename, file, false)}
-                actions={<></>}
-              />
-            </div>
-          ))}
-          {unstagedFiles.length === 0 ? (
-            <div className="px-3 py-1.5 text-xs text-gray-400 italic">No unstaged changes</div>
-          ) : (
-            unstagedFiles.map((file) => {
-              const isLocked = lockedSet.has(file.filename);
-              return (
-                <div key={file.filename} className="group">
-                  <FileRow
-                    file={file}
-                    isSelected={selectedUnstaged.has(file.filename)}
-                    isLocked={isLocked}
-                    onClick={(e) => handleUnstagedClick(file.filename, e.ctrlKey || e.metaKey, e.shiftKey)}
-                    onContextMenu={(e) => handleUnstagedContextMenu(e, file.filename, file, isLocked)}
-                    actions={
-                      <>
-                        <button
-                          onClick={() => handleStage([file.filename])}
-                          title="Stage"
-                          className="px-1 text-gray-400 hover:text-green-600 dark:hover:text-green-400 text-xs font-bold"
-                        >
-                          +
-                        </button>
-                        {file.unstaged_status !== "Untracked" && (
-                          <button
-                            onClick={() => handleDiscard([file.filename])}
-                            title="Discard"
-                            className="px-1 text-gray-400 hover:text-red-500 dark:hover:text-red-400 text-xs"
-                          >
-                            ✕
-                          </button>
-                        )}
-                      </>
-                    }
-                  />
-                </div>
-              );
-            })
-          )}
-        </div>
-      </div>
-
-      {/* ── Locked files (LFS) ── */}
-      {hasLfsLockable && lfsLocks.length > 0 && (
-        <div className="flex flex-col border-t border-gray-200 dark:border-gray-700 overflow-hidden" style={{ maxHeight: "40%" }}>
+        {/* ── Unstaged files ── */}
+        <div
+          className={`flex flex-col overflow-hidden${hasLfsLockable && lfsLocks.length > 0 ? " border-b border-gray-200 dark:border-gray-700" : " flex-1"}`}
+          style={hasLfsLockable && lfsLocks.length > 0 ? { maxHeight: "60%" } : undefined}
+        >
           <SectionHeader
-            label="Locked files"
-            count={lfsLocks.length}
-            action={{ label: "Show Locks", onClick: handleShowLocks }}
+            label="Unstaged files"
+            count={unstagedFiles.length + unmergedFiles.length}
+            action={
+              unstagedFiles.length > 0
+                ? { label: "Stage All", onClick: handleStageAll }
+                : undefined
+            }
           />
-          <div className="overflow-y-auto">
-            {lfsLocks.map((lock) => (
-              <div key={`locked:${lock.filename}`} className="group">
-                <LockedOnlyRow
-                  lock={lock}
-                  onContextMenu={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    setCtxMenu({
-                      x: e.clientX, y: e.clientY,
-                      files: [lock.filename], isLocked: true, isModified: false,
-                      hasUntracked: false, hasUnmerged: false,
-                    });
-                  }}
+
+          <div className="flex-1 overflow-y-auto min-h-[2.5rem]">
+            {unmergedFiles.length > 0 && (
+              <div className="px-3 py-0.5 text-xs font-medium text-yellow-700 dark:text-yellow-400 bg-yellow-50 dark:bg-yellow-900/20 border-b border-yellow-200 dark:border-yellow-800">
+                {unmergedFiles.length} conflict{unmergedFiles.length > 1 ? "s" : ""}
+              </div>
+            )}
+            {unmergedFiles.map((file) => (
+              <div key={file.filename} className="group">
+                <FileRow
+                  file={file}
+                  isSelected={selectedUnstaged.has(file.filename)}
+                  onClick={(e) => handleUnstagedClick(file.filename, e.ctrlKey || e.metaKey, e.shiftKey)}
+                  onContextMenu={(e) => handleUnstagedContextMenu(e, file.filename, file, false)}
+                  actions={<></>}
                 />
               </div>
             ))}
+            {unstagedFiles.length === 0 ? (
+              <div className="px-3 py-1.5 text-xs text-gray-400 italic">No unstaged changes</div>
+            ) : (
+              unstagedFiles.map((file) => {
+                const isLocked = lockedSet.has(file.filename);
+                return (
+                  <div key={file.filename} className="group">
+                    <FileRow
+                      file={file}
+                      isSelected={selectedUnstaged.has(file.filename)}
+                      isLocked={isLocked}
+                      onClick={(e) => handleUnstagedClick(file.filename, e.ctrlKey || e.metaKey, e.shiftKey)}
+                      onContextMenu={(e) => handleUnstagedContextMenu(e, file.filename, file, isLocked)}
+                      actions={
+                        <>
+                          <button
+                            onClick={() => handleStage([file.filename])}
+                            title="Stage"
+                            className="px-1 text-gray-400 hover:text-green-600 dark:hover:text-green-400 text-xs font-bold"
+                          >
+                            +
+                          </button>
+                          {file.unstaged_status !== "Untracked" && (
+                            <button
+                              onClick={() => handleDiscard([file.filename])}
+                              title="Discard"
+                              className="px-1 text-gray-400 hover:text-red-500 dark:hover:text-red-400 text-xs"
+                            >
+                              ✕
+                            </button>
+                          )}
+                        </>
+                      }
+                    />
+                  </div>
+                );
+              })
+            )}
           </div>
         </div>
-      )}
+
+        {/* ── Locked files (LFS) ── */}
+        {hasLfsLockable && lfsLocks.length > 0 && (
+          <div className="flex flex-col border-t border-gray-200 dark:border-gray-700 overflow-hidden" style={{ maxHeight: "40%" }}>
+            <SectionHeader
+              label="Locked files"
+              count={lfsLocks.length}
+              action={{ label: "Show Locks", onClick: handleShowLocks }}
+            />
+            <div className="overflow-y-auto min-h-[2.5rem]">
+              {lfsLocks.map((lock) => (
+                <div key={`locked:${lock.filename}`} className="group">
+                  <LockedOnlyRow
+                    lock={lock}
+                    onContextMenu={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setCtxMenu({
+                        x: e.clientX, y: e.clientY,
+                        files: [lock.filename], isLocked: true, isModified: false,
+                        hasUntracked: false, hasUnmerged: false,
+                      });
+                    }}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+      </div>
 
       {/* ── Staged Context Menu ── */}
       {stagedCtxMenu && (
