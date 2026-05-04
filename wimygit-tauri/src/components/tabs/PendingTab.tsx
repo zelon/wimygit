@@ -57,6 +57,7 @@ interface PendingTabProps {
   onFilePreview?: (filename: string, staged: boolean, isUntracked?: boolean) => void;
   onLfsLockCountChange?: (count: number) => void;
   onShowInWorkspaceFile?: (absolutePath: string) => void;
+  onShowInHistoryFile?: (absolutePath: string) => void;
 }
 
 function statusIcon(file: FileStatus): { icon: string; cls: string } {
@@ -173,13 +174,14 @@ interface UnstagedCtxMenuProps {
   onDeleteFiles: (files: string[]) => void;
   onUnlockLfs: () => void;
   onShowInWorkspaceFile?: (absolutePath: string) => void;
+  onShowInHistoryFile?: (absolutePath: string) => void;
 }
 
 function UnstagedCtxMenu({
   x, y, repoPath, files, hasUntracked, hasUnmerged,
   isLocked, isModified,
   onClose, onStage, onRevert, onRefresh, onDiff, onDeleteFiles, onUnlockLfs,
-  onShowInWorkspaceFile,
+  onShowInWorkspaceFile, onShowInHistoryFile,
 }: UnstagedCtxMenuProps) {
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -317,6 +319,18 @@ function UnstagedCtxMenu({
           </button>
         )}
 
+        {/* Show in History — 단일 파일만 */}
+        {isSingle && onShowInHistoryFile && (
+          <button className={btnClass} onClick={() => {
+            const sep = navigator.platform.startsWith("Win") ? "\\" : "/";
+            const fullPath = `${repoPath}${sep}${firstFile.replace(/\//g, sep)}`;
+            onShowInHistoryFile(fullPath);
+            onClose();
+          }}>
+            <span>Show in History</span>
+          </button>
+        )}
+
         {sep}
 
         {/* Delete Local File */}
@@ -400,9 +414,10 @@ interface StagedCtxMenuProps {
   onDiff: (filename: string) => void;
   onRefresh: () => void;
   onShowInWorkspaceFile?: (absolutePath: string) => void;
+  onShowInHistoryFile?: (absolutePath: string) => void;
 }
 
-function StagedCtxMenu({ x, y, repoPath, files, onClose, onUnstage, onDiff, onRefresh, onShowInWorkspaceFile }: StagedCtxMenuProps) {
+function StagedCtxMenu({ x, y, repoPath, files, onClose, onUnstage, onDiff, onRefresh, onShowInWorkspaceFile, onShowInHistoryFile }: StagedCtxMenuProps) {
   const menuRef = useRef<HTMLDivElement>(null);
 
   const [pos, setPos] = useState({ top: y, left: x });
@@ -477,6 +492,17 @@ function StagedCtxMenu({ x, y, repoPath, files, onClose, onUnstage, onDiff, onRe
             <span>Show in workspace</span>
           </button>
         )}
+
+        {isSingle && onShowInHistoryFile && (
+          <button className={btnClass} onClick={() => {
+            const sep = navigator.platform.startsWith("Win") ? "\\" : "/";
+            const fullPath = `${repoPath}${sep}${firstFile.replace(/\//g, sep)}`;
+            onShowInHistoryFile(fullPath);
+            onClose();
+          }}>
+            <span>Show in History</span>
+          </button>
+        )}
       </div>
     </>,
     document.body
@@ -511,7 +537,7 @@ function SectionHeader({ label, count, action }: SectionHeaderProps) {
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
-export function PendingTab({ repoPath, refreshKey, onFilePreview, onLfsLockCountChange, onShowInWorkspaceFile }: PendingTabProps) {
+export function PendingTab({ repoPath, refreshKey, onFilePreview, onLfsLockCountChange, onShowInWorkspaceFile, onShowInHistoryFile }: PendingTabProps) {
   const [status, setStatus] = useState<GitStatus | null>(null);
   const [syncStatus, setSyncStatus] = useState<SyncStatus | null>(null);
   const [loading, setLoading] = useState(true);
@@ -1086,6 +1112,7 @@ export function PendingTab({ repoPath, refreshKey, onFilePreview, onLfsLockCount
           onDiff={handleStagedDifftool}
           onRefresh={fetchStatus}
           onShowInWorkspaceFile={onShowInWorkspaceFile}
+          onShowInHistoryFile={onShowInHistoryFile}
         />
       )}
 
@@ -1108,6 +1135,7 @@ export function PendingTab({ repoPath, refreshKey, onFilePreview, onLfsLockCount
           onDeleteFiles={handleDeleteFiles}
           onUnlockLfs={() => handleUnlockLfs(ctxMenu.files[0])}
           onShowInWorkspaceFile={onShowInWorkspaceFile}
+          onShowInHistoryFile={onShowInHistoryFile}
         />
       )}
 

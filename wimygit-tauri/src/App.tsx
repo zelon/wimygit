@@ -477,6 +477,10 @@ function App() {
                   setWorkspaceHighlight(prev => ({ path: absolutePath, triggerCount: (prev?.triggerCount ?? 0) + 1 }));
                 })();
               }}
+              onShowInHistoryFile={(absolutePath) => {
+                setSelectedFilePath(absolutePath);
+                handleTabChange("history");
+              }}
             />
           </div>
           <Suspense fallback={null}>
