@@ -826,13 +826,6 @@ export function PendingTab({ repoPath, refreshKey, onFilePreview, onLfsLockCount
 
   // LFS 계산
   const lockedSet = new Set(lfsLocks.map((l) => l.filename));
-  const unstagedFilenames = new Set(unstagedFiles.map((f) => f.filename));
-  // 수정 없이 잠기기만 한 파일 (Pending 목록에 없는 locked 파일)
-  const onlyLockedFiles = lfsLocks.filter((l) => !unstagedFilenames.has(l.filename));
-
-  const hasLocks = lfsLocks.length > 0;
-  const unstagedSectionLabel = hasLocks ? "Unstaged & Locked Files" : "Unstaged files";
-  const unstagedSectionCount = unstagedFiles.length + onlyLockedFiles.length;
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
@@ -950,27 +943,14 @@ export function PendingTab({ repoPath, refreshKey, onFilePreview, onLfsLockCount
       {/* ── Unstaged files ── */}
       <div className="flex-1 flex flex-col overflow-hidden">
         <SectionHeader
-          label={unstagedSectionLabel}
-          count={unstagedSectionCount}
+          label="Unstaged files"
+          count={unstagedFiles.length + unmergedFiles.length}
           action={
-            hasLfsLockable
-              ? { label: "Show Locks", onClick: handleShowLocks }
-              : unstagedFiles.length > 0
-                ? { label: "Stage All", onClick: handleStageAll }
-                : undefined
+            unstagedFiles.length > 0
+              ? { label: "Stage All", onClick: handleStageAll }
+              : undefined
           }
         />
-        {/* Stage All 버튼: Show Locks가 표시될 때는 별도 위치에 배치 */}
-        {hasLfsLockable && unstagedFiles.length > 0 && (
-          <div className="shrink-0 flex justify-end px-3 py-0.5 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-            <button
-              onClick={handleStageAll}
-              className="text-xs text-blue-600 dark:text-blue-400 hover:underline"
-            >
-              Stage All
-            </button>
-          </div>
-        )}
 
         <div className="flex-1 overflow-y-auto">
           {unmergedFiles.length > 0 && (
@@ -989,65 +969,75 @@ export function PendingTab({ repoPath, refreshKey, onFilePreview, onLfsLockCount
               />
             </div>
           ))}
-          {unstagedFiles.length === 0 && onlyLockedFiles.length === 0 ? (
+          {unstagedFiles.length === 0 ? (
             <div className="px-3 py-1.5 text-xs text-gray-400 italic">No unstaged changes</div>
           ) : (
-            <>
-              {unstagedFiles.map((file) => {
-                const isLocked = lockedSet.has(file.filename);
-                return (
-                  <div key={file.filename} className="group">
-                    <FileRow
-                      file={file}
-                      isSelected={selectedUnstaged.has(file.filename)}
-                      isLocked={isLocked}
-                      onClick={(e) => handleUnstagedClick(file.filename, e.ctrlKey || e.metaKey, e.shiftKey)}
-                      onContextMenu={(e) => handleUnstagedContextMenu(e, file.filename, file, isLocked)}
-                      actions={
-                        <>
+            unstagedFiles.map((file) => {
+              const isLocked = lockedSet.has(file.filename);
+              return (
+                <div key={file.filename} className="group">
+                  <FileRow
+                    file={file}
+                    isSelected={selectedUnstaged.has(file.filename)}
+                    isLocked={isLocked}
+                    onClick={(e) => handleUnstagedClick(file.filename, e.ctrlKey || e.metaKey, e.shiftKey)}
+                    onContextMenu={(e) => handleUnstagedContextMenu(e, file.filename, file, isLocked)}
+                    actions={
+                      <>
+                        <button
+                          onClick={() => handleStage([file.filename])}
+                          title="Stage"
+                          className="px-1 text-gray-400 hover:text-green-600 dark:hover:text-green-400 text-xs font-bold"
+                        >
+                          +
+                        </button>
+                        {file.unstaged_status !== "Untracked" && (
                           <button
-                            onClick={() => handleStage([file.filename])}
-                            title="Stage"
-                            className="px-1 text-gray-400 hover:text-green-600 dark:hover:text-green-400 text-xs font-bold"
+                            onClick={() => handleDiscard([file.filename])}
+                            title="Discard"
+                            className="px-1 text-gray-400 hover:text-red-500 dark:hover:text-red-400 text-xs"
                           >
-                            +
+                            ✕
                           </button>
-                          {file.unstaged_status !== "Untracked" && (
-                            <button
-                              onClick={() => handleDiscard([file.filename])}
-                              title="Discard"
-                              className="px-1 text-gray-400 hover:text-red-500 dark:hover:text-red-400 text-xs"
-                            >
-                              ✕
-                            </button>
-                          )}
-                        </>
-                      }
-                    />
-                  </div>
-                );
-              })}
-              {/* Only-Locked 파일 (수정 없이 잠긴 파일) */}
-              {onlyLockedFiles.map((lock) => (
-                <div key={`locked:${lock.filename}`} className="group">
-                  <LockedOnlyRow
-                    lock={lock}
-                    onContextMenu={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      setCtxMenu({
-                        x: e.clientX, y: e.clientY,
-                        files: [lock.filename], isLocked: true, isModified: false,
-                        hasUntracked: false, hasUnmerged: false,
-                      });
-                    }}
+                        )}
+                      </>
+                    }
                   />
                 </div>
-              ))}
-            </>
+              );
+            })
           )}
         </div>
       </div>
+
+      {/* ── Locked files (LFS) ── */}
+      {hasLfsLockable && lfsLocks.length > 0 && (
+        <div className="flex flex-col border-t border-gray-200 dark:border-gray-700 overflow-hidden" style={{ maxHeight: "40%" }}>
+          <SectionHeader
+            label="Locked files"
+            count={lfsLocks.length}
+            action={{ label: "Show Locks", onClick: handleShowLocks }}
+          />
+          <div className="overflow-y-auto">
+            {lfsLocks.map((lock) => (
+              <div key={`locked:${lock.filename}`} className="group">
+                <LockedOnlyRow
+                  lock={lock}
+                  onContextMenu={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setCtxMenu({
+                      x: e.clientX, y: e.clientY,
+                      files: [lock.filename], isLocked: true, isModified: false,
+                      hasUntracked: false, hasUnmerged: false,
+                    });
+                  }}
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* ── Staged Context Menu ── */}
       {stagedCtxMenu && (

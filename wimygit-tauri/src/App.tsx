@@ -424,6 +424,7 @@ function App() {
         repoPath={activeRepo.repoPath}
         refreshKey={activeRepo.refreshKey}
         onRefresh={handleRefresh}
+        onPushSuccess={() => handleAfterPush(activeRepo.repoPath)}
         plugins={plugins}
         selectedFilePath={selectedFilePath}
         onTimeLapse={() => setShowTimeLapse(true)}

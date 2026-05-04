@@ -17,6 +17,7 @@ interface HeaderProps {
   repoPath: string;
   refreshKey: number;
   onRefresh: () => void;
+  onPushSuccess?: () => void;
   plugins?: PluginInfo[];
   selectedFilePath?: string | null;
   onTimeLapse?: () => void;
@@ -207,7 +208,7 @@ function Sep() {
 
 // ─── Header ───────────────────────────────────────────────────────────────────
 
-export function Header({ repoPath, refreshKey, onRefresh, plugins = [], selectedFilePath, onTimeLapse }: HeaderProps) {
+export function Header({ repoPath, refreshKey, onRefresh, onPushSuccess, plugins = [], selectedFilePath, onTimeLapse }: HeaderProps) {
   const [currentBranch, setCurrentBranch] = useState<string>("");
   const [repoName, setRepoName] = useState<string>("");
   const [author, setAuthor] = useState<{ name: string; email: string } | null>(null);
@@ -241,12 +242,13 @@ export function Header({ repoPath, refreshKey, onRefresh, plugins = [], selected
     try {
       await fn();
       if (refreshAfter) onRefresh();
+      if (key === "push") onPushSuccess?.();
     } catch (e) {
       setLastError(String(e));
     } finally {
       setBusy(null);
     }
-  }, [onRefresh]);
+  }, [onRefresh, onPushSuccess]);
 
   const isDisabled = busy !== null;
 
