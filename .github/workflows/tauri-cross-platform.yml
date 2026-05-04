@@ -91,3 +91,31 @@ jobs:
             wimygit-tauri/src-tauri/target/release/bundle/rpm/*.rpm
             wimygit-tauri/src-tauri/target/release/bundle/appimage/*.AppImage
           if-no-files-found: warn
+
+  combine-artifacts:
+    name: Combine All Artifacts
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          # download all artifacts
+          # pattern to get all artifacts
+          pattern: wimygit-tauri-*
+          path: all-artifacts
+          merge-multiple: true # merge all artifacts into one folder
+
+      - name: Display structure of downloaded files
+        run: ls -R all-artifacts
+
+      - name: Create final zip
+        run: |
+          cd all-artifacts
+          zip -r ../wimygit-all-platforms.zip .
+
+      - name: Upload final bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: wimygit-full-bundle
+          path: wimygit-all-platforms.zip
