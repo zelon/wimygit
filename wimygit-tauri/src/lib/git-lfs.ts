@@ -22,6 +22,11 @@ export async function getLfsLocks(repoPath: string): Promise<LfsLock[]> {
   return invoke("get_lfs_locks", { repoPath });
 }
 
+/** 현재 인증된 사용자가 소유한 lock만 반환 (git lfs locks --local) */
+export async function getLfsLocalLocks(repoPath: string): Promise<LfsLock[]> {
+  return invoke("get_lfs_local_locks", { repoPath });
+}
+
 export async function lfsLockFile(repoPath: string, filename: string): Promise<string> {
   return invoke("lfs_lock_file", { repoPath, filename });
 }

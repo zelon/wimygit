@@ -21,9 +21,14 @@ import {
   loadPlugins,
   hasLfsAttributes,
   checkLfsInstalled,
+  getGitStatus,
+  getLfsLocalLocks,
+  lfsUnlockFile,
   type PluginInfo,
   type SelectedDiffInfo,
+  type LfsLock,
 } from "./lib";
+import { LfsUnlockModal } from "./components/shared/LfsUnlockModal";
 
 const BASE_INNER_TABS = [
   { id: "pending", label: "Pending Changes" },
@@ -84,6 +89,12 @@ function App() {
   const [lfsLockCount, setLfsLockCount] = useState(0);
   const [worktreeCount, setWorktreeCount] = useState(0);
   const [showPluginModal, setShowPluginModal] = useState(false);
+  const [lfsUnlockConfirm, setLfsUnlockConfirm] = useState<{
+    repoPath: string;
+    locks: LfsLock[];
+    stagedSet: Set<string>;
+    modifiedSet: Set<string>;
+  } | null>(null);
 
   // Set window title (visible in taskbar)
   useEffect(() => {
@@ -146,6 +157,29 @@ function App() {
   const handleRefresh = useCallback(() => {
     updateActiveRepo((t) => ({ refreshKey: t.refreshKey + 1 }));
   }, [updateActiveRepo]);
+
+  const handleAfterPush = useCallback(async (repoPath: string) => {
+    try {
+      const myLocks = await getLfsLocalLocks(repoPath);
+      if (myLocks.length === 0) return;
+      const status = await getGitStatus(repoPath);
+      const stagedSet = new Set(status.staged.map((f) => f.filename));
+      const modifiedSet = new Set(status.modified.map((f) => f.filename));
+      setLfsUnlockConfirm({ repoPath, locks: myLocks, stagedSet, modifiedSet });
+    } catch {
+      // LFS not available or network error — silently skip
+    }
+  }, []);
+
+  const handleLfsUnlockConfirm = useCallback(async () => {
+    if (!lfsUnlockConfirm) return;
+    const { repoPath, locks } = lfsUnlockConfirm;
+    setLfsUnlockConfirm(null);
+    for (const lock of locks) {
+      try { await lfsUnlockFile(repoPath, lock.filename); } catch { /* ignore individual failures */ }
+    }
+    handleRefresh();
+  }, [lfsUnlockConfirm, handleRefresh]);
 
   // F5 키를 앱 전체 새로고침 대신 현재 repo Refresh로 동작하게 변경
   useEffect(() => {
@@ -426,14 +460,14 @@ function App() {
             activeTab={activeRepo.activeTab}
             onTabChange={handleTabChange}
           />
-          {activeRepo.activeTab === "pending" && (
+          <div className={activeRepo.activeTab === "pending" ? "contents" : "hidden"}>
             <PendingTab
               repoPath={activeRepo.repoPath}
               refreshKey={activeRepo.refreshKey}
               onFilePreview={(filename, staged, isUntracked) => { setSelectedDiff(null); setPendingFilePreview({ filename, staged, isUntracked }); }}
               onLfsLockCountChange={setLfsLockCount}
             />
-          )}
+          </div>
           <Suspense fallback={null}>
           {activeRepo.activeTab === "history" && (
             <HistoryTab
@@ -469,6 +503,7 @@ function App() {
               repoPath={activeRepo.repoPath}
               refreshKey={activeRepo.refreshKey}
               onRefresh={handleRefresh}
+              onPushSuccess={() => handleAfterPush(activeRepo.repoPath)}
             />
           )}
           {activeRepo.activeTab === "tags" && (
@@ -517,6 +552,17 @@ function App() {
       <GitLogPanel />
 
 
+
+      {/* LFS unlock confirmation modal */}
+      {lfsUnlockConfirm && (
+        <LfsUnlockModal
+          locks={lfsUnlockConfirm.locks}
+          stagedSet={lfsUnlockConfirm.stagedSet}
+          modifiedSet={lfsUnlockConfirm.modifiedSet}
+          onConfirm={handleLfsUnlockConfirm}
+          onCancel={() => setLfsUnlockConfirm(null)}
+        />
+      )}
 
       {/* Plugin modal overlay */}
       {showPluginModal && (

@@ -68,6 +68,17 @@ async fn lfs_unlock_file(repo_path: String, filename: String) -> Result<String, 
     Ok(result.stdout)
 }
 
+/// 현재 인증된 사용자가 소유한 LFS lock만 반환 (git lfs locks --local)
+#[tauri::command]
+async fn get_lfs_local_locks(repo_path: String) -> Result<Vec<LfsLock>, String> {
+    let result = git::run_git(
+        vec!["lfs".into(), "locks".into(), "--local".into()],
+        repo_path,
+    )
+    .await?;
+    Ok(parse_lfs_locks(&result.stdout))
+}
+
 /// 특정 파일의 lock 소유자 조회 (lock 실패 시 오류 메시지 보완용)
 #[tauri::command]
 async fn get_lfs_locks_for_file(repo_path: String, filename: String) -> Result<Vec<LfsLock>, String> {
@@ -183,6 +194,7 @@ pub fn run() {
       get_lfs_lockable_extensions_cmd,
       check_lfs_installed,
       get_lfs_locks,
+      get_lfs_local_locks,
       lfs_lock_file,
       lfs_unlock_file,
       get_lfs_locks_for_file,

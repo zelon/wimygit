@@ -14,9 +14,10 @@ interface RemoteTabProps {
   repoPath: string;
   refreshKey: number;
   onRefresh: () => void;
+  onPushSuccess?: () => void;
 }
 
-export function RemoteTab({ repoPath, refreshKey, onRefresh }: RemoteTabProps) {
+export function RemoteTab({ repoPath, refreshKey, onRefresh, onPushSuccess }: RemoteTabProps) {
   const [remotes, setRemotes] = useState<RemoteInfo[]>([]);
   const [currentBranch, setCurrentBranch] = useState<string>("");
   const [loading, setLoading] = useState(true);
@@ -86,6 +87,7 @@ export function RemoteTab({ repoPath, refreshKey, onRefresh }: RemoteTabProps) {
     try {
       await gitPush(repoPath, remote, currentBranch);
       setSuccess(`Pushed to ${remote}/${currentBranch}`);
+      onPushSuccess?.();
       onRefresh();
     } catch (e) {
       setError(String(e));
