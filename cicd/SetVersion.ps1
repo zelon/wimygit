@@ -4,6 +4,22 @@ param(
     [string]$newVersion
 )
 
+function Set-TauriVersion {
+    param(
+        [string]$FilePath,
+        [string]$NewVersion
+    )
+
+    $json = Get-Content $FilePath -Raw | ConvertFrom-Json
+
+    # 보통 여기 있음
+    $json.version = $NewVersion
+
+    $json | ConvertTo-Json -Depth 100 | Set-Content $FilePath
+}
+
+Push-Location
+
 $pattern = '(\d+)\.(\d+)\.(\d+)'
 $content = $newVersion
 $newVersion = [regex]::Replace($content, $pattern, {
@@ -15,8 +31,14 @@ $newVersion = [regex]::Replace($content, $pattern, {
 }).Trim()
 
 # Update Version String
-$versionFilePath = "$PSScriptRoot\..\WimyGit\Properties\AssemblyInfo.cs"
-$content = Get-Content $versionFilePath -Raw
-$content = $content -replace 'AssemblyInformationalVersion\(".*?"\)', "AssemblyInformationalVersion(""$newVersion"")"
-$content = $content.Trim()
-Set-Content $versionFilePath $content -Encoding UTF8
+cargo install cargo-edit
+
+Set-Location "$PSScriptRoot\..\wimygit-tauri\src-tauri"
+cargo set-version $newVersion
+
+Set-Location "$PSScriptRoot\..\wimygit-tauri"
+npm version $newVersion
+
+Set-TauriVersion -FilePath "$PSScriptRoot\..\wimygit-tauri\src-tauri\tauri.conf.json" -NewVersion $newVersion
+
+Pop-Location
