@@ -1,6 +1,3 @@
-# This workflow will build a .NET project
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-net
-
 name: Stable Release
 
 on:
@@ -9,100 +6,190 @@ on:
       winget-publish:
         description: 'Publish to winget'
         type: boolean
-        default: true  
+        default: true
+
+concurrency: 
+  group: stable-release
+  cancel-in-progress: false
 
 jobs:
-  release:
+  prepare:
+    name: Prepare
     runs-on: windows-latest
+    outputs:
+      version: ${{ steps.config.outputs.version }}
+      tag: ${{ steps.config.outputs.tag }}
+      zipFileName: ${{ steps.config.outputs.zipFileName }}
+      zipDownloadUrl: ${{ steps.config.outputs.zipDownloadUrl }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: Swatinem/rust-cache@v2
+      - name: Validate branch name and set variables
+        id: config
+        shell: pwsh
+        run: |
+          $branchName = "${{ github.ref_name }}"
+          if ($branchName -notmatch "release/(\d+)\.(\d+)\.(\d+)") {
+            Write-Host "Invalid branch name: ${{ github.ref_name }}. Use like release/1.2.3"
+            exit 1
+          }
+          $version = $branchName.Replace("release/", "")
+          Write-Host "version=$version"
+          echo "version=$version" >> $env:GITHUB_OUTPUT
+
+          $tag = "v$version"
+          Write-Host "tag=$tag"
+          echo "tag=$tag" >> $env:GITHUB_OUTPUT
+
+          $zipFileName = "wimygit-windows-$tag.zip"
+          Write-Host "zipFileName=$zipFileName"
+          echo "zipFileName=$zipFileName" >> $env:GITHUB_OUTPUT
+
+          $zipDownloadUrl = "https://github.com/zelon/wimygit/releases/download/$tag/$zipFileName"
+          Write-Host "zipDownloadUrl=$zipDownloadUrl"
+          echo "zipDownloadUrl=$zipDownloadUrl" >> $env:GITHUB_OUTPUT
+
+          ./cicd/SetVersion.ps1 $version
+
+          git config --global user.name 'GitHub Action'
+          git config --global user.email 'action@github.com'
+
+          git add .
+          git commit -m "ci: update Release Version to $version"
+          git push
+
+          git tag $tag
+          git push origin $tag
+
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            platform: windows
+          - os: macos-latest
+            platform: macos
+          - os: ubuntu-latest
+            platform: linux
+    needs: prepare
+    runs-on: ${{ matrix.os }}
+    name: Build (${{ matrix.platform }})
 
     steps:
-    - name: Validate branch name and set variables
-      id: config
-      shell: pwsh
-      run: |
-        $branchName = "${{ github.ref_name }}"
-        if ($branchName -notmatch "release/(\d+)\.(\d+)\.(\d+)") {
-          Write-Host "Invalid branch name: ${{ github.ref_name }}. Use like release/1.2.3"
-          exit 1
-        }
-        $version = $branchName.Replace("release/", "")
-        Write-Host "version=$version"
-        echo "version=$version" >> $env:GITHUB_OUTPUT
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ needs.prepare.outputs.tag }}
 
-        $tag = "v$version"
-        Write-Host "tag=$tag"
-        echo "tag=$tag" >> $env:GITHUB_OUTPUT
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: wimygit-tauri/package-lock.json
 
-        $zipFileName = "wimygit-$tag.zip"
-        Write-Host "zipFileName=$zipFileName"
-        echo "zipFileName=$zipFileName" >> $env:GITHUB_OUTPUT
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
 
-        $zipDownloadUrl = "https://github.com/zelon/wimygit/releases/download/$tag/$zipFileName"
-        Write-Host "zipDownloadUrl=$zipDownloadUrl"
-        echo "zipDownloadUrl=$zipDownloadUrl" >> $env:GITHUB_OUTPUT
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: wimygit-tauri/src-tauri
 
-    - uses: actions/checkout@v6
-      with:
-        ref: ${{ github.ref_name }}
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v5
-      with:
-        dotnet-version: 10.0.x
+      - name: Install Linux system dependencies
+        if: matrix.platform == 'linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libwebkit2gtk-4.1-dev \
+            libappindicator3-dev \
+            librsvg2-dev \
+            patchelf
 
-    - name: Configure Git User
-      run: |
-        git config --global user.name 'GitHub Action'
-        git config --global user.email 'action@github.com'
+      - name: Install frontend dependencies
+        working-directory: wimygit-tauri
+        run: npm ci
 
-    - name: Set Official Version
-      shell: pwsh
-      run: |
-        ./cicd/SetVersion.ps1 -NewVersion ${{ steps.config.outputs.version }}
-        git add .
-        git commit -m "Update Version to ${{ steps.config.outputs.version }}"
-        git push origin ${{ github.ref_name }}
-        
-    - name: Restore dependencies
-      run: dotnet restore
+      - name: Build Tauri app
+        working-directory: wimygit-tauri
+        run: npm run tauri build
 
-    - name: Build
-      run: dotnet build --no-restore
+      - name: Upload build artifacts (Windows)
+        if: matrix.platform == 'windows'
+        uses: actions/upload-artifact@v7
+        with:
+          name: wimygit-windows
+          path: |
+            wimygit-tauri/src-tauri/target/release/wimygit.exe
+            wimygit-tauri/src-tauri/target/release/bundle/msi/*.msi
+            wimygit-tauri/src-tauri/target/release/bundle/nsis/*.exe
+          if-no-files-found: error
 
-    - name: Test
-      run: dotnet test --no-build --verbosity normal
+      - name: Upload build artifacts (macOS)
+        if: matrix.platform == 'macos'
+        uses: actions/upload-artifact@v7
+        with:
+          name: wimygit-macos
+          path: |
+            wimygit-tauri/src-tauri/target/release/bundle/dmg/*.dmg
+          if-no-files-found: error
 
-    - name: DotNet Publish
-      run: dotnet publish WimyGit -c Release /p:PublishProfile=ReleasePublishProfile
+      - name: Upload build artifacts (Linux)
+        if: matrix.platform == 'linux'
+        uses: actions/upload-artifact@v7
+        with:
+          name: wimygit-linux
+          path: |
+            wimygit-tauri/src-tauri/target/release/bundle/deb/*.deb
+            wimygit-tauri/src-tauri/target/release/bundle/rpm/*.rpm
+            wimygit-tauri/src-tauri/target/release/bundle/appimage/*.AppImage
+          if-no-files-found: error
 
-    - name: Create tag
-      id: tag
-      run: |
-        git tag ${{ steps.config.outputs.tag }} --force
-        git push origin ${{ steps.config.outputs.tag }} --force
+  release:
+    name: Release
+    needs: [prepare, build]
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ needs.prepare.outputs.tag }}
+      - name: Download all artifacts
+        uses: actions/download-artifact@v8
+        with:
+          # download all artifacts
+          # pattern to get all artifacts
+          pattern: wimygit-*
+          path: all-artifacts
+          merge-multiple: true # merge all artifacts into one folder
 
-    - name: Zip build folder
-      shell: pwsh
-      run: |
-        Compress-Archive -Path WimyGit\bin\Release\publish\* -DestinationPath ${{ steps.config.outputs.zipFileName }} -Force
+      - name: Display structure of downloaded files
+        shell: pwsh
+        run: Get-ChildItem all-artifacts -Recurse
 
-    - name: Create GitHub Release
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: |
-        $tag = "${{ steps.config.outputs.tag }}"
-        $zipName = "${{ steps.config.outputs.zipFileName }}"
-        $title = "WimyGit ${{ steps.config.outputs.tag }}"
-        gh release create $tag $zipName --generate-notes --prerelease --title $title
+      - name: Create winget zip
+        shell: pwsh
+        working-directory: all-artifacts
+        run: |
+          Compress-Archive -Path wimygit.exe -DestinationPath "${{ needs.prepare.outputs.zipFileName }}" -Force
+          Remove-Item wimygit.exe
 
-    - name: Winget Publish
-      if: ${{ inputs.winget-publish == true }}
-      env:
-        GITHUB_TOKEN: ${{ secrets.MY_PAT }}
-      shell: pwsh
-      run: |
-        $packageIdentifier = "Wimysoft.WimyGit"
-        $newVersion = "${{ steps.config.outputs.version }}"
-        $newDownloadUrl = "${{ steps.config.outputs.zipDownloadUrl }}"
-        Write-Host "-packageIdentifier $packageIdentifier -newVersion $newVersion -newDownloadUrl $newDownloadUrl"
-        .\cicd\CreateWingetPullRequest.ps1 submit -packageIdentifier $packageIdentifier -newVersion $newVersion -newDownloadUrl $newDownloadUrl -token $env:GITHUB_TOKEN
-        
+      - name: Create GitHub Release
+        shell: pwsh
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        working-directory: all-artifacts
+        run: |
+          $title = "wimygit-${{ needs.prepare.outputs.tag }}"
+          $files = Get-ChildItem -Path . -Include *.exe,*.zip,*.dmg,*.AppImage,*.deb,*.rpm -Recurse | ForEach-Object { $_.FullName }
+          gh release create "${{ needs.prepare.outputs.tag }}" @files --generate-notes --prerelease --title $title
+
+      - name: Winget Publish
+        shell: pwsh
+        if: ${{ inputs.winget-publish == true }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.MY_PAT }}
+        run: |
+          $packageIdentifier = "Wimysoft.WimyGit"
+          $newVersion = "${{ needs.prepare.outputs.version }}"
+          $newDownloadUrl = "${{ needs.prepare.outputs.zipDownloadUrl }}"
+          ./cicd/CreateWingetPullRequest.ps1 submit -packageIdentifier $packageIdentifier -newVersion $newVersion -newDownloadUrl $newDownloadUrl -token $env:GITHUB_TOKEN

@@ -50,7 +50,7 @@ jobs:
           git config --global user.email 'action@github.com'
 
           git add ./cicd/NightlyVersion.txt
-          git commit -m "Update Nightly Version to $version"
+          git commit -m "ci: update Nightly Version to $version"
           git push
 
           git tag $tag
@@ -119,7 +119,7 @@ jobs:
 
       - name: Upload build artifacts (Windows)
         if: matrix.platform == 'windows'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: wimygit-windows
           path: |
@@ -130,7 +130,7 @@ jobs:
 
       - name: Upload build artifacts (macOS)
         if: matrix.platform == 'macos'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: wimygit-macos
           path: |
@@ -139,7 +139,7 @@ jobs:
 
       - name: Upload build artifacts (Linux)
         if: matrix.platform == 'linux'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: wimygit-linux
           path: |
@@ -157,7 +157,7 @@ jobs:
         with:
           ref: ${{ needs.prepare.outputs.tag }}
       - name: Download all artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           # download all artifacts
           # pattern to get all artifacts
