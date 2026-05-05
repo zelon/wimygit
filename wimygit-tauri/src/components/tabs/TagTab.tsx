@@ -117,6 +117,7 @@ export function TagTab({ repoPath, refreshKey, onRefresh }: TagTabProps) {
   }
 
   return (
+    <div className="flex-1 overflow-y-auto min-h-0">
     <div className="p-4 max-w-3xl">
       {/* Messages */}
       {error && (
@@ -291,6 +292,7 @@ export function TagTab({ repoPath, refreshKey, onRefresh }: TagTabProps) {
           </table>
         </div>
       )}
+    </div>
     </div>
   );
 }
