@@ -23,6 +23,7 @@ jobs:
       zipDownloadUrl: ${{ steps.config.outputs.zipDownloadUrl }}
     steps:
       - uses: actions/checkout@v6
+      - uses: Swatinem/rust-cache@v2
       - name: Increase Nightly Version and Git Push
         id: config
         shell: pwsh
