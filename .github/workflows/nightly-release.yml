@@ -14,6 +14,7 @@ concurrency:
 
 jobs:
   prepare:
+    name: Prepare
     runs-on: windows-latest
     outputs:
       version: ${{ steps.config.outputs.version }}
@@ -103,7 +104,7 @@ jobs:
         working-directory: wimygit-tauri
         run: npm ci
 
-      - name: Set Nightly Version Icon
+      - name: Set Nightly Version and Icon
         id: config
         shell: pwsh
         working-directory: cicd
@@ -147,7 +148,7 @@ jobs:
           if-no-files-found: error
 
   release:
-    name: Combine All Artifacts and create release
+    name: Release
     needs: [prepare, build]
     runs-on: windows-latest
     steps:
