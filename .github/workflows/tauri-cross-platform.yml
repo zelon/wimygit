@@ -26,12 +26,12 @@ jobs:
     name: Build (${{ matrix.platform }})
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
-          node-version: 20
+          node-version: 24
           cache: npm
           cache-dependency-path: wimygit-tauri/package-lock.json
 
@@ -65,7 +65,7 @@ jobs:
         if: matrix.platform == 'windows'
         uses: actions/upload-artifact@v4
         with:
-          name: wimygit-tauri-windows
+          name: wimygit-windows
           path: |
             wimygit-tauri/src-tauri/target/release/wimygit.exe
             wimygit-tauri/src-tauri/target/release/bundle/msi/*.msi
@@ -76,17 +76,16 @@ jobs:
         if: matrix.platform == 'macos'
         uses: actions/upload-artifact@v4
         with:
-          name: wimygit-tauri-macos
+          name: wimygit-macos
           path: |
             wimygit-tauri/src-tauri/target/release/bundle/dmg/*.dmg
-            wimygit-tauri/src-tauri/target/release/bundle/macos/*.app
           if-no-files-found: warn
 
       - name: Upload build artifacts (Linux)
         if: matrix.platform == 'linux'
         uses: actions/upload-artifact@v4
         with:
-          name: wimygit-tauri-linux
+          name: wimygit-linux
           path: |
             wimygit-tauri/src-tauri/target/release/bundle/deb/*.deb
             wimygit-tauri/src-tauri/target/release/bundle/rpm/*.rpm
@@ -103,7 +102,7 @@ jobs:
         with:
           # download all artifacts
           # pattern to get all artifacts
-          pattern: wimygit-tauri-*
+          pattern: wimygit-*
           path: all-artifacts
           merge-multiple: true # merge all artifacts into one folder
 
