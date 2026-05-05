@@ -117,6 +117,7 @@ export function StashTab({ repoPath, refreshKey, onRefresh }: StashTabProps) {
   }
 
   return (
+    <div className="flex-1 overflow-y-auto min-h-0">
     <div className="p-4">
       {error && (
         <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded">
@@ -243,6 +244,7 @@ export function StashTab({ repoPath, refreshKey, onRefresh }: StashTabProps) {
           </div>
         )}
       </div>
+    </div>
     </div>
   );
 }

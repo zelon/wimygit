@@ -145,6 +145,7 @@ export function WorktreeTab({ repoPath, refreshKey, onRefresh, onOpenRepo, onWor
   }
 
   return (
+    <div className="flex-1 overflow-y-auto min-h-0">
     <div className="p-4 max-w-3xl">
       {/* Messages */}
       {error && (
@@ -325,6 +326,7 @@ export function WorktreeTab({ repoPath, refreshKey, onRefresh, onOpenRepo, onWor
           </div>
         )}
       </div>
+    </div>
     </div>
   );
 }
