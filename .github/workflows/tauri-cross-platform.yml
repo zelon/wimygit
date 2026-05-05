@@ -3,10 +3,10 @@ name: Tauri Cross-Platform Build
 on:
   push:
     branches:
-      - tauri
+      - main
   pull_request:
     branches:
-      - tauri
+      - main
   workflow_dispatch:
 
 jobs:
