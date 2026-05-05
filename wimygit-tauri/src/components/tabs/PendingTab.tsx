@@ -124,10 +124,10 @@ function FileRow({ file, isSelected, isCheckSelected, isLocked, onClick, onConte
         }`}
     >
       <span className={`font-mono font-bold w-3.5 shrink-0 ${cls}`}>{icon}</span>
-      <span className="flex-1 truncate" title={file.filename}>{file.filename}</span>
       {isLocked && (
         <span title="LFS Locked" className="text-amber-500 shrink-0 text-xs">🔒</span>
       )}
+      <span className="flex-1 truncate" title={file.filename}>{file.filename}</span>
       <div className="flex gap-1 shrink-0 opacity-0 group-hover:opacity-100" onClick={(e) => e.stopPropagation()}>
         {actions}
       </div>
@@ -959,6 +959,7 @@ export function PendingTab({ repoPath, refreshKey, onFilePreview, onLfsLockCount
                 <FileRow
                   file={file}
                   isSelected={previewKey === `s:${file.filename}`}
+                  isLocked={lockedSet.has(file.filename)}
                   onClick={(_e) => handleFileClick(file.filename, true)}
                   onContextMenu={(e) => handleStagedContextMenu(e, file.filename)}
                   actions={
