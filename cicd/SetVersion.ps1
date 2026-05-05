@@ -33,12 +33,12 @@ $newVersion = [regex]::Replace($content, $pattern, {
 # Update Version String
 cargo install cargo-edit
 
-Set-Location "$PSScriptRoot\..\wimygit-tauri\src-tauri"
+Set-Location (Join-Path $PSScriptRoot ".." "wimygit-tauri" "src-tauri")
 cargo set-version $newVersion
 
-Set-Location "$PSScriptRoot\..\wimygit-tauri"
+Set-Location (Join-Path $PSScriptRoot ".." "wimygit-tauri")
 npm version $newVersion
 
-Set-TauriVersion -FilePath "$PSScriptRoot\..\wimygit-tauri\src-tauri\tauri.conf.json" -NewVersion $newVersion
+Set-TauriVersion -FilePath (Join-Path $PSScriptRoot ".." "wimygit-tauri" "src-tauri" "tauri.conf.json") -NewVersion $newVersion
 
 Pop-Location
