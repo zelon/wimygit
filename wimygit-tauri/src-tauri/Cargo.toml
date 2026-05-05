@@ -4,7 +4,7 @@ version = "2.0.0"
 description = "WimyGit - Cross-platform Git GUI Client"
 authors = ["WimyGit Team"]
 license = "MIT"
-repository = "https://github.com/user/wimygit"
+repository = "https://github.com/zelon/wimygit"
 edition = "2021"
 rust-version = "1.77.2"
 
