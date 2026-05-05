@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { remove } from "@tauri-apps/plugin-fs";
+import { resolve } from "@tauri-apps/api/path";
 import { confirm as tauriConfirm } from "@tauri-apps/plugin-dialog";
 import {
   getGitStatus,
@@ -670,18 +671,17 @@ export function PendingTab({ repoPath, refreshKey, onFilePreview, onLfsLockCount
     catch (e) { setError(String(e)); }
   };
 
-  const buildRevertMessage = (files: string[], rp: string) => {
-    const sep = navigator.platform.startsWith("Win") ? "\\" : "/";
+  const buildRevertMessage = async (files: string[], rp: string) => {
     const MAX = 20;
     const shown = files.length <= MAX ? files : files.slice(0, MAX);
-    const lines = shown.map((f) => `${rp}${sep}${f}`);
+    const lines = await Promise.all(shown.map((f) => resolve(rp, f)));
     if (files.length > MAX) lines.push("...");
     return `Revert changes to ${files.length} file(s)?\n\n${lines.join("\n")}`;
   };
 
   const handleDiscard = async (files: string[]) => {
     const ok = await tauriConfirm(
-      buildRevertMessage(files, repoPath),
+      await buildRevertMessage(files, repoPath),
       { title: "Revert", kind: "warning" }
     );
     if (!ok) return;
@@ -702,7 +702,8 @@ export function PendingTab({ repoPath, refreshKey, onFilePreview, onLfsLockCount
         const untrackedNames = new Set((st?.untracked ?? []).map((f) => f.filename));
         const revertable = [...sel].filter((f) => !untrackedNames.has(f));
         if (revertable.length === 0) return;
-        tauriConfirm(buildRevertMessage(revertable, rp), { title: "Revert", kind: "warning" })
+        buildRevertMessage(revertable, rp)
+          .then((msg) => tauriConfirm(msg, { title: "Revert", kind: "warning" }))
           .then((ok) => { if (ok) gitDiscard(rp, revertable).then(() => fetchStatus()).catch((e) => setError(String(e))); })
           .catch(() => { });
       }
@@ -712,8 +713,7 @@ export function PendingTab({ repoPath, refreshKey, onFilePreview, onLfsLockCount
   }, []);
 
   const handleDeleteFiles = async (files: string[]) => {
-    const sep = navigator.platform.startsWith("Win") ? "\\" : "/";
-    const absolutePaths = files.map(f => `${repoPath}${sep}${f}`);
+    const absolutePaths = await Promise.all(files.map(f => resolve(repoPath, f)));
     const ok = await tauriConfirm(`Delete ${files.length} file(s) permanently?\n\n${absolutePaths.join("\n")}`, { title: "Delete Local File", kind: "warning" });
     if (!ok) return;
     try {
