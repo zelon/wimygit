@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { getCurrentWindow } from "@tauri-apps/api/window";
-import { getVersion } from "@tauri-apps/api/app";
+import { getVersion, getName } from "@tauri-apps/api/app";
 import { HamburgerMenu } from "./HamburgerMenu";
 
 interface RepoTabItem {
@@ -21,9 +21,11 @@ interface RepoTabBarProps {
 export function RepoTabBar({ tabs, activeId, onSelect, onClose, onAdd, onPluginClick }: RepoTabBarProps) {
   const [isMaximized, setIsMaximized] = useState(false);
   const [version, setVersion] = useState("");
+  const [appName, setAppName] = useState("WimyGit");
 
   useEffect(() => {
     getVersion().then(setVersion).catch(() => {});
+    getName().then(setAppName).catch(() => {});
     const appWindow = getCurrentWindow();
     appWindow.isMaximized().then(setIsMaximized).catch(() => {});
 
@@ -48,7 +50,7 @@ export function RepoTabBar({ tabs, activeId, onSelect, onClose, onAdd, onPluginC
         data-tauri-drag-region
         className="text-xs font-semibold text-gray-500 dark:text-gray-400 tracking-wide px-2 shrink-0 self-center"
       >
-        WimyGit
+        {appName}
         {version && <span className="ml-1 font-normal text-gray-400 dark:text-gray-500">v{version}</span>}
       </span>
 

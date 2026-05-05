@@ -111,7 +111,7 @@ jobs:
         working-directory: cicd
         run: |
           ./SetVersion.ps1 "${{ needs.prepare.outputs.version }}"
-          ./SetNightlyVersionIcon.ps1
+          ./SetNightlyVersionSetting.ps1
 
       - name: Build Tauri app
         working-directory: wimygit-tauri

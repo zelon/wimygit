@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, lazy, Suspense } from "react";
 import { open } from "@tauri-apps/plugin-dialog";
 import { exists } from "@tauri-apps/plugin-fs";
 import { getCurrentWindow } from "@tauri-apps/api/window";
+import { getName } from "@tauri-apps/api/app";
 import { Header, TabBar, RepoTabBar, GitLogPanel, LeftSidebar, RepoStateBanner } from "./components/layout";
 import { PendingTab } from "./components/tabs";
 
@@ -98,7 +99,7 @@ function App() {
 
   // Set window title (visible in taskbar)
   useEffect(() => {
-    getCurrentWindow().setTitle("WimyGit").catch(() => { });
+    getName().then(name => getCurrentWindow().setTitle(name)).catch(() => { });
   }, []);
 
   // Restore previously opened repos on startup
