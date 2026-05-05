@@ -119,8 +119,8 @@ function FileRow({ file, isSelected, isCheckSelected, isLocked, onClick, onConte
       onClick={onClick}
       onContextMenu={onContextMenu}
       className={`flex items-center gap-1.5 px-3 py-0.5 text-xs cursor-pointer border-b border-gray-50 dark:border-gray-800 select-none ${highlight
-          ? "bg-blue-50 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200"
-          : "hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300"
+        ? "bg-blue-50 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200"
+        : "hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300"
         }`}
     >
       <span className={`font-mono font-bold w-3.5 shrink-0 ${cls}`}>{icon}</span>
@@ -204,9 +204,9 @@ function UnstagedCtxMenu({
   // .gitignore에 추가할 폴더 경로 후보 목록 계산
   const folderCandidates = isSingle
     ? firstFile.split("/").slice(0, -1).reduce<string[]>((acc, part) => {
-        acc.push(acc.length > 0 ? `${acc[acc.length - 1]}/${part}` : part);
-        return acc;
-      }, [])
+      acc.push(acc.length > 0 ? `${acc[acc.length - 1]}/${part}` : part);
+      return acc;
+    }, [])
     : [];
 
   const [showGitignoreSub, setShowGitignoreSub] = useState(false);
@@ -315,7 +315,7 @@ function UnstagedCtxMenu({
             onShowInWorkspaceFile(fullPath);
             onClose();
           }}>
-            <span>Show in workspace</span>
+            <span>Show in Workspace</span>
           </button>
         )}
 
@@ -489,7 +489,7 @@ function StagedCtxMenu({ x, y, repoPath, files, onClose, onUnstage, onDiff, onRe
             onShowInWorkspaceFile(fullPath);
             onClose();
           }}>
-            <span>Show in workspace</span>
+            <span>Show in Workspace</span>
           </button>
         )}
 
@@ -704,7 +704,7 @@ export function PendingTab({ repoPath, refreshKey, onFilePreview, onLfsLockCount
         if (revertable.length === 0) return;
         tauriConfirm(buildRevertMessage(revertable, rp), { title: "Revert", kind: "warning" })
           .then((ok) => { if (ok) gitDiscard(rp, revertable).then(() => fetchStatus()).catch((e) => setError(String(e))); })
-          .catch(() => {});
+          .catch(() => { });
       }
     };
     window.addEventListener("keydown", onKeyDown, { capture: true });
