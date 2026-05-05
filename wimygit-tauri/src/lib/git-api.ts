@@ -303,6 +303,7 @@ export async function getCommitDiff(
   filePath2?: string,
   parentHash?: string,
   contextLines?: number,
+  ignoreWhitespace?: boolean,
 ): Promise<string> {
   return invoke<string>("get_commit_diff", {
     cwd,
@@ -311,6 +312,7 @@ export async function getCommitDiff(
     filePath2: filePath2 ?? null,
     parentHash: parentHash ?? null,
     contextLines: contextLines ?? null,
+    ignoreWhitespace: ignoreWhitespace ?? null,
   });
 }
 
@@ -320,6 +322,7 @@ export async function getDiff(
   filePath?: string,
   contextLines?: number,
   parent?: string,
+  ignoreWhitespace?: boolean,
 ): Promise<string> {
   return invoke<string>("get_diff", {
     cwd,
@@ -327,6 +330,7 @@ export async function getDiff(
     filePath: filePath ?? null,
     contextLines: contextLines ?? null,
     parent: parent ?? null,
+    ignoreWhitespace: ignoreWhitespace ?? null,
   });
 }
 

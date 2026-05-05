@@ -177,18 +177,21 @@ pub async fn get_commit_diff(
     file_path2: Option<String>,
     parent_hash: Option<String>,
     context_lines: Option<u32>,
+    ignore_whitespace: Option<bool>,
 ) -> Result<String, String> {
     let ctx = context_lines.unwrap_or(3);
+    let ignore_ws = ignore_whitespace.unwrap_or(false);
 
     let args = if let Some(parent) = parent_hash {
         // Diff specific parent vs commit
         let mut args = vec![
             "diff".to_string(),
             format!("-U{}", ctx),
-            parent,
-            commit_id,
-            "--".to_string(),
         ];
+        if ignore_ws { args.push("--ignore-all-space".to_string()); }
+        args.push(parent);
+        args.push(commit_id);
+        args.push("--".to_string());
         if let Some(p2) = file_path2 { args.push(p2); }
         args.push(file_path);
         args
@@ -197,9 +200,10 @@ pub async fn get_commit_diff(
         let mut args = vec![
             "show".to_string(),
             format!("-U{}", ctx),
-            commit_id,
-            "--".to_string(),
         ];
+        if ignore_ws { args.push("--ignore-all-space".to_string()); }
+        args.push(commit_id);
+        args.push("--".to_string());
         if let Some(p2) = file_path2 { args.push(p2); }
         args.push(file_path);
         args
@@ -224,9 +228,14 @@ pub async fn get_diff(
     file_path: Option<String>,
     context_lines: Option<u32>,
     parent: Option<String>,
+    ignore_whitespace: Option<bool>,
 ) -> Result<String, String> {
     let ctx = context_lines.unwrap_or(3);
     let mut args = vec!["diff".to_string(), format!("-U{}", ctx)];
+
+    if ignore_whitespace.unwrap_or(false) {
+        args.push("--ignore-all-space".to_string());
+    }
 
     if staged {
         args.push("--cached".to_string());

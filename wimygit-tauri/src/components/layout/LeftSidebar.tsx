@@ -385,6 +385,7 @@ function SidebarQuickDiff({ repoPath, selectedDiff, pendingFilePreview }: Sideba
   const [modes, setModes] = useState<DiffMode[]>([{ kind: "combined", label: "Diff" }]);
   const [activeMode, setActiveMode] = useState<DiffModeKind>("combined");
   const [contextLines, setContextLines] = useState(DEFAULT_CONTEXT);
+  const [ignoreWhitespace, setIgnoreWhitespace] = useState(false);
   const [diff, setDiff] = useState("");
   const [loadingDiff, setLoadingDiff] = useState(false);
   const [pendingDiff, setPendingDiff] = useState("");
@@ -414,12 +415,13 @@ function SidebarQuickDiff({ repoPath, selectedDiff, pendingFilePreview }: Sideba
       selectedDiff.file.filename2 ?? undefined,
       currentMode.parentRef,
       contextLines,
+      ignoreWhitespace,
     )
       .then((d) => setDiff(d))
       .catch(() => setDiff(""))
       .finally(() => setLoadingDiff(false));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [repoPath, selectedDiff, activeMode, contextLines]);
+  }, [repoPath, selectedDiff, activeMode, contextLines, ignoreWhitespace]);
 
   // ── Pending file preview (from PendingTab) ──
   useEffect(() => {
@@ -462,11 +464,11 @@ function SidebarQuickDiff({ repoPath, selectedDiff, pendingFilePreview }: Sideba
 
     setImagePreviewSrc(null);
     setPendingLoading(true);
-    getDiff(repoPath, pendingFilePreview.staged, pendingFilePreview.filename, contextLines)
+    getDiff(repoPath, pendingFilePreview.staged, pendingFilePreview.filename, contextLines, undefined, ignoreWhitespace)
       .then((d) => setPendingDiff(d))
       .catch(() => setPendingDiff(""))
       .finally(() => setPendingLoading(false));
-  }, [pendingFilePreview, isCommitMode, repoPath, contextLines]);
+  }, [pendingFilePreview, isCommitMode, repoPath, contextLines, ignoreWhitespace]);
 
   // ── Diff Tool ──
   const handleDiffTool = async () => {
@@ -510,7 +512,16 @@ function SidebarQuickDiff({ repoPath, selectedDiff, pendingFilePreview }: Sideba
             ))}
           </div>
         )}
-        <div className="flex gap-0.5 shrink-0 ml-auto">
+        <div className="flex gap-0.5 shrink-0 ml-auto items-center">
+          <label className="flex items-center gap-0.5 cursor-pointer select-none text-xs text-gray-600 dark:text-gray-400 px-1" title="Ignore whitespace changes (-w)">
+            <input
+              type="checkbox"
+              checked={ignoreWhitespace}
+              onChange={(e) => setIgnoreWhitespace(e.target.checked)}
+              className="w-3 h-3 cursor-pointer"
+            />
+            Ignore Whitespace
+          </label>
           <button
             onClick={handleDiffTool}
             disabled={!isCommitMode && !showingPendingPreview}
