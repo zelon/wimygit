@@ -16,3 +16,4 @@ WimyGitLib/obj
 manifests/w/Wimysoft/WimyGit
 wingetcreate.exe
 .dev-container
+wimygit-tauri/src-tauri/.cargo/config.toml
