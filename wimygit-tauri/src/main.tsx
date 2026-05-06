@@ -69,9 +69,9 @@ restoreWindowState().finally(() => {
   );
 
   // 콘텐츠가 렌더링된 후 윈도우를 표시하여 빈 프레임이 먼저 보이는 문제 방지
-  requestAnimationFrame(() => {
+  setTimeout(() => {
     getCurrentWindow().show();
-  });
+  }, 10);
 
   // 리사이즈/이동 시 일반 상태 크기를 추적
   const win = getCurrentWindow();
