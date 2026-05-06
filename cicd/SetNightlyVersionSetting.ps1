@@ -2,6 +2,6 @@ Copy-Item (Join-Path $PSScriptRoot ".." "wimygit-tauri" "src-tauri" "icons-night
 
 $tauriConfPath = Join-Path $PSScriptRoot ".." "wimygit-tauri" "src-tauri" "tauri.conf.json"
 $tauriConf = Get-Content $tauriConfPath -Raw | ConvertFrom-Json
-$tauriConf.productName = "WimyGit Nightly"
+$tauriConf.productName = "Wimygit Nightly"
 $tauriConf.app.windows[0].title = "WimyGit Nightly"
 $tauriConf | ConvertTo-Json -Depth 100 | Set-Content $tauriConfPath
