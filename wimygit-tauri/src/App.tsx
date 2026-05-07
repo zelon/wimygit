@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, lazy, Suspense } from "react";
 import { open } from "@tauri-apps/plugin-dialog";
 import { exists } from "@tauri-apps/plugin-fs";
 import { getCurrentWindow } from "@tauri-apps/api/window";
-import { getName } from "@tauri-apps/api/app";
+import { APP_NAME } from "./constants";
 import { Header, TabBar, RepoTabBar, GitLogPanel, LeftSidebar, RepoStateBanner } from "./components/layout";
 import { PendingTab } from "./components/tabs";
 
@@ -99,7 +99,7 @@ function App() {
 
   // Set window title (visible in taskbar)
   useEffect(() => {
-    getName().then(name => getCurrentWindow().setTitle(name)).catch(() => { });
+    getCurrentWindow().setTitle(APP_NAME).catch(() => { });
   }, []);
 
   // Restore previously opened repos on startup
@@ -381,7 +381,7 @@ function App() {
         </div>
         <div className="flex-1 flex flex-col items-center justify-center">
           <div className="text-center">
-            <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">WimyGit</h1>
+            <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">{APP_NAME}</h1>
             <p className="text-gray-600 dark:text-gray-400 mb-8">Cross-platform Git GUI Client</p>
             {openError && (
               <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded max-w-md">
