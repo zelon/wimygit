@@ -139,6 +139,43 @@ pub async fn get_branches(cwd: String) -> Result<Vec<BranchInfo>, String> {
     Ok(branches)
 }
 
+/// Get stale remote tracking branches (deleted on remote but still tracked locally)
+#[tauri::command]
+pub async fn get_stale_remote_branches(cwd: String) -> Result<Vec<String>, String> {
+    // Get list of remotes
+    let remotes_result = crate::git::run_git(
+        vec!["remote".to_string()],
+        cwd.clone(),
+    )
+    .await?;
+
+    let mut stale_branches = Vec::new();
+
+    for remote in remotes_result.stdout.lines() {
+        let remote = remote.trim();
+        if remote.is_empty() {
+            continue;
+        }
+
+        let prune_result = crate::git::run_git(
+            vec!["remote".to_string(), "prune".to_string(), "--dry-run".to_string(), remote.to_string()],
+            cwd.clone(),
+        )
+        .await?;
+
+        // Parse output lines like: " * [would prune] origin/branch-name"
+        for line in prune_result.stdout.lines() {
+            if line.contains("[would prune]") {
+                if let Some(branch) = line.split("[would prune]").nth(1) {
+                    stale_branches.push(branch.trim().to_string());
+                }
+            }
+        }
+    }
+
+    Ok(stale_branches)
+}
+
 /// Get current branch name
 #[tauri::command]
 pub async fn get_current_branch(cwd: String) -> Result<String, String> {

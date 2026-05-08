@@ -94,6 +94,10 @@ export async function getCurrentBranch(cwd: string): Promise<string> {
   return invoke<string>("get_current_branch", { cwd });
 }
 
+export async function getStaleBranches(cwd: string): Promise<string[]> {
+  return invoke<string[]>("get_stale_remote_branches", { cwd });
+}
+
 // ============= Git Remotes =============
 
 export async function getRemotes(cwd: string): Promise<RemoteInfo[]> {

@@ -3,6 +3,7 @@ import {
   getHistory,
   getCommitFiles,
   getCommitParents,
+  getStaleBranches,
   type CommitInfo,
   type CommitFile,
   type SelectedDiffInfo,
@@ -40,10 +41,10 @@ function parseRefNames(refNames: string) {
 }
 
 const REF_BADGE: Record<string, string> = {
-  head:   "bg-green-600 text-white",
+  head: "bg-green-600 text-white",
   branch: "bg-blue-500 text-white",
   remote: "bg-gray-500 text-white",
-  tag:    "bg-yellow-500 text-white",
+  tag: "bg-yellow-500 text-white",
 };
 
 function formatDate(ts: number) {
@@ -97,32 +98,38 @@ function ContextMenu({ x, y, commit, repoPath, onClose, onRefresh }: ContextMenu
   };
 
   const items: { label: string; action: () => void; danger?: boolean }[] = [
-    { label: "Checkout",          action: () => run(["checkout", commit.hash]) },
-    { label: "Create Branch here…", action: async () => {
+    { label: "Checkout", action: () => run(["checkout", commit.hash]) },
+    {
+      label: "Create Branch here…", action: async () => {
         onClose();
         const name = prompt("New branch name:"); if (!name?.trim()) return;
         try { await invoke("run_git_simple", { args: ["checkout", "-b", name.trim(), commit.hash], cwd: repoPath }); onRefresh(); }
         catch (e) { alert(String(e)); }
-    }},
-    { label: "Create Tag here…", action: async () => {
+      }
+    },
+    {
+      label: "Create Tag here…", action: async () => {
         onClose();
         const name = prompt("Tag name:"); if (!name?.trim()) return;
         try { await invoke("run_git_simple", { args: ["tag", name.trim(), commit.hash], cwd: repoPath }); onRefresh(); }
         catch (e) { alert(String(e)); }
-    }},
-    { label: "Cherry-pick",       action: async () => {
+      }
+    },
+    {
+      label: "Cherry-pick", action: async () => {
         onClose();
         try { await invoke("run_git", { args: ["cherry-pick", commit.hash], cwd: repoPath }); }
         catch { /* run_git only fails if git is not found; conflicts are non-throwing */ }
         onRefresh();
-    }},
-    { label: "──", action: () => {} },
-    { label: "Reset Soft",        action: () => { if (confirm(`Reset soft to ${commit.short_hash}?`)) run(["reset", "--soft", commit.hash]); } },
-    { label: "Reset Mixed",       action: () => { if (confirm(`Reset mixed to ${commit.short_hash}?`)) run(["reset", "--mixed", commit.hash]); } },
+      }
+    },
+    { label: "──", action: () => { } },
+    { label: "Reset Soft", action: () => { if (confirm(`Reset soft to ${commit.short_hash}?`)) run(["reset", "--soft", commit.hash]); } },
+    { label: "Reset Mixed", action: () => { if (confirm(`Reset mixed to ${commit.short_hash}?`)) run(["reset", "--mixed", commit.hash]); } },
     { label: "Reset Hard", danger: true, action: () => { if (confirm(`Reset HARD to ${commit.short_hash}?`)) run(["reset", "--hard", commit.hash]); } },
-    { label: "──", action: () => {} },
-    { label: "Copy Commit ID",    action: () => { onClose(); navigator.clipboard.writeText(commit.hash).catch(() => {}); } },
-    { label: "Copy Short ID",     action: () => { onClose(); navigator.clipboard.writeText(commit.short_hash).catch(() => {}); } },
+    { label: "──", action: () => { } },
+    { label: "Copy Commit ID", action: () => { onClose(); navigator.clipboard.writeText(commit.hash).catch(() => { }); } },
+    { label: "Copy Short ID", action: () => { onClose(); navigator.clipboard.writeText(commit.short_hash).catch(() => { }); } },
   ];
 
   return (
@@ -132,9 +139,9 @@ function ContextMenu({ x, y, commit, repoPath, onClose, onRefresh }: ContextMenu
         item.label === "──"
           ? <div key={i} className="border-t border-gray-200 dark:border-gray-700 my-1" />
           : <button key={i} onClick={item.action}
-              className={`w-full text-left px-4 py-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 ${item.danger ? "text-red-600 dark:text-red-400" : ""}`}>
-              {item.label}
-            </button>
+            className={`w-full text-left px-4 py-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 ${item.danger ? "text-red-600 dark:text-red-400" : ""}`}>
+            {item.label}
+          </button>
       )}
     </div>
   );
@@ -195,6 +202,7 @@ export function HistoryTab({ repoPath, filePath, refreshKey, onRefresh, onFileSe
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; commit: CommitInfo } | null>(null);
   const [fileCtxMenu, setFileCtxMenu] = useState<{ x: number; y: number; absolutePath: string } | null>(null);
   const [allBranches, setAllBranches] = useState(true);
+  const [staleBranches, setStaleBranches] = useState<Set<string>>(new Set());
 
   // ── load history ──────────────────────────────────────────────────────────
 
@@ -221,6 +229,13 @@ export function HistoryTab({ repoPath, filePath, refreshKey, onRefresh, onFileSe
     setParents([]);
     loadHistory(0);
   }, [repoPath, refreshKey, loadHistory]);
+
+  useEffect(() => {
+    if (!repoPath) return;
+    getStaleBranches(repoPath)
+      .then((branches) => setStaleBranches(new Set(branches)))
+      .catch(() => setStaleBranches(new Set()));
+  }, [repoPath, refreshKey]);
 
   // ── select commit → load files + parents ─────────────────────────────────
 
@@ -321,30 +336,40 @@ export function HistoryTab({ repoPath, filePath, refreshKey, onRefresh, onFileSe
               key={commit.hash}
               onClick={() => handleSelectCommit(commit)}
               onContextMenu={(e) => { e.preventDefault(); setContextMenu({ x: e.clientX, y: e.clientY, commit }); }}
-              className={`flex items-center gap-2 px-2 cursor-pointer border-b border-gray-100 dark:border-gray-800 ${
-                isSelected ? "bg-blue-50 dark:bg-blue-900/30" : "hover:bg-gray-50 dark:hover:bg-gray-800"
-              }`}
+              className={`flex items-center gap-2 px-2 cursor-pointer border-b border-gray-100 dark:border-gray-800 ${isSelected ? "bg-blue-50 dark:bg-blue-900/30" : "hover:bg-gray-50 dark:hover:bg-gray-800"
+                }`}
               style={{ height: ROW_H }}
             >
               {/* Graph (SVG) */}
               {graphRow && <GraphSvg row={graphRow} />}
               {/* Message (with inline refs) */}
               <div className="flex-1 min-w-0 flex items-center gap-1">
-                {refs.map((r, i) => (
-                  <span key={i} className={`text-[10px] px-1 rounded leading-4 shrink-0 inline-flex items-center gap-0.5 ${REF_BADGE[r.kind]}`}>
-                    {(r.kind === "head" || r.kind === "branch" || r.kind === "remote") && (
-                      <svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor" className="shrink-0">
-                        <path d="M11.75 2.5a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5zm-2.25.75a2.25 2.25 0 1 1 3 2.122V6A2.5 2.5 0 0 1 10 8.5H6a1 1 0 0 0-1 1v1.128a2.251 2.251 0 1 1-1.5 0V5.372a2.25 2.25 0 1 1 1.5 0v1.836A2.493 2.493 0 0 1 6 7h4a1 1 0 0 0 1-1v-.628A2.25 2.25 0 0 1 9.5 3.25zM4.25 12a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5zM3.5 3.25a.75.75 0 1 1 1.5 0 .75.75 0 0 1-1.5 0z" />
-                      </svg>
-                    )}
-                    {r.kind === "tag" && (
-                      <svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor" className="shrink-0">
-                        <path d="M1 7.775V2.75C1 1.784 1.784 1 2.75 1h5.025c.464 0 .91.184 1.238.513l6.25 6.25a1.75 1.75 0 0 1 0 2.474l-5.026 5.026a1.75 1.75 0 0 1-2.474 0l-6.25-6.25A1.752 1.752 0 0 1 1 7.775zM6 5a1 1 0 1 0 0 2 1 1 0 0 0 0-2z" />
-                      </svg>
-                    )}
-                    {r.label}
-                  </span>
-                ))}
+                {refs.map((r, i) => {
+                  const isStale = r.kind === "remote" && staleBranches.has(r.label);
+                  return (
+                    <span key={i} className={`inline-flex items-center shrink-0 leading-4 overflow-hidden ${isStale ? "rounded border border-red-950 bg-red-600" : "rounded"}`}>
+                      <span className={`text-[10px] px-1 leading-4 inline-flex items-center gap-0.5 ${isStale ? "bg-red-800 text-white" : REF_BADGE[r.kind]}`}>
+                        {(r.kind === "head" || r.kind === "branch" || r.kind === "remote") && (
+                          <svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor" className="shrink-0">
+                            <path d="M11.75 2.5a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5zm-2.25.75a2.25 2.25 0 1 1 3 2.122V6A2.5 2.5 0 0 1 10 8.5H6a1 1 0 0 0-1 1v1.128a2.251 2.251 0 1 1-1.5 0V5.372a2.25 2.25 0 1 1 1.5 0v1.836A2.493 2.493 0 0 1 6 7h4a1 1 0 0 0 1-1v-.628A2.25 2.25 0 0 1 9.5 3.25zM4.25 12a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5zM3.5 3.25a.75.75 0 1 1 1.5 0 .75.75 0 0 1-1.5 0z" />
+                          </svg>
+                        )}
+                        {r.kind === "tag" && (
+                          <svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor" className="shrink-0">
+                            <path d="M1 7.775V2.75C1 1.784 1.784 1 2.75 1h5.025c.464 0 .91.184 1.238.513l6.25 6.25a1.75 1.75 0 0 1 0 2.474l-5.026 5.026a1.75 1.75 0 0 1-2.474 0l-6.25-6.25A1.752 1.752 0 0 1 1 7.775zM6 5a1 1 0 1 0 0 2 1 1 0 0 0 0-2z" />
+                          </svg>
+                        )}
+                        {r.label}
+                      </span>
+                      {isStale && (
+                        <>
+                          <span className="self-stretch w-px bg-red-950" />
+                          <span className="text-[10px] px-1 leading-4 text-white">deleted on remote</span>
+                        </>
+                      )}
+                    </span>
+                  );
+                })}
                 <span className="text-xs text-gray-800 dark:text-gray-200 truncate">{commit.message}</span>
               </div>
               {/* Author */}
@@ -421,9 +446,8 @@ export function HistoryTab({ repoPath, filePath, refreshKey, onRefresh, onFileSe
                   <div key={i}
                     onClick={() => handleSelectFile(file)}
                     onContextMenu={(e) => { e.preventDefault(); setFileCtxMenu({ x: e.clientX, y: e.clientY, absolutePath: absPath }); }}
-                    className={`flex items-center gap-2 px-3 py-1 text-xs cursor-pointer border-b border-gray-50 dark:border-gray-800 ${
-                      isSelected ? "bg-blue-50 dark:bg-blue-900/30" : "hover:bg-gray-50 dark:hover:bg-gray-800"
-                    }`}
+                    className={`flex items-center gap-2 px-3 py-1 text-xs cursor-pointer border-b border-gray-50 dark:border-gray-800 ${isSelected ? "bg-blue-50 dark:bg-blue-900/30" : "hover:bg-gray-50 dark:hover:bg-gray-800"
+                      }`}
                   >
                     <span className={`font-mono font-bold w-4 shrink-0 ${si.cls}`}>{si.icon}</span>
                     <span className="truncate" title={file.display}>{file.display}</span>
