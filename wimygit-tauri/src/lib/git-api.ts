@@ -94,6 +94,10 @@ export async function getCurrentBranch(cwd: string): Promise<string> {
   return invoke<string>("get_current_branch", { cwd });
 }
 
+export async function getLocalOnlyBranches(cwd: string): Promise<string[]> {
+  return invoke<string[]>("get_local_only_branches", { cwd });
+}
+
 export async function getStaleBranches(cwd: string): Promise<string[]> {
   return invoke<string[]>("get_stale_remote_branches", { cwd });
 }

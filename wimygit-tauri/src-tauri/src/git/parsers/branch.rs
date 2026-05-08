@@ -139,6 +139,23 @@ pub async fn get_branches(cwd: String) -> Result<Vec<BranchInfo>, String> {
     Ok(branches)
 }
 
+/// Get local-only branches (local branches with no upstream configured)
+#[tauri::command]
+pub async fn get_local_only_branches(cwd: String) -> Result<Vec<String>, String> {
+    let result = crate::git::run_git(
+        vec!["branch".to_string(), "-vv".to_string()],
+        cwd,
+    )
+    .await?;
+
+    let branches = parse_branches(&result.stdout);
+    Ok(branches
+        .into_iter()
+        .filter(|b| b.upstream.is_none())
+        .map(|b| b.name)
+        .collect())
+}
+
 /// Get stale remote tracking branches (deleted on remote but still tracked locally)
 #[tauri::command]
 pub async fn get_stale_remote_branches(cwd: String) -> Result<Vec<String>, String> {

@@ -3,6 +3,7 @@ import {
   getHistory,
   getCommitFiles,
   getCommitParents,
+  getLocalOnlyBranches,
   getStaleBranches,
   type CommitInfo,
   type CommitFile,
@@ -203,6 +204,7 @@ export function HistoryTab({ repoPath, filePath, refreshKey, onRefresh, onFileSe
   const [fileCtxMenu, setFileCtxMenu] = useState<{ x: number; y: number; absolutePath: string } | null>(null);
   const [allBranches, setAllBranches] = useState(true);
   const [staleBranches, setStaleBranches] = useState<Set<string>>(new Set());
+  const [localOnlyBranches, setLocalOnlyBranches] = useState<Set<string>>(new Set());
 
   // ── load history ──────────────────────────────────────────────────────────
 
@@ -235,6 +237,9 @@ export function HistoryTab({ repoPath, filePath, refreshKey, onRefresh, onFileSe
     getStaleBranches(repoPath)
       .then((branches) => setStaleBranches(new Set(branches)))
       .catch(() => setStaleBranches(new Set()));
+    getLocalOnlyBranches(repoPath)
+      .then((branches) => setLocalOnlyBranches(new Set(branches)))
+      .catch(() => setLocalOnlyBranches(new Set()));
   }, [repoPath, refreshKey]);
 
   // ── select commit → load files + parents ─────────────────────────────────
@@ -346,9 +351,10 @@ export function HistoryTab({ repoPath, filePath, refreshKey, onRefresh, onFileSe
               <div className="flex-1 min-w-0 flex items-center gap-1">
                 {refs.map((r, i) => {
                   const isStale = r.kind === "remote" && staleBranches.has(r.label);
+                  const isLocalOnly = (r.kind === "branch" || r.kind === "head") && localOnlyBranches.has(r.label);
                   return (
-                    <span key={i} className={`inline-flex items-center shrink-0 leading-4 overflow-hidden ${isStale ? "rounded border border-red-950 bg-red-600" : "rounded"}`}>
-                      <span className={`text-[10px] px-1 leading-4 inline-flex items-center gap-0.5 ${isStale ? "bg-red-800 text-white" : REF_BADGE[r.kind]}`}>
+                    <span key={i} className={`inline-flex items-center shrink-0 leading-4 overflow-hidden rounded ${isStale ? "border border-red-950 bg-red-600" : isLocalOnly ? "border border-orange-950 bg-orange-500" : ""}`}>
+                      <span className={`text-[10px] px-1 leading-4 inline-flex items-center gap-0.5 ${isStale ? "bg-red-800 text-white" : isLocalOnly ? "bg-orange-700 text-white" : REF_BADGE[r.kind]}`}>
                         {(r.kind === "head" || r.kind === "branch" || r.kind === "remote") && (
                           <svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor" className="shrink-0">
                             <path d="M11.75 2.5a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5zm-2.25.75a2.25 2.25 0 1 1 3 2.122V6A2.5 2.5 0 0 1 10 8.5H6a1 1 0 0 0-1 1v1.128a2.251 2.251 0 1 1-1.5 0V5.372a2.25 2.25 0 1 1 1.5 0v1.836A2.493 2.493 0 0 1 6 7h4a1 1 0 0 0 1-1v-.628A2.25 2.25 0 0 1 9.5 3.25zM4.25 12a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5zM3.5 3.25a.75.75 0 1 1 1.5 0 .75.75 0 0 1-1.5 0z" />
@@ -365,6 +371,12 @@ export function HistoryTab({ repoPath, filePath, refreshKey, onRefresh, onFileSe
                         <>
                           <span className="self-stretch w-px bg-red-950" />
                           <span className="text-[10px] px-1 leading-4 text-white">deleted on remote</span>
+                        </>
+                      )}
+                      {isLocalOnly && (
+                        <>
+                          <span className="self-stretch w-px bg-orange-950" />
+                          <span className="text-[10px] px-1 leading-4 text-white">local only</span>
                         </>
                       )}
                     </span>

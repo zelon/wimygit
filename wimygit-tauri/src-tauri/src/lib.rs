@@ -151,6 +151,7 @@ pub fn run() {
       // Git branch commands
       git::get_branches,
       git::get_current_branch,
+      git::get_local_only_branches,
       git::get_stale_remote_branches,
       // Git remote commands
       git::get_remotes,
