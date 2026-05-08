@@ -5,6 +5,7 @@ import {
   getCommitParents,
   getLocalOnlyBranches,
   getStaleBranches,
+  getRemotes,
   type CommitInfo,
   type CommitFile,
   type SelectedDiffInfo,
@@ -79,11 +80,12 @@ interface ContextMenuProps {
   x: number; y: number;
   commit: CommitInfo;
   repoPath: string;
+  localOnlyBranches: Set<string>;
   onClose: () => void;
   onRefresh: () => void;
 }
 
-function ContextMenu({ x, y, commit, repoPath, onClose, onRefresh }: ContextMenuProps) {
+function ContextMenu({ x, y, commit, repoPath, localOnlyBranches, onClose, onRefresh }: ContextMenuProps) {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -97,6 +99,10 @@ function ContextMenu({ x, y, commit, repoPath, onClose, onRefresh }: ContextMenu
     try { await invoke("run_git_simple", { args, cwd: repoPath }); onRefresh(); }
     catch (e) { alert(String(e)); }
   };
+
+  const localOnlyRefsOnCommit = parseRefNames(commit.ref_names)
+    .filter(r => (r.kind === "branch" || r.kind === "head") && localOnlyBranches.has(r.label))
+    .map(r => r.label);
 
   const items: { label: string; action: () => void; danger?: boolean }[] = [
     { label: "Checkout", action: () => run(["checkout", commit.hash]) },
@@ -131,6 +137,34 @@ function ContextMenu({ x, y, commit, repoPath, onClose, onRefresh }: ContextMenu
     { label: "──", action: () => { } },
     { label: "Copy Commit ID", action: () => { onClose(); navigator.clipboard.writeText(commit.hash).catch(() => { }); } },
     { label: "Copy Short ID", action: () => { onClose(); navigator.clipboard.writeText(commit.short_hash).catch(() => { }); } },
+    ...(localOnlyRefsOnCommit.length > 0 ? [
+      { label: "──", action: () => { } },
+      ...localOnlyRefsOnCommit.map(branch => ({
+        label: `Push "${branch}" to remote…`,
+        action: async () => {
+          onClose();
+          let remotes: { name: string }[];
+          try { remotes = await getRemotes(repoPath); }
+          catch { alert("Failed to get remotes."); return; }
+          if (remotes.length === 0) { alert("No remotes configured."); return; }
+
+          let remote: string;
+          if (remotes.length === 1) {
+            remote = remotes[0].name;
+          } else {
+            const names = remotes.map(r => r.name).join(", ");
+            const input = prompt(`Push to which remote? (${names})`, remotes[0].name);
+            if (!input?.trim()) return;
+            remote = input.trim();
+          }
+
+          try {
+            await invoke("run_git_simple", { args: ["push", "-u", remote, branch], cwd: repoPath });
+            onRefresh();
+          } catch (e) { alert(String(e)); }
+        },
+      })),
+    ] : []),
   ];
 
   return (
@@ -495,7 +529,8 @@ export function HistoryTab({ repoPath, filePath, refreshKey, onRefresh, onFileSe
       )}
       {contextMenu && (
         <ContextMenu x={contextMenu.x} y={contextMenu.y} commit={contextMenu.commit}
-          repoPath={repoPath} onClose={() => setContextMenu(null)}
+          repoPath={repoPath} localOnlyBranches={localOnlyBranches}
+          onClose={() => setContextMenu(null)}
           onRefresh={() => { setContextMenu(null); onRefresh(); }} />
       )}
     </div>
