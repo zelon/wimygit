@@ -352,9 +352,25 @@ export function HistoryTab({ repoPath, filePath, refreshKey, onRefresh, onFileSe
                 {refs.map((r, i) => {
                   const isStale = r.kind === "remote" && staleBranches.has(r.label);
                   const isLocalOnly = (r.kind === "branch" || r.kind === "head") && localOnlyBranches.has(r.label);
+                  const isCurrent = r.kind === "head";
+
+                  const outerCls = isStale
+                    ? "border border-red-950"
+                    : isLocalOnly
+                    ? "border border-orange-950"
+                    : "";
+
+                  const nameBg = isStale
+                    ? "bg-red-800 text-white"
+                    : isCurrent
+                    ? "bg-green-700 text-white"
+                    : isLocalOnly
+                    ? "bg-orange-700 text-white"
+                    : REF_BADGE[r.kind];
+
                   return (
-                    <span key={i} className={`inline-flex items-center shrink-0 leading-4 overflow-hidden rounded ${isStale ? "border border-red-950 bg-red-600" : isLocalOnly ? "border border-orange-950 bg-orange-500" : ""}`}>
-                      <span className={`text-[10px] px-1 leading-4 inline-flex items-center gap-0.5 ${isStale ? "bg-red-800 text-white" : isLocalOnly ? "bg-orange-700 text-white" : REF_BADGE[r.kind]}`}>
+                    <span key={i} className={`inline-flex items-center shrink-0 leading-4 overflow-hidden rounded ${outerCls}`}>
+                      <span className={`text-[10px] px-1 leading-4 inline-flex items-center gap-0.5 ${nameBg}`}>
                         {(r.kind === "head" || r.kind === "branch" || r.kind === "remote") && (
                           <svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor" className="shrink-0">
                             <path d="M11.75 2.5a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5zm-2.25.75a2.25 2.25 0 1 1 3 2.122V6A2.5 2.5 0 0 1 10 8.5H6a1 1 0 0 0-1 1v1.128a2.251 2.251 0 1 1-1.5 0V5.372a2.25 2.25 0 1 1 1.5 0v1.836A2.493 2.493 0 0 1 6 7h4a1 1 0 0 0 1-1v-.628A2.25 2.25 0 0 1 9.5 3.25zM4.25 12a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5zM3.5 3.25a.75.75 0 1 1 1.5 0 .75.75 0 0 1-1.5 0z" />
@@ -367,17 +383,14 @@ export function HistoryTab({ repoPath, filePath, refreshKey, onRefresh, onFileSe
                         )}
                         {r.label}
                       </span>
-                      {isStale && (
-                        <>
-                          <span className="self-stretch w-px bg-red-950" />
-                          <span className="text-[10px] px-1 leading-4 text-white">deleted on remote</span>
-                        </>
+                      {isCurrent && (
+                        <span className="text-[10px] px-1 leading-4 bg-green-600 text-white">HEAD</span>
                       )}
                       {isLocalOnly && (
-                        <>
-                          <span className="self-stretch w-px bg-orange-950" />
-                          <span className="text-[10px] px-1 leading-4 text-white">local only</span>
-                        </>
+                        <span className="text-[10px] px-1 leading-4 bg-orange-500 text-white">local only</span>
+                      )}
+                      {isStale && (
+                        <span className="text-[10px] px-1 leading-4 bg-red-600 text-white">deleted on remote</span>
                       )}
                     </span>
                   );
