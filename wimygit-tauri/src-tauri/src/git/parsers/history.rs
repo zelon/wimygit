@@ -122,6 +122,7 @@ pub async fn get_history(
     let format_str = format!("{}%H||%h||%an||%at||%s||%D||%P", COMMIT_MARKER);
     let mut args = vec![
         "log".to_string(),
+        "--topo-order".to_string(),
         format!("--pretty=format:{}", format_str),
         format!("-{}", count),
         format!("--skip={}", skip),
