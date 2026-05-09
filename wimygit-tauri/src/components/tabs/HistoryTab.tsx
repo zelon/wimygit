@@ -605,10 +605,13 @@ export function HistoryTab({ repoPath, filePath, refreshKey, onRefresh, onFileSe
       {createBranchModal && (
         <CreateBranchModal
           commitHash={createBranchModal}
-          onConfirm={async (name) => {
+          onConfirm={async (name, checkout) => {
             setCreateBranchModal(null);
             try {
-              await invoke("run_git_simple", { args: ["checkout", "-b", name, createBranchModal], cwd: repoPath });
+              const args = checkout
+                ? ["checkout", "-b", name, createBranchModal]
+                : ["branch", name, createBranchModal];
+              await invoke("run_git_simple", { args, cwd: repoPath });
               onRefresh();
             } catch (e) { alert(String(e)); }
           }}
