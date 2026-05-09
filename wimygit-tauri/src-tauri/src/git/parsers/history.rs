@@ -117,6 +117,7 @@ pub async fn get_history(
     skip: u32,
     count: u32,
     all: bool,
+    grep: Option<String>,
 ) -> Result<Vec<CommitInfo>, String> {
     let format_str = format!("{}%H||%h||%an||%at||%s||%D||%P", COMMIT_MARKER);
     let mut args = vec![
@@ -128,6 +129,13 @@ pub async fn get_history(
 
     if all {
         args.insert(1, "--all".to_string());
+    }
+
+    if let Some(ref pattern) = grep {
+        if !pattern.is_empty() {
+            args.push(format!("--grep={}", pattern));
+            args.push("--regexp-ignore-case".to_string());
+        }
     }
 
     if !path.is_empty() {

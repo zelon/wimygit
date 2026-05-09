@@ -247,6 +247,10 @@ export function HistoryTab({ repoPath, filePath, refreshKey, onRefresh, onFileSe
   const [hasMore, setHasMore] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const [searchInput, setSearchInput] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const searchRef = useRef<HTMLInputElement>(null);
+
   const [selectedCommit, setSelectedCommit] = useState<CommitInfo | null>(null);
   const [commitFiles, setCommitFiles] = useState<CommitFile[]>([]);
   const [parents, setParents] = useState<string[]>([]);
@@ -265,7 +269,7 @@ export function HistoryTab({ repoPath, filePath, refreshKey, onRefresh, onFileSe
     if (!repoPath) return;
     skip === 0 ? setLoading(true) : setLoadingMore(true);
     try {
-      const result = await getHistory(repoPath, filePath ?? "", skip, PAGE_SIZE, allBranches);
+      const result = await getHistory(repoPath, filePath ?? "", skip, PAGE_SIZE, allBranches, searchQuery || undefined);
       setCommits((prev) => skip === 0 ? result : [...prev, ...result]);
       setHasMore(result.length === PAGE_SIZE);
       setError(null);
@@ -275,7 +279,7 @@ export function HistoryTab({ repoPath, filePath, refreshKey, onRefresh, onFileSe
       setLoading(false);
       setLoadingMore(false);
     }
-  }, [repoPath, filePath, allBranches]);
+  }, [repoPath, filePath, allBranches, searchQuery]);
 
   useEffect(() => {
     setSelectedCommit(null);
@@ -334,8 +338,8 @@ export function HistoryTab({ repoPath, filePath, refreshKey, onRefresh, onFileSe
   ) !== "/";
 
   const graphRows = useMemo(
-    () => isPathFiltered ? computeLinearLayout(commits.length) : computeGraphLayout(commits),
-    [commits, isPathFiltered]
+    () => (isPathFiltered || !!searchQuery) ? computeLinearLayout(commits.length) : computeGraphLayout(commits),
+    [commits, isPathFiltered, searchQuery]
   );
 
   // ── render ────────────────────────────────────────────────────────────────
@@ -381,6 +385,48 @@ export function HistoryTab({ repoPath, filePath, refreshKey, onRefresh, onFileSe
           <input type="checkbox" checked={allBranches} onChange={(e) => setAllBranches(e.target.checked)} className="cursor-pointer" />
           All Branches
         </label>
+      </div>
+      {/* ── Search bar ── */}
+      <div className="flex items-center gap-2 px-3 py-1 border-b border-gray-200 dark:border-gray-700 shrink-0">
+        <button
+          onClick={() => setSearchQuery(searchInput)}
+          className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 shrink-0"
+          title="Search"
+        >
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
+            <path d="M10.68 11.74a6 6 0 0 1-7.922-8.982 6 6 0 0 1 8.982 7.922l3.04 3.04a.749.749 0 0 1-.326 1.275.749.749 0 0 1-.734-.215ZM11.5 7a4.499 4.499 0 1 0-8.997 0A4.499 4.499 0 0 0 11.5 7Z" />
+          </svg>
+        </button>
+        <input
+          ref={searchRef}
+          type="text"
+          value={searchInput}
+          onChange={(e) => setSearchInput(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") setSearchQuery(searchInput);
+            if (e.key === "Escape") { setSearchInput(""); setSearchQuery(""); }
+          }}
+          placeholder="Search commits..."
+          className="flex-1 min-w-0 bg-transparent text-xs text-gray-700 dark:text-gray-300 placeholder-gray-400 outline-none"
+        />
+        {searchQuery && (
+          loading ? (
+            <span className="text-xs text-gray-400 shrink-0">...</span>
+          ) : (
+            <span className="text-xs text-gray-400 shrink-0">{commits.length}{hasMore ? "+" : ""} results</span>
+          )
+        )}
+        {searchInput && (
+          <button
+            onClick={() => { setSearchInput(""); setSearchQuery(""); }}
+            className="shrink-0 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+            title="Clear search"
+          >
+            <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
+              <path d="M3.72 3.72a.75.75 0 0 1 1.06 0L8 6.94l3.22-3.22a.749.749 0 0 1 1.275.326.749.749 0 0 1-.215.734L9.06 8l3.22 3.22a.749.749 0 0 1-.326 1.275.749.749 0 0 1-.734-.215L8 9.06l-3.22 3.22a.749.749 0 0 1-1.275-.326.749.749 0 0 1 .215-.734L6.94 8 3.72 4.78a.75.75 0 0 1 0-1.06Z" />
+            </svg>
+          </button>
+        )}
       </div>
       {/* ── Top: commit list ── */}
       <div className="flex-[3] overflow-y-auto border-b border-gray-200 dark:border-gray-700">

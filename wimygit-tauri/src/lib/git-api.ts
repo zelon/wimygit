@@ -292,9 +292,10 @@ export async function getHistory(
   path: string = "",
   skip: number = 0,
   count: number = 100,
-  all: boolean = true
+  all: boolean = true,
+  grep?: string,
 ): Promise<CommitInfo[]> {
-  return invoke<CommitInfo[]>("get_history", { cwd, path, skip, count, all });
+  return invoke<CommitInfo[]>("get_history", { cwd, path, skip, count, all, grep: grep ?? null });
 }
 
 export async function getCommitFiles(
