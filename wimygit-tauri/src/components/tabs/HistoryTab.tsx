@@ -1,4 +1,6 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import { CreateBranchModal } from "../shared/CreateBranchModal";
+import { CreateTagModal } from "../shared/CreateTagModal";
 import {
   getHistory,
   getCommitFiles,
@@ -84,9 +86,11 @@ interface ContextMenuProps {
   staleBranches: Set<string>;
   onClose: () => void;
   onRefresh: () => void;
+  onOpenCreateBranch: (commitHash: string) => void;
+  onOpenCreateTag: (commitHash: string) => void;
 }
 
-function ContextMenu({ x, y, commit, repoPath, localOnlyBranches, staleBranches, onClose, onRefresh }: ContextMenuProps) {
+function ContextMenu({ x, y, commit, repoPath, localOnlyBranches, staleBranches, onClose, onRefresh, onOpenCreateBranch, onOpenCreateTag }: ContextMenuProps) {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -112,19 +116,15 @@ function ContextMenu({ x, y, commit, repoPath, localOnlyBranches, staleBranches,
   const items: { label: string; action: () => void; danger?: boolean }[] = [
     { label: "Checkout", action: () => run(["checkout", commit.hash]) },
     {
-      label: "Create Branch here…", action: async () => {
+      label: "Create Branch here…", action: () => {
         onClose();
-        const name = prompt("New branch name:"); if (!name?.trim()) return;
-        try { await invoke("run_git_simple", { args: ["checkout", "-b", name.trim(), commit.hash], cwd: repoPath }); onRefresh(); }
-        catch (e) { alert(String(e)); }
+        onOpenCreateBranch(commit.hash);
       }
     },
     {
-      label: "Create Tag here…", action: async () => {
+      label: "Create Tag here…", action: () => {
         onClose();
-        const name = prompt("Tag name:"); if (!name?.trim()) return;
-        try { await invoke("run_git_simple", { args: ["tag", name.trim(), commit.hash], cwd: repoPath }); onRefresh(); }
-        catch (e) { alert(String(e)); }
+        onOpenCreateTag(commit.hash);
       }
     },
     {
@@ -258,6 +258,8 @@ export function HistoryTab({ repoPath, filePath, refreshKey, onRefresh, onFileSe
   const [selectedFile, setSelectedFile] = useState<CommitFile | null>(null);
 
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; commit: CommitInfo } | null>(null);
+  const [createBranchModal, setCreateBranchModal] = useState<string | null>(null); // commit hash
+  const [createTagModal, setCreateTagModal] = useState<string | null>(null); // commit hash
   const [fileCtxMenu, setFileCtxMenu] = useState<{ x: number; y: number; absolutePath: string } | null>(null);
   const [allBranches, setAllBranches] = useState(true);
   const [staleBranches, setStaleBranches] = useState<Set<string>>(new Set());
@@ -596,7 +598,35 @@ export function HistoryTab({ repoPath, filePath, refreshKey, onRefresh, onFileSe
         <ContextMenu x={contextMenu.x} y={contextMenu.y} commit={contextMenu.commit}
           repoPath={repoPath} localOnlyBranches={localOnlyBranches} staleBranches={staleBranches}
           onClose={() => setContextMenu(null)}
-          onRefresh={() => { setContextMenu(null); onRefresh(); }} />
+          onRefresh={() => { setContextMenu(null); onRefresh(); }}
+          onOpenCreateBranch={(hash) => setCreateBranchModal(hash)}
+          onOpenCreateTag={(hash) => setCreateTagModal(hash)} />
+      )}
+      {createBranchModal && (
+        <CreateBranchModal
+          commitHash={createBranchModal}
+          onConfirm={async (name) => {
+            setCreateBranchModal(null);
+            try {
+              await invoke("run_git_simple", { args: ["checkout", "-b", name, createBranchModal], cwd: repoPath });
+              onRefresh();
+            } catch (e) { alert(String(e)); }
+          }}
+          onCancel={() => setCreateBranchModal(null)}
+        />
+      )}
+      {createTagModal && (
+        <CreateTagModal
+          commitHash={createTagModal}
+          onConfirm={async (name) => {
+            setCreateTagModal(null);
+            try {
+              await invoke("run_git_simple", { args: ["tag", name, createTagModal], cwd: repoPath });
+              onRefresh();
+            } catch (e) { alert(String(e)); }
+          }}
+          onCancel={() => setCreateTagModal(null)}
+        />
       )}
     </div>
   );
