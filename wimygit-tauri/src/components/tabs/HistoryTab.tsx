@@ -267,19 +267,22 @@ export function HistoryTab({ repoPath, filePath, refreshKey, onRefresh, onFileSe
 
   // ── load history ──────────────────────────────────────────────────────────
 
+  const loadHistoryGenRef = useRef(0);
+
   const loadHistory = useCallback(async (skip = 0) => {
     if (!repoPath) return;
+    const gen = ++loadHistoryGenRef.current;
     skip === 0 ? setLoading(true) : setLoadingMore(true);
     try {
       const result = await getHistory(repoPath, filePath ?? "", skip, PAGE_SIZE, allBranches, searchQuery || undefined);
+      if (gen !== loadHistoryGenRef.current) return;
       setCommits((prev) => skip === 0 ? result : [...prev, ...result]);
       setHasMore(result.length === PAGE_SIZE);
       setError(null);
     } catch (e) {
-      setError(String(e));
+      if (gen === loadHistoryGenRef.current) setError(String(e));
     } finally {
-      setLoading(false);
-      setLoadingMore(false);
+      if (gen === loadHistoryGenRef.current) { setLoading(false); setLoadingMore(false); }
     }
   }, [repoPath, filePath, allBranches, searchQuery]);
 
@@ -289,16 +292,19 @@ export function HistoryTab({ repoPath, filePath, refreshKey, onRefresh, onFileSe
     setSelectedFile(null);
     setParents([]);
     loadHistory(0);
+    return () => { loadHistoryGenRef.current++; };
   }, [repoPath, refreshKey, loadHistory]);
 
   useEffect(() => {
     if (!repoPath) return;
+    let cancelled = false;
     getStaleBranches(repoPath)
-      .then((branches) => setStaleBranches(new Set(branches)))
-      .catch(() => setStaleBranches(new Set()));
+      .then((branches) => { if (!cancelled) setStaleBranches(new Set(branches)); })
+      .catch(() => { if (!cancelled) setStaleBranches(new Set()); });
     getLocalOnlyBranches(repoPath)
-      .then((branches) => setLocalOnlyBranches(new Set(branches)))
-      .catch(() => setLocalOnlyBranches(new Set()));
+      .then((branches) => { if (!cancelled) setLocalOnlyBranches(new Set(branches)); })
+      .catch(() => { if (!cancelled) setLocalOnlyBranches(new Set()); });
+    return () => { cancelled = true; };
   }, [repoPath, refreshKey]);
 
   // ── select commit → load files + parents ─────────────────────────────────

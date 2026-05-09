@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   getTags,
   createTag,
@@ -29,26 +29,31 @@ export function TagTab({ repoPath, refreshKey, onRefresh }: TagTabProps) {
   const [newMessage, setNewMessage] = useState("");
   const [isAnnotated, setIsAnnotated] = useState(false);
 
+  const fetchGenRef = useRef(0);
+
   const fetchData = async () => {
     if (!repoPath) return;
+    const gen = ++fetchGenRef.current;
     setLoading(true);
     try {
       const [tagList, remoteList] = await Promise.all([
         getTags(repoPath),
         getRemotes(repoPath),
       ]);
+      if (gen !== fetchGenRef.current) return;
       setTags(tagList);
       setRemotes(remoteList.map((r) => r.name));
       setError(null);
     } catch (e) {
-      setError(String(e));
+      if (gen === fetchGenRef.current) setError(String(e));
     } finally {
-      setLoading(false);
+      if (gen === fetchGenRef.current) setLoading(false);
     }
   };
 
   useEffect(() => {
     fetchData();
+    return () => { fetchGenRef.current++; };
   }, [repoPath, refreshKey]);
 
   const handleCreate = async () => {

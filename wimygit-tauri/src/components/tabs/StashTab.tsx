@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   getStashList,
   stashPush,
@@ -24,22 +24,27 @@ export function StashTab({ repoPath, refreshKey, onRefresh }: StashTabProps) {
   const [newStashMessage, setNewStashMessage] = useState("");
   const [includeUntracked, setIncludeUntracked] = useState(false);
 
+  const fetchGenRef = useRef(0);
+
   const fetchStashes = async () => {
     if (!repoPath) return;
+    const gen = ++fetchGenRef.current;
     setLoading(true);
     try {
       const list = await getStashList(repoPath);
+      if (gen !== fetchGenRef.current) return;
       setStashes(list);
       setError(null);
     } catch (e) {
-      setError(String(e));
+      if (gen === fetchGenRef.current) setError(String(e));
     } finally {
-      setLoading(false);
+      if (gen === fetchGenRef.current) setLoading(false);
     }
   };
 
   useEffect(() => {
     fetchStashes();
+    return () => { fetchGenRef.current++; };
   }, [repoPath, refreshKey]);
 
   const handleCreate = async () => {

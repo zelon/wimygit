@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   getBranches,
   getCurrentBranch,
@@ -24,26 +24,31 @@ export function BranchTab({ repoPath, refreshKey, onRefresh }: BranchTabProps) {
   const [showNewBranch, setShowNewBranch] = useState(false);
   const [filter, setFilter] = useState<"all" | "local" | "remote">("local");
 
+  const fetchGenRef = useRef(0);
+
   const fetchBranches = async () => {
     if (!repoPath) return;
+    const gen = ++fetchGenRef.current;
     setLoading(true);
     try {
       const [branchList, current] = await Promise.all([
         getBranches(repoPath),
         getCurrentBranch(repoPath),
       ]);
+      if (gen !== fetchGenRef.current) return;
       setBranches(branchList);
       setCurrentBranch(current);
       setError(null);
     } catch (e) {
-      setError(String(e));
+      if (gen === fetchGenRef.current) setError(String(e));
     } finally {
-      setLoading(false);
+      if (gen === fetchGenRef.current) setLoading(false);
     }
   };
 
   useEffect(() => {
     fetchBranches();
+    return () => { fetchGenRef.current++; };
   }, [repoPath, refreshKey]);
 
   const handleCheckout = async (branchName: string) => {

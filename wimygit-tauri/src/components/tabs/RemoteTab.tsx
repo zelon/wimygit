@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   getRemotes,
   addRemote,
@@ -28,26 +28,31 @@ export function RemoteTab({ repoPath, refreshKey, onRefresh, onPushSuccess }: Re
   const [newRemoteName, setNewRemoteName] = useState("");
   const [newRemoteUrl, setNewRemoteUrl] = useState("");
 
+  const fetchGenRef = useRef(0);
+
   const fetchData = async () => {
     if (!repoPath) return;
+    const gen = ++fetchGenRef.current;
     setLoading(true);
     try {
       const [remoteList, branch] = await Promise.all([
         getRemotes(repoPath),
         getCurrentBranch(repoPath),
       ]);
+      if (gen !== fetchGenRef.current) return;
       setRemotes(remoteList);
       setCurrentBranch(branch);
       setError(null);
     } catch (e) {
-      setError(String(e));
+      if (gen === fetchGenRef.current) setError(String(e));
     } finally {
-      setLoading(false);
+      if (gen === fetchGenRef.current) setLoading(false);
     }
   };
 
   useEffect(() => {
     fetchData();
+    return () => { fetchGenRef.current++; };
   }, [repoPath, refreshKey]);
 
   const handleFetch = async (remote: string) => {

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { resolve } from "@tauri-apps/api/path";
 import {
   getWorktrees,
@@ -44,23 +44,28 @@ export function WorktreeTab({ repoPath, refreshKey, onRefresh, onOpenRepo, onWor
     resolve(repoPath, trimmed, ".git").then(setResolvedPath);
   }, [addPath, repoPath]);
 
+  const fetchGenRef = useRef(0);
+
   const fetchWorktrees = async () => {
     if (!repoPath) return;
+    const gen = ++fetchGenRef.current;
     setLoading(true);
     try {
       const list = await getWorktrees(repoPath);
+      if (gen !== fetchGenRef.current) return;
       setWorktrees(list);
       onWorktreeCountChange?.(list.length);
       setError(null);
     } catch (e) {
-      setError(String(e));
+      if (gen === fetchGenRef.current) setError(String(e));
     } finally {
-      setLoading(false);
+      if (gen === fetchGenRef.current) setLoading(false);
     }
   };
 
   useEffect(() => {
     fetchWorktrees();
+    return () => { fetchGenRef.current++; };
   }, [repoPath, refreshKey]);
 
   const handleOpenAdd = async () => {

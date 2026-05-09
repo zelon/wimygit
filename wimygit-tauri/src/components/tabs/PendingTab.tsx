@@ -565,8 +565,11 @@ export function PendingTab({ repoPath, refreshKey, onFilePreview, onLfsLockCount
     x: number; y: number; files: string[];
   } | null>(null);
 
+  const fetchGenRef = useRef(0);
+
   const fetchStatus = async () => {
     if (!repoPath) return;
+    const gen = ++fetchGenRef.current;
     setLoading(true);
     try {
       const [result, lockableExts, sync] = await Promise.all([
@@ -574,10 +577,12 @@ export function PendingTab({ repoPath, refreshKey, onFilePreview, onLfsLockCount
         getLfsLockableExtensions(repoPath).catch(() => [] as string[]),
         getSyncStatus(repoPath),
       ]);
+      if (gen !== fetchGenRef.current) return;
       const hasLockable = lockableExts.length > 0;
       const locks = hasLockable
         ? await getLfsLocks(repoPath).catch(() => [] as LfsLock[])
         : [];
+      if (gen !== fetchGenRef.current) return;
       setStatus(result);
       setSyncStatus(sync);
       setLfsLocks(locks);
@@ -585,9 +590,9 @@ export function PendingTab({ repoPath, refreshKey, onFilePreview, onLfsLockCount
       onLfsLockCountChange?.(locks.length);
       setError(null);
     } catch (e) {
-      setError(String(e));
+      if (gen === fetchGenRef.current) setError(String(e));
     } finally {
-      setLoading(false);
+      if (gen === fetchGenRef.current) setLoading(false);
     }
   };
 
@@ -595,6 +600,7 @@ export function PendingTab({ repoPath, refreshKey, onFilePreview, onLfsLockCount
     fetchStatus();
     setPreviewKey(null);
     setSelectedUnstaged(new Set());
+    return () => { fetchGenRef.current++; };
   }, [repoPath, refreshKey]);
 
   // ── File actions ──────────────────────────────────────────────────────────
