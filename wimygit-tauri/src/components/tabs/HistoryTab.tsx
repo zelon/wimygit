@@ -81,11 +81,12 @@ interface ContextMenuProps {
   commit: CommitInfo;
   repoPath: string;
   localOnlyBranches: Set<string>;
+  staleBranches: Set<string>;
   onClose: () => void;
   onRefresh: () => void;
 }
 
-function ContextMenu({ x, y, commit, repoPath, localOnlyBranches, onClose, onRefresh }: ContextMenuProps) {
+function ContextMenu({ x, y, commit, repoPath, localOnlyBranches, staleBranches, onClose, onRefresh }: ContextMenuProps) {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -102,6 +103,10 @@ function ContextMenu({ x, y, commit, repoPath, localOnlyBranches, onClose, onRef
 
   const localOnlyRefsOnCommit = parseRefNames(commit.ref_names)
     .filter(r => (r.kind === "branch" || r.kind === "head") && localOnlyBranches.has(r.label))
+    .map(r => r.label);
+
+  const staleRefsOnCommit = parseRefNames(commit.ref_names)
+    .filter(r => r.kind === "remote" && staleBranches.has(r.label))
     .map(r => r.label);
 
   const items: { label: string; action: () => void; danger?: boolean }[] = [
@@ -160,6 +165,20 @@ function ContextMenu({ x, y, commit, repoPath, localOnlyBranches, onClose, onRef
 
           try {
             await invoke("run_git_simple", { args: ["push", "-u", remote, branch], cwd: repoPath });
+            onRefresh();
+          } catch (e) { alert(String(e)); }
+        },
+      })),
+    ] : []),
+    ...(staleRefsOnCommit.length > 0 ? [
+      { label: "──", action: () => { } },
+      ...staleRefsOnCommit.map(branch => ({
+        label: `Delete remote tracking ref "${branch}"`,
+        danger: true,
+        action: async () => {
+          onClose();
+          try {
+            await invoke("run_git_simple", { args: ["branch", "-dr", branch], cwd: repoPath });
             onRefresh();
           } catch (e) { alert(String(e)); }
         },
@@ -529,7 +548,7 @@ export function HistoryTab({ repoPath, filePath, refreshKey, onRefresh, onFileSe
       )}
       {contextMenu && (
         <ContextMenu x={contextMenu.x} y={contextMenu.y} commit={contextMenu.commit}
-          repoPath={repoPath} localOnlyBranches={localOnlyBranches}
+          repoPath={repoPath} localOnlyBranches={localOnlyBranches} staleBranches={staleBranches}
           onClose={() => setContextMenu(null)}
           onRefresh={() => { setContextMenu(null); onRefresh(); }} />
       )}
