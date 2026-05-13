@@ -258,7 +258,7 @@ export function HistoryTab({ repoPath, filePath, refreshKey, onRefresh, onFileSe
   const [selectedFile, setSelectedFile] = useState<CommitFile | null>(null);
 
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; commit: CommitInfo } | null>(null);
-  const [createBranchModal, setCreateBranchModal] = useState<string | null>(null); // commit hash
+  const [createBranchModal, setCreateBranchModal] = useState<{ commitHash: string; hasRemotes: boolean } | null>(null);
   const [createTagModal, setCreateTagModal] = useState<string | null>(null); // commit hash
   const [fileCtxMenu, setFileCtxMenu] = useState<{ x: number; y: number; absolutePath: string } | null>(null);
   const [allBranches, setAllBranches] = useState(true);
@@ -605,19 +605,39 @@ export function HistoryTab({ repoPath, filePath, refreshKey, onRefresh, onFileSe
           repoPath={repoPath} localOnlyBranches={localOnlyBranches} staleBranches={staleBranches}
           onClose={() => setContextMenu(null)}
           onRefresh={() => { setContextMenu(null); onRefresh(); }}
-          onOpenCreateBranch={(hash) => setCreateBranchModal(hash)}
+          onOpenCreateBranch={async (hash) => {
+            const remotes = await getRemotes(repoPath).catch(() => []);
+            setCreateBranchModal({ commitHash: hash, hasRemotes: remotes.length > 0 });
+          }}
           onOpenCreateTag={(hash) => setCreateTagModal(hash)} />
       )}
       {createBranchModal && (
         <CreateBranchModal
-          commitHash={createBranchModal}
-          onConfirm={async (name, checkout) => {
+          commitHash={createBranchModal.commitHash}
+          hasRemotes={createBranchModal.hasRemotes}
+          onConfirm={async (name, checkout, pushToRemote) => {
+            const { commitHash } = createBranchModal;
             setCreateBranchModal(null);
             try {
               const args = checkout
-                ? ["checkout", "-b", name, createBranchModal]
-                : ["branch", name, createBranchModal];
+                ? ["checkout", "-b", name, commitHash]
+                : ["branch", name, commitHash];
               await invoke("run_git_simple", { args, cwd: repoPath });
+              if (pushToRemote) {
+                const remotes = await getRemotes(repoPath);
+                if (remotes.length > 0) {
+                  let remote: string | undefined;
+                  if (remotes.length === 1) {
+                    remote = remotes[0].name;
+                  } else {
+                    const names = remotes.map(r => r.name).join(", ");
+                    remote = prompt(`Push to which remote? (${names})`, remotes[0].name)?.trim();
+                  }
+                  if (remote) {
+                    await invoke("run_git_simple", { args: ["push", "-u", remote, name], cwd: repoPath });
+                  }
+                }
+              }
               onRefresh();
             } catch (e) { alert(String(e)); }
           }}

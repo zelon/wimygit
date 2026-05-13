@@ -2,13 +2,15 @@ import { useState, useRef, useEffect } from "react";
 
 interface CreateBranchModalProps {
   commitHash: string;
-  onConfirm: (branchName: string, checkout: boolean) => void;
+  hasRemotes: boolean;
+  onConfirm: (branchName: string, checkout: boolean, pushToRemote: boolean) => void;
   onCancel: () => void;
 }
 
-export function CreateBranchModal({ commitHash, onConfirm, onCancel }: CreateBranchModalProps) {
+export function CreateBranchModal({ commitHash, hasRemotes, onConfirm, onCancel }: CreateBranchModalProps) {
   const [branchName, setBranchName] = useState("");
   const [checkout, setCheckout] = useState(true);
+  const [pushToRemote, setPushToRemote] = useState(hasRemotes);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -17,7 +19,7 @@ export function CreateBranchModal({ commitHash, onConfirm, onCancel }: CreateBra
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && branchName.trim()) {
-      onConfirm(branchName.trim(), checkout);
+      onConfirm(branchName.trim(), checkout, hasRemotes ? pushToRemote : false);
     } else if (e.key === "Escape") {
       onCancel();
     }
@@ -51,6 +53,18 @@ export function CreateBranchModal({ commitHash, onConfirm, onCancel }: CreateBra
           <span className="text-xs text-gray-700 dark:text-gray-300">Checkout after creation</span>
         </label>
 
+        {hasRemotes && (
+          <label className="flex items-center gap-2 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={pushToRemote}
+              onChange={(e) => setPushToRemote(e.target.checked)}
+              className="w-3.5 h-3.5 accent-blue-600"
+            />
+            <span className="text-xs text-gray-700 dark:text-gray-300">Push to remote</span>
+          </label>
+        )}
+
         <div className="flex justify-end gap-2 pt-1">
           <button
             onClick={onCancel}
@@ -59,7 +73,7 @@ export function CreateBranchModal({ commitHash, onConfirm, onCancel }: CreateBra
             Cancel
           </button>
           <button
-            onClick={() => onConfirm(branchName.trim(), checkout)}
+            onClick={() => onConfirm(branchName.trim(), checkout, hasRemotes ? pushToRemote : false)}
             disabled={!branchName.trim()}
             className="px-3 py-1.5 text-xs rounded bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           >
