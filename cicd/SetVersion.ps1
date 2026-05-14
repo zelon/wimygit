@@ -30,11 +30,12 @@ $newVersion = [regex]::Replace($content, $pattern, {
     return "$major.$minor.$patch"
 }).Trim()
 
-# Update Version String
-cargo install cargo-edit
-
-Set-Location (Join-Path $PSScriptRoot ".." "wimygit-tauri" "src-tauri")
-cargo set-version $newVersion
+# Update Cargo.toml version (replace cargo-edit to avoid requiring Rust in CI prepare step)
+# Only replaces `version = "..."` within the [package] section, before the next section header.
+$cargoTomlPath = Join-Path $PSScriptRoot ".." "wimygit-tauri" "src-tauri" "Cargo.toml"
+$cargoToml = Get-Content $cargoTomlPath -Raw
+$cargoToml = $cargoToml -replace '(?ms)(\[package\].*?)^version = "[^"]*"', "`$1version = `"$newVersion`""
+Set-Content $cargoTomlPath $cargoToml -NoNewline -Encoding UTF8
 
 Set-Location (Join-Path $PSScriptRoot ".." "wimygit-tauri")
 npm version $newVersion
