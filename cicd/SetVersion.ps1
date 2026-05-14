@@ -34,7 +34,12 @@ $newVersion = [regex]::Replace($content, $pattern, {
 # Only replaces `version = "..."` within the [package] section, before the next section header.
 $cargoTomlPath = Join-Path $PSScriptRoot ".." "wimygit-tauri" "src-tauri" "Cargo.toml"
 $cargoToml = Get-Content $cargoTomlPath -Raw
-$cargoToml = $cargoToml -replace '(?ms)(\[package\].*?)^version = "[^"]*"', "`$1version = `"$newVersion`""
+$pattern = '(?ms)(\[package\].*?)^version = "[^"]*"'
+$matchCount = [regex]::Matches($cargoToml, $pattern).Count
+if ($matchCount -ne 1) {
+    throw "Cargo.toml: expected exactly 1 version match in [package] section, but found $matchCount"
+}
+$cargoToml = $cargoToml -replace $pattern, "`$1version = `"$newVersion`""
 Set-Content $cargoTomlPath $cargoToml -NoNewline -Encoding UTF8
 
 Set-Location (Join-Path $PSScriptRoot ".." "wimygit-tauri")
