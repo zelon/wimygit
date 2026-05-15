@@ -30,6 +30,11 @@ import {
   type LfsLock,
 } from "./lib";
 import { LfsUnlockModal } from "./components/shared/LfsUnlockModal";
+import {
+  loadAutoFetchSettings,
+  saveAutoFetchSettings,
+  type AutoFetchSettings,
+} from "./hooks/useAutoFetch";
 
 const BASE_INNER_TABS = [
   { id: "pending", label: "Pending Changes" },
@@ -90,6 +95,7 @@ function App() {
   const [lfsLockCount, setLfsLockCount] = useState(0);
   const [worktreeCount, setWorktreeCount] = useState(0);
   const [showPluginModal, setShowPluginModal] = useState(false);
+  const [autoFetchSettings, setAutoFetchSettings] = useState<AutoFetchSettings>(loadAutoFetchSettings);
   const [lfsUnlockConfirm, setLfsUnlockConfirm] = useState<{
     repoPath: string;
     locks: LfsLock[];
@@ -170,6 +176,11 @@ function App() {
     } catch {
       // LFS not available or network error — silently skip
     }
+  }, []);
+
+  const handleAutoFetchSettingsChange = useCallback((settings: AutoFetchSettings) => {
+    saveAutoFetchSettings(settings);
+    setAutoFetchSettings(settings);
   }, []);
 
   const handleLfsUnlockConfirm = useCallback(async () => {
@@ -429,6 +440,8 @@ function App() {
         plugins={plugins}
         selectedFilePath={selectedFilePath}
         onTimeLapse={() => setShowTimeLapse(true)}
+        autoFetchSettings={autoFetchSettings}
+        onAutoFetchSettingsChange={handleAutoFetchSettingsChange}
       />
 
       {/* Body: left sidebar + main content */}

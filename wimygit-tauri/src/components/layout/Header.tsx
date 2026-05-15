@@ -12,6 +12,8 @@ import {
   type PluginInfo,
 } from "../../lib";
 import { PluginButtons } from "./PluginButtons";
+import { useAutoFetch, type AutoFetchSettings } from "../../hooks/useAutoFetch";
+import { AutoFetchIndicator } from "../shared/AutoFetchIndicator";
 
 interface HeaderProps {
   repoPath: string;
@@ -21,6 +23,8 @@ interface HeaderProps {
   plugins?: PluginInfo[];
   selectedFilePath?: string | null;
   onTimeLapse?: () => void;
+  autoFetchSettings: AutoFetchSettings;
+  onAutoFetchSettingsChange: (settings: AutoFetchSettings) => void;
 }
 
 type BusyKey =
@@ -208,7 +212,7 @@ function Sep() {
 
 // ─── Header ───────────────────────────────────────────────────────────────────
 
-export function Header({ repoPath, refreshKey, onRefresh, onPushSuccess, plugins = [], selectedFilePath, onTimeLapse }: HeaderProps) {
+export function Header({ repoPath, refreshKey, onRefresh, onPushSuccess, plugins = [], selectedFilePath, onTimeLapse, autoFetchSettings, onAutoFetchSettingsChange }: HeaderProps) {
   const [currentBranch, setCurrentBranch] = useState<string>("");
   const [repoName, setRepoName] = useState<string>("");
   const [author, setAuthor] = useState<{ name: string; email: string } | null>(null);
@@ -251,6 +255,18 @@ export function Header({ repoPath, refreshKey, onRefresh, onPushSuccess, plugins
   }, [onRefresh, onPushSuccess]);
 
   const isDisabled = busy !== null;
+
+  const handleAutoFetch = useCallback(async () => {
+    await gitFetchAll(repoPath);
+    onRefresh();
+  }, [repoPath, onRefresh]);
+
+  const { lastFetchedAt, nextFetchIn, isFetching: isAutoFetching } = useAutoFetch({
+    settings: autoFetchSettings,
+    repoPath,
+    isBusy: busy !== null,
+    onFetch: handleAutoFetch,
+  });
 
   // ── Push dropdown items ──────────────────────────────────────────────────
 
@@ -330,6 +346,15 @@ export function Header({ repoPath, refreshKey, onRefresh, onPushSuccess, plugins
           isBusy={busy === "fetchAll"}
           disabled={isDisabled}
           onClick={() => run("fetchAll", () => gitFetchAll(repoPath), true)}
+        />
+
+        {/* ── 3b. Auto Fetch indicator ── */}
+        <AutoFetchIndicator
+          settings={autoFetchSettings}
+          nextFetchIn={nextFetchIn}
+          isFetching={isAutoFetching}
+          lastFetchedAt={lastFetchedAt}
+          onChange={onAutoFetchSettingsChange}
         />
 
         {/* ── 4. Pull ── */}
