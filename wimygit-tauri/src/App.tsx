@@ -52,6 +52,7 @@ interface RepoTabState {
   repoName: string;
   activeTab: string;
   refreshKey: number;
+  silentRefreshKey: number;
 }
 
 const STORAGE_KEY = "repoTabs_v2";
@@ -120,6 +121,7 @@ function App() {
       repoName: s.repoName,
       activeTab: "pending",
       refreshKey: 0,
+      silentRefreshKey: 0,
     }));
     setRepoTabs(tabs);
     const lastActive = localStorage.getItem("activeRepoId");
@@ -164,6 +166,14 @@ function App() {
   const handleRefresh = useCallback(() => {
     updateActiveRepo((t) => ({ refreshKey: t.refreshKey + 1 }));
   }, [updateActiveRepo]);
+
+  const handleSilentRefresh = useCallback(() => {
+    setRepoTabs((prev) =>
+      prev.map((t) =>
+        t.id === activeRepoId ? { ...t, silentRefreshKey: t.silentRefreshKey + 1 } : t
+      )
+    );
+  }, [activeRepoId]);
 
   const handleAfterPush = useCallback(async (repoPath: string) => {
     try {
@@ -301,6 +311,7 @@ function App() {
           repoName: repoNameFromPath(root),
           activeTab: "pending",
           refreshKey: 0,
+          silentRefreshKey: 0,
         };
 
         setRepoTabs((prev) => {
@@ -442,6 +453,7 @@ function App() {
         onTimeLapse={() => setShowTimeLapse(true)}
         autoFetchSettings={autoFetchSettings}
         onAutoFetchSettingsChange={handleAutoFetchSettingsChange}
+        onSilentRefresh={handleSilentRefresh}
       />
 
       {/* Body: left sidebar + main content */}
@@ -479,6 +491,7 @@ function App() {
             <PendingTab
               repoPath={activeRepo.repoPath}
               refreshKey={activeRepo.refreshKey}
+              silentRefreshKey={activeRepo.silentRefreshKey}
               onFilePreview={(filename, staged) => { setSelectedDiff(null); setPendingFilePreview({ filename, staged }); }}
               onLfsLockCountChange={setLfsLockCount}
               onShowInWorkspaceFile={(absolutePath) => {
@@ -503,6 +516,7 @@ function App() {
                 repoPath={activeRepo.repoPath}
                 filePath={selectedFilePath}
                 refreshKey={activeRepo.refreshKey}
+                silentRefreshKey={activeRepo.silentRefreshKey}
                 onRefresh={handleRefresh}
                 onFileSelect={setSelectedDiff}
                 onClearPath={() => setSelectedFilePath(null)}
@@ -524,6 +538,7 @@ function App() {
               <BranchTab
                 repoPath={activeRepo.repoPath}
                 refreshKey={activeRepo.refreshKey}
+                silentRefreshKey={activeRepo.silentRefreshKey}
                 onRefresh={handleRefresh}
               />
             )}

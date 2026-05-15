@@ -25,6 +25,7 @@ interface HeaderProps {
   onTimeLapse?: () => void;
   autoFetchSettings: AutoFetchSettings;
   onAutoFetchSettingsChange: (settings: AutoFetchSettings) => void;
+  onSilentRefresh: () => void;
 }
 
 type BusyKey =
@@ -212,7 +213,7 @@ function Sep() {
 
 // ─── Header ───────────────────────────────────────────────────────────────────
 
-export function Header({ repoPath, refreshKey, onRefresh, onPushSuccess, plugins = [], selectedFilePath, onTimeLapse, autoFetchSettings, onAutoFetchSettingsChange }: HeaderProps) {
+export function Header({ repoPath, refreshKey, onRefresh, onPushSuccess, plugins = [], selectedFilePath, onTimeLapse, autoFetchSettings, onAutoFetchSettingsChange, onSilentRefresh }: HeaderProps) {
   const [currentBranch, setCurrentBranch] = useState<string>("");
   const [repoName, setRepoName] = useState<string>("");
   const [author, setAuthor] = useState<{ name: string; email: string } | null>(null);
@@ -258,8 +259,8 @@ export function Header({ repoPath, refreshKey, onRefresh, onPushSuccess, plugins
 
   const handleAutoFetch = useCallback(async () => {
     await gitFetchAll(repoPath);
-    onRefresh();
-  }, [repoPath, onRefresh]);
+    onSilentRefresh();
+  }, [repoPath, onSilentRefresh]);
 
   const { lastFetchedAt, nextFetchIn, isFetching: isAutoFetching } = useAutoFetch({
     settings: autoFetchSettings,
