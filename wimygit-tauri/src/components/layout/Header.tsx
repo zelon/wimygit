@@ -118,15 +118,16 @@ interface ToolButtonProps {
   isBusy: boolean;
   disabled: boolean;
   onClick: () => void;
+  className?: string;
 }
 
-function ToolButton({ icon, label, title, isBusy, disabled, onClick }: ToolButtonProps) {
+function ToolButton({ icon, label, title, isBusy, disabled, onClick, className = "" }: ToolButtonProps) {
   return (
     <button
       onClick={onClick}
       disabled={disabled}
       title={title}
-      className={`${BASE_BTN} ${isBusy ? BUSY_BTN : IDLE_BTN}`}
+      className={`${BASE_BTN} ${isBusy ? BUSY_BTN : IDLE_BTN} ${className}`}
     >
       {icon}
       <span>{label}</span>
@@ -339,24 +340,25 @@ export function Header({ repoPath, refreshKey, onRefresh, onPushSuccess, plugins
 
         <Sep />
 
-        {/* ── 3. FetchAll ── */}
-        <ToolButton
-          icon={<IconFetchAll />}
-          label="FetchAll"
-          title="git fetch --all"
-          isBusy={busy === "fetchAll"}
-          disabled={isDisabled}
-          onClick={() => run("fetchAll", () => gitFetchAll(repoPath), true)}
-        />
-
-        {/* ── 3b. Auto Fetch indicator ── */}
-        <AutoFetchIndicator
-          settings={autoFetchSettings}
-          nextFetchIn={nextFetchIn}
-          isFetching={isAutoFetching}
-          lastFetchedAt={lastFetchedAt}
-          onChange={onAutoFetchSettingsChange}
-        />
+        {/* ── 3. FetchAll + Auto Fetch expand button ── */}
+        <div className="relative flex shrink-0">
+          <ToolButton
+            icon={<IconFetchAll />}
+            label="FetchAll"
+            title="git fetch --all"
+            isBusy={busy === "fetchAll"}
+            disabled={isDisabled}
+            onClick={() => run("fetchAll", () => gitFetchAll(repoPath), true)}
+            className="rounded-r-none border-r-0"
+          />
+          <AutoFetchIndicator
+            settings={autoFetchSettings}
+            nextFetchIn={nextFetchIn}
+            isFetching={isAutoFetching}
+            lastFetchedAt={lastFetchedAt}
+            onChange={onAutoFetchSettingsChange}
+          />
+        </div>
 
         {/* ── 4. Pull ── */}
         <ToolButton
