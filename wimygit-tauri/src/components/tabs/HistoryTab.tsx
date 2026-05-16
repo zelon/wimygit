@@ -19,6 +19,7 @@ interface HistoryTabProps {
   repoPath: string;
   filePath?: string | null;
   refreshKey: number;
+  silentRefreshKey?: number;
   onRefresh: () => void;
   onFileSelect?: (info: SelectedDiffInfo) => void;
   onClearPath?: () => void;
@@ -240,7 +241,7 @@ function FileContextMenu({ x, y, absolutePath, onClose, onShowInWorkspace, onSho
 
 const PAGE_SIZE = 100;
 
-export function HistoryTab({ repoPath, filePath, refreshKey, onRefresh, onFileSelect, onClearPath, onShowInWorkspace, onShowInWorkspaceFile, onShowInHistoryFile }: HistoryTabProps) {
+export function HistoryTab({ repoPath, filePath, refreshKey, silentRefreshKey, onRefresh, onFileSelect, onClearPath, onShowInWorkspace, onShowInWorkspaceFile, onShowInHistoryFile }: HistoryTabProps) {
   const [commits, setCommits] = useState<CommitInfo[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -294,6 +295,23 @@ export function HistoryTab({ repoPath, filePath, refreshKey, onRefresh, onFileSe
     loadHistory(0);
     return () => { loadHistoryGenRef.current++; };
   }, [repoPath, refreshKey, loadHistory]);
+
+  const silentHistoryGenRef = useRef(0);
+
+  useEffect(() => {
+    if (!silentRefreshKey || !repoPath) return;
+    const gen = ++silentHistoryGenRef.current;
+    (async () => {
+      try {
+        const result = await getHistory(repoPath, filePath ?? "", 0, PAGE_SIZE, allBranches, searchQuery || undefined);
+        if (gen !== silentHistoryGenRef.current) return;
+        setCommits(result);
+        setHasMore(result.length === PAGE_SIZE);
+      } catch {
+        // silent refresh errors are ignored
+      }
+    })();
+  }, [repoPath, silentRefreshKey]);
 
   useEffect(() => {
     if (!repoPath) return;

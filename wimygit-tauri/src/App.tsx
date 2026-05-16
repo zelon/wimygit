@@ -30,6 +30,11 @@ import {
   type LfsLock,
 } from "./lib";
 import { LfsUnlockModal } from "./components/shared/LfsUnlockModal";
+import {
+  loadAutoFetchSettings,
+  saveAutoFetchSettings,
+  type AutoFetchSettings,
+} from "./hooks/useAutoFetch";
 
 const BASE_INNER_TABS = [
   { id: "pending", label: "Pending Changes" },
@@ -47,6 +52,7 @@ interface RepoTabState {
   repoName: string;
   activeTab: string;
   refreshKey: number;
+  silentRefreshKey: number;
 }
 
 const STORAGE_KEY = "repoTabs_v2";
@@ -90,6 +96,7 @@ function App() {
   const [lfsLockCount, setLfsLockCount] = useState(0);
   const [worktreeCount, setWorktreeCount] = useState(0);
   const [showPluginModal, setShowPluginModal] = useState(false);
+  const [autoFetchSettings, setAutoFetchSettings] = useState<AutoFetchSettings>(loadAutoFetchSettings);
   const [lfsUnlockConfirm, setLfsUnlockConfirm] = useState<{
     repoPath: string;
     locks: LfsLock[];
@@ -114,6 +121,7 @@ function App() {
       repoName: s.repoName,
       activeTab: "pending",
       refreshKey: 0,
+      silentRefreshKey: 0,
     }));
     setRepoTabs(tabs);
     const lastActive = localStorage.getItem("activeRepoId");
@@ -159,6 +167,14 @@ function App() {
     updateActiveRepo((t) => ({ refreshKey: t.refreshKey + 1 }));
   }, [updateActiveRepo]);
 
+  const handleSilentRefresh = useCallback(() => {
+    setRepoTabs((prev) =>
+      prev.map((t) =>
+        t.id === activeRepoId ? { ...t, silentRefreshKey: t.silentRefreshKey + 1 } : t
+      )
+    );
+  }, [activeRepoId]);
+
   const handleAfterPush = useCallback(async (repoPath: string) => {
     try {
       const myLocks = await getLfsLocalLocks(repoPath);
@@ -170,6 +186,11 @@ function App() {
     } catch {
       // LFS not available or network error — silently skip
     }
+  }, []);
+
+  const handleAutoFetchSettingsChange = useCallback((settings: AutoFetchSettings) => {
+    saveAutoFetchSettings(settings);
+    setAutoFetchSettings(settings);
   }, []);
 
   const handleLfsUnlockConfirm = useCallback(async () => {
@@ -290,6 +311,7 @@ function App() {
           repoName: repoNameFromPath(root),
           activeTab: "pending",
           refreshKey: 0,
+          silentRefreshKey: 0,
         };
 
         setRepoTabs((prev) => {
@@ -429,6 +451,9 @@ function App() {
         plugins={plugins}
         selectedFilePath={selectedFilePath}
         onTimeLapse={() => setShowTimeLapse(true)}
+        autoFetchSettings={autoFetchSettings}
+        onAutoFetchSettingsChange={handleAutoFetchSettingsChange}
+        onSilentRefresh={handleSilentRefresh}
       />
 
       {/* Body: left sidebar + main content */}
@@ -466,6 +491,7 @@ function App() {
             <PendingTab
               repoPath={activeRepo.repoPath}
               refreshKey={activeRepo.refreshKey}
+              silentRefreshKey={activeRepo.silentRefreshKey}
               onFilePreview={(filename, staged) => { setSelectedDiff(null); setPendingFilePreview({ filename, staged }); }}
               onLfsLockCountChange={setLfsLockCount}
               onShowInWorkspaceFile={(absolutePath) => {
@@ -490,6 +516,7 @@ function App() {
                 repoPath={activeRepo.repoPath}
                 filePath={selectedFilePath}
                 refreshKey={activeRepo.refreshKey}
+                silentRefreshKey={activeRepo.silentRefreshKey}
                 onRefresh={handleRefresh}
                 onFileSelect={setSelectedDiff}
                 onClearPath={() => setSelectedFilePath(null)}
@@ -511,6 +538,7 @@ function App() {
               <BranchTab
                 repoPath={activeRepo.repoPath}
                 refreshKey={activeRepo.refreshKey}
+                silentRefreshKey={activeRepo.silentRefreshKey}
                 onRefresh={handleRefresh}
               />
             )}

@@ -55,6 +55,7 @@ async function generateAiCommitMessage(stagedDiff: string, apiKey: string): Prom
 interface PendingTabProps {
   repoPath: string;
   refreshKey: number;
+  silentRefreshKey?: number;
   onFilePreview?: (filename: string, staged: boolean, isUntracked?: boolean) => void;
   onLfsLockCountChange?: (count: number) => void;
   onShowInWorkspaceFile?: (absolutePath: string) => void;
@@ -538,7 +539,7 @@ function SectionHeader({ label, count, action }: SectionHeaderProps) {
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
-export function PendingTab({ repoPath, refreshKey, onFilePreview, onLfsLockCountChange, onShowInWorkspaceFile, onShowInHistoryFile }: PendingTabProps) {
+export function PendingTab({ repoPath, refreshKey, silentRefreshKey, onFilePreview, onLfsLockCountChange, onShowInWorkspaceFile, onShowInHistoryFile }: PendingTabProps) {
   const [status, setStatus] = useState<GitStatus | null>(null);
   const [syncStatus, setSyncStatus] = useState<SyncStatus | null>(null);
   const [loading, setLoading] = useState(true);
@@ -602,6 +603,35 @@ export function PendingTab({ repoPath, refreshKey, onFilePreview, onLfsLockCount
     setSelectedUnstaged(new Set());
     return () => { fetchGenRef.current++; };
   }, [repoPath, refreshKey]);
+
+  const silentFetchGenRef = useRef(0);
+
+  useEffect(() => {
+    if (!silentRefreshKey || !repoPath) return;
+    const gen = ++silentFetchGenRef.current;
+    (async () => {
+      try {
+        const [result, lockableExts, sync] = await Promise.all([
+          getGitStatus(repoPath),
+          getLfsLockableExtensions(repoPath).catch(() => [] as string[]),
+          getSyncStatus(repoPath),
+        ]);
+        if (gen !== silentFetchGenRef.current) return;
+        const hasLockable = lockableExts.length > 0;
+        const locks = hasLockable
+          ? await getLfsLocks(repoPath).catch(() => [] as LfsLock[])
+          : [];
+        if (gen !== silentFetchGenRef.current) return;
+        setStatus(result);
+        setSyncStatus(sync);
+        setLfsLocks(locks);
+        setHasLfsLockable(hasLockable);
+        onLfsLockCountChange?.(locks.length);
+      } catch {
+        // silent refresh errors are ignored to avoid disrupting the user
+      }
+    })();
+  }, [repoPath, silentRefreshKey]);
 
   // ── File actions ──────────────────────────────────────────────────────────
 

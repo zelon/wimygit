@@ -12,10 +12,11 @@ import {
 interface BranchTabProps {
   repoPath: string;
   refreshKey: number;
+  silentRefreshKey?: number;
   onRefresh: () => void;
 }
 
-export function BranchTab({ repoPath, refreshKey, onRefresh }: BranchTabProps) {
+export function BranchTab({ repoPath, refreshKey, silentRefreshKey, onRefresh }: BranchTabProps) {
   const [branches, setBranches] = useState<BranchInfo[]>([]);
   const [currentBranch, setCurrentBranch] = useState<string>("");
   const [loading, setLoading] = useState(true);
@@ -50,6 +51,26 @@ export function BranchTab({ repoPath, refreshKey, onRefresh }: BranchTabProps) {
     fetchBranches();
     return () => { fetchGenRef.current++; };
   }, [repoPath, refreshKey]);
+
+  const silentFetchGenRef = useRef(0);
+
+  useEffect(() => {
+    if (!silentRefreshKey || !repoPath) return;
+    const gen = ++silentFetchGenRef.current;
+    (async () => {
+      try {
+        const [branchList, current] = await Promise.all([
+          getBranches(repoPath),
+          getCurrentBranch(repoPath),
+        ]);
+        if (gen !== silentFetchGenRef.current) return;
+        setBranches(branchList);
+        setCurrentBranch(current);
+      } catch {
+        // silent refresh errors are ignored
+      }
+    })();
+  }, [repoPath, silentRefreshKey]);
 
   const handleCheckout = async (branchName: string) => {
     try {
