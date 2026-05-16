@@ -49,7 +49,7 @@ export function AutoFetchIndicator({
       <button
         onClick={() => setOpen((v) => !v)}
         title={tooltip}
-        className="relative flex items-center px-1 border rounded-l-none rounded-r transition-colors bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-400 dark:text-gray-500"
+        className="relative flex items-center px-1 border rounded-l-none rounded-r transition-colors bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300"
       >
         {/* Circular arc progress indicator — positioned at top where ↺ icon was */}
         {settings.enabled && (
