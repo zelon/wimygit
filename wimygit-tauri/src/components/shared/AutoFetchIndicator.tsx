@@ -9,6 +9,12 @@ interface AutoFetchIndicatorProps {
   onChange: (settings: AutoFetchSettings) => void;
 }
 
+function formatCountdown(seconds: number): string {
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return `${m}:${String(s).padStart(2, "0")}`;
+}
+
 export function AutoFetchIndicator({
   settings,
   nextFetchIn,
@@ -147,6 +153,13 @@ export function AutoFetchIndicator({
           {lastFetchedAt && (
             <div className="text-[10px] text-gray-400 dark:text-gray-500">
               Last fetched: {lastFetchedAt.toLocaleTimeString()}
+            </div>
+          )}
+          {settings.enabled && (
+            <div className="text-[10px] text-gray-400 dark:text-gray-500 mt-0.5">
+              {isFetching
+                ? "Fetching…"
+                : `Next fetch in: ${formatCountdown(nextFetchIn)}`}
             </div>
           )}
         </div>
