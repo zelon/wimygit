@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@source inline("outline-sky-400 dark:outline-sky-500");
 
 @theme {
   --color-git-added: #28a745;
