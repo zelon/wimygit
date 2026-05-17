@@ -168,6 +168,7 @@ pub fn run() {
       git::get_commit_files,
       git::get_commit_diff,
       git::get_diff,
+      git::apply_patch,
       // Git tag commands
       git::get_tags,
       git::create_tag,

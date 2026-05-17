@@ -275,6 +275,15 @@ export async function gitDiff(
   return runGitSimple(args, cwd);
 }
 
+export async function gitApplyPatch(
+  cwd: string,
+  patch: string,
+  cached: boolean,
+  reverse: boolean
+): Promise<void> {
+  return invoke<void>("apply_patch", { cwd, patch, cached, reverse });
+}
+
 // ============= Filesystem =============
 
 export async function readTextFile(filePath: string): Promise<string> {

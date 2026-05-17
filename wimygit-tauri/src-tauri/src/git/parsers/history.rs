@@ -268,6 +268,50 @@ pub async fn get_diff(
     Ok(result.stdout)
 }
 
+/// Apply a patch string to the index (--cached) or working tree.
+/// Writes the patch to a temp file and runs `git apply`.
+#[tauri::command]
+pub async fn apply_patch(
+    cwd: String,
+    patch: String,
+    cached: bool,
+    reverse: bool,
+) -> Result<(), String> {
+    use std::fs;
+
+    // Write patch to a uniquely named temp file
+    let nanos = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap_or_default()
+        .subsec_nanos();
+    let temp_path = std::env::temp_dir()
+        .join(format!("wimygit_patch_{}.patch", nanos));
+
+    fs::write(&temp_path, patch.as_bytes())
+        .map_err(|e| format!("Failed to write patch file: {}", e))?;
+
+    let mut args = vec!["apply".to_string()];
+    if cached {
+        args.push("--cached".to_string());
+    }
+    if reverse {
+        args.push("--reverse".to_string());
+    }
+    args.push(temp_path.to_string_lossy().to_string());
+
+    let result = crate::git::run_git(args, cwd).await;
+    let _ = fs::remove_file(&temp_path);
+
+    let result = result?;
+    if result.exit_code != 0 {
+        return Err(format!(
+            "git apply failed: {}",
+            result.stderr.trim()
+        ));
+    }
+    Ok(())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
