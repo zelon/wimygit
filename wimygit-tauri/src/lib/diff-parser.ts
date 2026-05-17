@@ -82,8 +82,8 @@ export function parseDiffIntoHunks(diff: string): FileDiff[] {
       inChangedBlock = false;
       currentHunk = { header: line, ...coords, lines: [] };
     } else if (currentHunk) {
-      if (line.startsWith("\\")) {
-        // "\ No newline at end of file" — skip
+      if (line.startsWith("\\") || line === "") {
+        // "\ No newline at end of file" and trailing empty from split — skip both
       } else if (line.startsWith("+")) {
         if (!inChangedBlock) {
           blockId++;
