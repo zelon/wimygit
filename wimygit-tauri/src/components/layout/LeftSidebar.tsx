@@ -13,6 +13,7 @@ import {
 } from "../../lib";
 import { type TreeNode, makeNode, patchNode } from "../tabs/DirectoryTreeTab";
 import { DiffViewer } from "../shared/DiffViewer";
+import { InteractiveDiffViewer } from "../shared/InteractiveDiffViewer";
 
 // ─── constants ────────────────────────────────────────────────────────────────
 
@@ -379,9 +380,10 @@ interface SidebarQuickDiffProps {
   repoPath: string;
   selectedDiff?: SelectedDiffInfo | null;
   pendingFilePreview?: PendingFilePreview | null;
+  onRefresh?: () => void;
 }
 
-function SidebarQuickDiff({ repoPath, selectedDiff, pendingFilePreview }: SidebarQuickDiffProps) {
+function SidebarQuickDiff({ repoPath, selectedDiff, pendingFilePreview, onRefresh }: SidebarQuickDiffProps) {
   const [modes, setModes] = useState<DiffMode[]>([{ kind: "combined", label: "Diff" }]);
   const [activeMode, setActiveMode] = useState<DiffModeKind>("combined");
   const [contextLines, setContextLines] = useState(DEFAULT_CONTEXT);
@@ -391,6 +393,7 @@ function SidebarQuickDiff({ repoPath, selectedDiff, pendingFilePreview }: Sideba
   const [pendingDiff, setPendingDiff] = useState("");
   const [pendingLoading, setPendingLoading] = useState(false);
   const [imagePreviewSrc, setImagePreviewSrc] = useState<string | null>(null);
+  const [localRefresh, setLocalRefresh] = useState(0);
 
   const isCommitMode = !!selectedDiff;
   const showingPendingPreview = !isCommitMode && !!pendingFilePreview;
@@ -468,7 +471,7 @@ function SidebarQuickDiff({ repoPath, selectedDiff, pendingFilePreview }: Sideba
       .then((d) => setPendingDiff(d))
       .catch(() => setPendingDiff(""))
       .finally(() => setPendingLoading(false));
-  }, [pendingFilePreview, isCommitMode, repoPath, contextLines, ignoreWhitespace]);
+  }, [pendingFilePreview, isCommitMode, repoPath, contextLines, ignoreWhitespace, localRefresh]);
 
   // ── Diff Tool ──
   const handleDiffTool = async () => {
@@ -570,6 +573,18 @@ function SidebarQuickDiff({ repoPath, selectedDiff, pendingFilePreview }: Sideba
           <div className="flex items-center justify-center h-full p-4 overflow-auto bg-gray-50 dark:bg-gray-900">
             <img src={imagePreviewSrc} alt={pendingFilePreview?.filename} className="max-w-full max-h-full object-contain" />
           </div>
+        ) : showingPendingPreview && pendingFilePreview && !pendingFilePreview.isUntracked ? (
+          <InteractiveDiffViewer
+            diff={pendingDiff}
+            repoPath={repoPath}
+            filename={pendingFilePreview.filename}
+            staged={pendingFilePreview.staged}
+            onApplied={() => {
+              setLocalRefresh((k) => k + 1);
+              onRefresh?.();
+            }}
+            placeholder="No changes"
+          />
         ) : (
           <DiffViewer
             diff={displayDiff}
@@ -732,6 +747,7 @@ export function LeftSidebar({ repoPath, refreshKey, selectedDiff, pendingFilePre
               repoPath={repoPath}
               selectedDiff={selectedDiff}
               pendingFilePreview={pendingFilePreview}
+              onRefresh={onRefresh}
             />
           )}
         </div>
