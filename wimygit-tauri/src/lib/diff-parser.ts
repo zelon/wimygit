@@ -128,6 +128,85 @@ export function parseDiffIntoHunks(diff: string): FileDiff[] {
   return result;
 }
 
+// Build a minimal valid patch for a single line (Ctrl+click mode).
+export function buildLinePatch(
+  fileDiff: FileDiff,
+  hunkIdx: number,
+  lineIdx: number
+): string {
+  const hunk = fileDiff.hunks[hunkIdx];
+  const lines = hunk.lines;
+  const target = lines[lineIdx];
+  if (!target || target.type === "context") return "";
+
+  // When staging a '+' line: '-' (removed) lines exist in the old file (index) and
+  // can anchor the patch even when they are adjacent to the target.
+  // When staging a '-' line (reverse): '+' (added) lines serve the same role.
+  // Lines of the same type as the target do NOT exist in the old file, so skip them.
+  const anchorType: ParsedLine["type"] = target.type === "added" ? "removed" : "added";
+
+  // Collect context + anchor lines before target, skipping over same-type-as-target lines.
+  const beforeRaw: ParsedLine[] = [];
+  for (let i = lineIdx - 1; i >= 0; i--) {
+    const l = lines[i];
+    if (l.type === "context" || l.type === anchorType) {
+      beforeRaw.unshift(l);
+    }
+    // same-type lines don't exist in the old file — skip silently
+  }
+
+  // Collect context + anchor lines after target, skipping over same-type-as-target lines.
+  const afterRaw: ParsedLine[] = [];
+  for (let i = lineIdx + 1; i < lines.length; i++) {
+    const l = lines[i];
+    if (l.type === "context" || l.type === anchorType) {
+      afterRaw.push(l);
+    }
+    // same-type lines don't exist in the old file — skip silently
+  }
+
+  // Represent anchor lines as context in the patch: they are NOT being changed by this
+  // minimal patch, so they appear unchanged in both old and new sides.
+  const asContext = (l: ParsedLine): ParsedLine =>
+    l.type === anchorType ? { ...l, type: "context" } : l;
+
+  const subLines = [
+    ...beforeRaw.map(asContext),
+    target,
+    ...afterRaw.map(asContext),
+  ];
+
+  const oldCount = subLines.filter((l) => l.type !== "added").length;
+  const newCount = subLines.filter((l) => l.type !== "removed").length;
+
+  // oldStart: first line that exists in the old file
+  const firstOldRaw = [...beforeRaw, target, ...afterRaw].find((l) => l.type !== "added");
+  const oldStart = firstOldRaw?.oldLineNum ?? hunk.oldStart;
+
+  // newStart: first line that exists in the new (post-patch) file.
+  // Anchor lines treated as context have the same position in old and new.
+  let newStart: number;
+  if (beforeRaw.length === 0) {
+    newStart = oldStart; // pure insertion — new side starts at same offset as old
+  } else {
+    const firstBefore = beforeRaw[0];
+    newStart =
+      firstBefore.type === "context"
+        ? firstBefore.newLineNum  // real context line: use its new-file number
+        : firstBefore.oldLineNum; // anchor-as-context: old pos === new pos
+  }
+
+  const hunkHeader = `@@ -${oldStart},${oldCount} +${newStart},${newCount} @@`;
+  const hunkLines = subLines.map((l) => {
+    if (l.type === "added") return `+${l.content}`;
+    if (l.type === "removed") return `-${l.content}`;
+    return ` ${l.content}`;
+  });
+
+  const fileHeader = fileDiff.header.join("\n");
+  return `${fileHeader}\n${hunkHeader}\n${hunkLines.join("\n")}\n`;
+}
+
 // Build a minimal valid patch for a single contiguous block of changed lines.
 export function buildBlockPatch(
   fileDiff: FileDiff,
