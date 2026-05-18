@@ -106,15 +106,19 @@ export function ImageDiffViewer({ beforeSrc, afterSrc, filename, mode }: ImageDi
   // ── Info bar ──────────────────────────────────────────────────────────────
   const infoBar = (
     <div className="shrink-0 flex border-b border-gray-700 text-xs bg-gray-900 select-none">
-      <div className="flex-1 flex items-baseline justify-center gap-2 px-2 py-1 border-r border-gray-700 min-w-0">
-        <span className="font-semibold text-gray-100 shrink-0">BEFORE</span>
+      <div className="flex-1 flex items-center justify-center gap-2 px-2 py-1 border-r border-gray-700 min-w-0">
+        <span className="inline-flex items-center overflow-hidden rounded shrink-0">
+          <span className="px-1.5 py-0.5 font-semibold bg-blue-600 text-white leading-4">BEFORE</span>
+        </span>
         <span className="text-gray-400 truncate">
           {beforeNatural ? `${beforeNatural.w}×${beforeNatural.h}` : "—"}
         </span>
         <span className="text-gray-500 shrink-0">{beforeSize}</span>
       </div>
-      <div className="flex-1 flex items-baseline justify-center gap-2 px-2 py-1 min-w-0">
-        <span className="font-semibold text-gray-100 shrink-0">AFTER</span>
+      <div className="flex-1 flex items-center justify-center gap-2 px-2 py-1 min-w-0">
+        <span className="inline-flex items-center overflow-hidden rounded shrink-0">
+          <span className="px-1.5 py-0.5 font-semibold bg-green-600 text-white leading-4">AFTER</span>
+        </span>
         <span className="text-gray-400 truncate">
           {afterNatural ? `${afterNatural.w}×${afterNatural.h}` : "—"}
         </span>

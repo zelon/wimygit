@@ -406,8 +406,12 @@ function SingleImagePreview({ src, label, filename }: { src: string; label: stri
   return (
     <div className="flex flex-col h-full">
       {/* Info bar */}
-      <div className="shrink-0 flex items-baseline justify-center gap-2 px-2 py-1 border-b border-gray-700 text-xs bg-gray-900 select-none">
-        <span className="font-semibold text-gray-100">{label}</span>
+      <div className="shrink-0 flex items-center justify-center gap-2 px-2 py-1 border-b border-gray-700 text-xs bg-gray-900 select-none">
+        <span className="inline-flex items-center overflow-hidden rounded shrink-0">
+          <span className={`px-1.5 py-0.5 font-semibold text-white leading-4 ${label === "NEW FILE" ? "bg-orange-600" : "bg-gray-500"}`}>
+            {label}
+          </span>
+        </span>
         <span className="text-gray-400">{natural ? `${natural.w}×${natural.h}` : "—"}</span>
         <span className="text-gray-500">{formatBytes(base64ByteSize(src))}</span>
       </div>
