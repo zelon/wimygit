@@ -378,6 +378,47 @@ const IMAGE_MIME: Record<string, string> = {
   ".bmp": "image/bmp", ".ico": "image/x-icon", ".tiff": "image/tiff", ".avif": "image/avif",
 };
 
+const CHECKER = "repeating-conic-gradient(#d1d5db 0% 25%, #ffffff 0% 50%) 0 0 / 12px 12px";
+
+function base64ByteSize(dataUrl: string): number {
+  const b64 = dataUrl.slice(dataUrl.indexOf(",") + 1);
+  const padding = (b64.match(/=+$/) ?? [""])[0].length;
+  return Math.floor((b64.length * 3) / 4) - padding;
+}
+
+function formatBytes(n: number): string {
+  if (n < 1024) return `${n} B`;
+  if (n < 1024 * 1024) return `${(n / 1024).toFixed(1)} KB`;
+  return `${(n / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function SingleImagePreview({ src, label, filename }: { src: string; label: string; filename?: string }) {
+  const [natural, setNatural] = useState<{ w: number; h: number } | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    const img = new Image();
+    img.onload = () => { if (!cancelled) setNatural({ w: img.naturalWidth, h: img.naturalHeight }); };
+    img.src = src;
+    return () => { cancelled = true; };
+  }, [src]);
+
+  return (
+    <div className="flex flex-col h-full">
+      {/* Info bar */}
+      <div className="shrink-0 flex items-baseline justify-center gap-2 px-2 py-1 border-b border-gray-700 text-xs bg-gray-900 select-none">
+        <span className="font-semibold text-gray-100">{label}</span>
+        <span className="text-gray-400">{natural ? `${natural.w}×${natural.h}` : "—"}</span>
+        <span className="text-gray-500">{formatBytes(base64ByteSize(src))}</span>
+      </div>
+      {/* Image area */}
+      <div className="flex-1 bg-black flex items-center justify-center overflow-auto p-2">
+        <img src={src} alt={filename} className="max-w-full max-h-full block" style={{ background: CHECKER }} />
+      </div>
+    </div>
+  );
+}
+
 interface SidebarQuickDiffProps {
   repoPath: string;
   selectedDiff?: SelectedDiffInfo | null;
@@ -472,26 +513,32 @@ function SidebarQuickDiff({ repoPath, selectedDiff, pendingFilePreview, onRefres
 
     if (IMAGE_EXTS.has(ext)) {
       const mime = IMAGE_MIME[ext] ?? "application/octet-stream";
-      // staged: compare HEAD vs index; unstaged: compare HEAD vs working dir
-      const refSpec = pendingFilePreview.staged ? ":0" : "HEAD";
+      // before = HEAD version (fails for new files → plain image view)
+      // after  = staged ? index (:0) : working dir file
       setPendingLoading(true);
       setImagePreviewSrc(null);
       setImageDiffSrcs(null);
       setPendingDiff("");
 
+      const afterPromise = pendingFilePreview.staged
+        ? getGitFileBlob(repoPath, ":0", pendingFilePreview.filename)
+            .then((b64) => `data:${mime};base64,${b64}`)
+            .catch(() => null)
+        : readFile(absPath)
+            .then((bytes) => {
+              let binary = "";
+              for (let i = 0; i < bytes.length; i += 8192) {
+                binary += String.fromCharCode(...bytes.subarray(i, i + 8192));
+              }
+              return `data:${mime};base64,${btoa(binary)}`;
+            })
+            .catch(() => null);
+
       Promise.all([
-        getGitFileBlob(repoPath, refSpec, pendingFilePreview.filename)
+        getGitFileBlob(repoPath, "HEAD", pendingFilePreview.filename)
           .then((b64) => `data:${mime};base64,${b64}`)
           .catch(() => null),
-        readFile(absPath)
-          .then((bytes) => {
-            let binary = "";
-            for (let i = 0; i < bytes.length; i += 8192) {
-              binary += String.fromCharCode(...bytes.subarray(i, i + 8192));
-            }
-            return `data:${mime};base64,${btoa(binary)}`;
-          })
-          .catch(() => null),
+        afterPromise,
       ])
         .then(([beforeSrc, afterSrc]) => {
           if (beforeSrc && afterSrc) {
@@ -533,7 +580,7 @@ function SidebarQuickDiff({ repoPath, selectedDiff, pendingFilePreview, onRefres
 
   const displayDiff = showingPendingPreview ? pendingDiff : diff;
   const displayLoading = showingPendingPreview ? pendingLoading : loadingDiff;
-  const isImageDiff = !displayLoading && showingPendingPreview && !!imageDiffSrcs;
+  const isImageDiff = !displayLoading && showingPendingPreview && (!!imageDiffSrcs || !!imagePreviewSrc);
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
@@ -645,9 +692,11 @@ function SidebarQuickDiff({ repoPath, selectedDiff, pendingFilePreview, onRefres
             mode={imageDiffMode}
           />
         ) : showingPendingPreview && imagePreviewSrc ? (
-          <div className="flex items-center justify-center h-full p-4 overflow-auto bg-gray-50 dark:bg-gray-900">
-            <img src={imagePreviewSrc} alt={pendingFilePreview?.filename} className="max-w-full max-h-full object-contain" />
-          </div>
+          <SingleImagePreview
+            src={imagePreviewSrc}
+            label={pendingFilePreview?.isUntracked ? "UNTRACKED" : "NEW FILE"}
+            filename={pendingFilePreview?.filename}
+          />
         ) : showingPendingPreview && pendingFilePreview && !pendingFilePreview.isUntracked ? (
           <InteractiveDiffViewer
             diff={pendingDiff}
