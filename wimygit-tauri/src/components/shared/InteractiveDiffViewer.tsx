@@ -183,27 +183,27 @@ export function InteractiveDiffViewer({
                   ctxMenu.hunkIdx === hunkIdx &&
                   ctxMenu.blockId === segment.blockId;
 
+                // Hover state for this block (no Ctrl key)
+                const isBlockHovered =
+                  !ctrlHeld &&
+                  hoveredAt !== null &&
+                  hoveredAt.hunkIdx === hunkIdx &&
+                  fileDiff.hunks[hoveredAt.hunkIdx]?.lines[hoveredAt.lineIdx]?.blockId === segment.blockId;
+
                 const blockOutlineClass =
-                  isThisBlock && ctxHover === "block"
+                  (isThisBlock && ctxHover === "block") || isBlockHovered
                     ? dashedOutline()
                     : "";
 
                 return (
-                  <div key={segIdx} className={blockOutlineClass}>
+                  <div key={segIdx} className={blockOutlineClass} onMouseLeave={() => setHoveredAt(null)}>
                     {segment.lines.map(({ line, lineIdx }) => {
                       const isExactHover =
                         hoveredAt !== null &&
                         hoveredAt.hunkIdx === hunkIdx &&
                         hoveredAt.lineIdx === lineIdx;
 
-                      // Block hover (no Ctrl): background highlight on all lines in block
-                      const isBlockHovered =
-                        !ctrlHeld &&
-                        hoveredAt !== null &&
-                        hoveredAt.hunkIdx === hunkIdx &&
-                        fileDiff.hunks[hoveredAt.hunkIdx]?.lines[hoveredAt.lineIdx]?.blockId === line.blockId;
-
-                      // Ctrl+hover: dashed outline on exact line only (no background)
+                      // Ctrl+hover: dashed outline on exact line only
                       const isCtrlLineHovered = ctrlHeld && isExactHover;
 
                       // Context menu preview: dashed outline when "Stage this line" is hovered
@@ -226,7 +226,7 @@ export function InteractiveDiffViewer({
                       return (
                         <div
                           key={lineIdx}
-                          className={`flex items-stretch ${lineBg(line.type, isBlockHovered)} ${isCtrlLineHovered || isLinePreview ? dashedOutline() : ""}`}
+                          className={`flex items-stretch ${lineBg(line.type, false)} ${isCtrlLineHovered || isLinePreview ? dashedOutline() : ""}`}
                           onMouseEnter={() => setHoveredAt({ hunkIdx, lineIdx })}
                         >
                           {/* Line content */}
