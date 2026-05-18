@@ -34,6 +34,12 @@ winget install Wimysoft.wimygit
 Download the latest release from [GitHub Releases](https://github.com/zelon/wimygit/releases), extract the zip file, and run the executable.
 
 
+#### For MACOS
+ Sometimes the gatekeeper blocks the app, run the following command:
+```
+xattr -c /Applications/Wimygit.app
+```
+
 ## Development Environment
 
 | Component | Technology |
