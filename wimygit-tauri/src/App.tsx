@@ -88,7 +88,7 @@ function App() {
   const [plugins, setPlugins] = useState<PluginInfo[]>([]);
   const [openError, setOpenError] = useState<string | null>(null);
   const [selectedDiff, setSelectedDiff] = useState<SelectedDiffInfo | null>(null);
-  const [pendingFilePreview, setPendingFilePreview] = useState<{ filename: string; staged: boolean } | null>(null);
+  const [pendingFilePreview, setPendingFilePreview] = useState<{ filename: string; staged: boolean; isUntracked?: boolean } | null>(null);
   const [selectedFilePath, setSelectedFilePath] = useState<string | null>(null);
   const [workspaceHighlight, setWorkspaceHighlight] = useState<{ path: string; triggerCount: number } | null>(null);
   const [showTimeLapse, setShowTimeLapse] = useState(false);
@@ -492,7 +492,7 @@ function App() {
               repoPath={activeRepo.repoPath}
               refreshKey={activeRepo.refreshKey}
               silentRefreshKey={activeRepo.silentRefreshKey}
-              onFilePreview={(filename, staged) => { setSelectedDiff(null); setPendingFilePreview({ filename, staged }); }}
+              onFilePreview={(filename, staged, isUntracked) => { setSelectedDiff(null); setPendingFilePreview({ filename, staged, isUntracked }); }}
               onLfsLockCountChange={setLfsLockCount}
               onShowInWorkspaceFile={(absolutePath) => {
                 (async () => {

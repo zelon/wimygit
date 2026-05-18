@@ -465,6 +465,26 @@ function SidebarQuickDiff({ repoPath, selectedDiff, pendingFilePreview, onRefres
       return;
     }
 
+    const ext = ("." + pendingFilePreview.filename.split(".").pop()).toLowerCase();
+    if (IMAGE_EXTS.has(ext)) {
+      const absPath = repoPath.replace(/\\/g, "/") + "/" + pendingFilePreview.filename;
+      setPendingLoading(true);
+      setImagePreviewSrc(null);
+      setPendingDiff("");
+      readFile(absPath)
+        .then((bytes) => {
+          const mime = IMAGE_MIME[ext] ?? "application/octet-stream";
+          let binary = "";
+          for (let i = 0; i < bytes.length; i += 8192) {
+            binary += String.fromCharCode(...bytes.subarray(i, i + 8192));
+          }
+          setImagePreviewSrc(`data:${mime};base64,${btoa(binary)}`);
+        })
+        .catch(() => setImagePreviewSrc(null))
+        .finally(() => setPendingLoading(false));
+      return;
+    }
+
     setImagePreviewSrc(null);
     setPendingLoading(true);
     getDiff(repoPath, pendingFilePreview.staged, pendingFilePreview.filename, contextLines, undefined, ignoreWhitespace)
