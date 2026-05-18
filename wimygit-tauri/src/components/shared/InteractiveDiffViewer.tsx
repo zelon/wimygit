@@ -191,14 +191,22 @@ export function InteractiveDiffViewer({
                 return (
                   <div key={segIdx} className={blockOutlineClass}>
                     {segment.lines.map(({ line, lineIdx }) => {
-                      const isHovered =
+                      const isExactHover =
                         hoveredAt !== null &&
                         hoveredAt.hunkIdx === hunkIdx &&
-                        (ctrlHeld
-                          ? hoveredAt.lineIdx === lineIdx
-                          : fileDiff.hunks[hoveredAt.hunkIdx]?.lines[hoveredAt.lineIdx]?.blockId === line.blockId);
+                        hoveredAt.lineIdx === lineIdx;
 
-                      // Preview outline on the exact line when "Stage this line" is hovered
+                      // Block hover (no Ctrl): background highlight on all lines in block
+                      const isBlockHovered =
+                        !ctrlHeld &&
+                        hoveredAt !== null &&
+                        hoveredAt.hunkIdx === hunkIdx &&
+                        fileDiff.hunks[hoveredAt.hunkIdx]?.lines[hoveredAt.lineIdx]?.blockId === line.blockId;
+
+                      // Ctrl+hover: dashed outline on exact line only (no background)
+                      const isCtrlLineHovered = ctrlHeld && isExactHover;
+
+                      // Context menu preview: dashed outline when "Stage this line" is hovered
                       const isLinePreview =
                         isThisBlock &&
                         ctxHover === "line" &&
@@ -218,7 +226,7 @@ export function InteractiveDiffViewer({
                       return (
                         <div
                           key={lineIdx}
-                          className={`flex items-stretch ${lineBg(line.type, isHovered)} ${isLinePreview ? dashedOutline() : ""}`}
+                          className={`flex items-stretch ${lineBg(line.type, isBlockHovered)} ${isCtrlLineHovered || isLinePreview ? dashedOutline() : ""}`}
                           onMouseEnter={() => setHoveredAt({ hunkIdx, lineIdx })}
                         >
                           {/* Line content */}
@@ -238,7 +246,7 @@ export function InteractiveDiffViewer({
                           <button
                             onClick={(e) => {
                               if (e.ctrlKey) {
-                                handleApply(buildLinePatch(fileDiff, hunkIdx, lineIdx), singleKey);
+                                handleApply(buildLinePatch(fileDiff, hunkIdx, lineIdx, staged), singleKey);
                               } else {
                                 handleApply(buildBlockPatch(fileDiff, hunkIdx, line.blockId), blockKey);
                               }
@@ -246,7 +254,7 @@ export function InteractiveDiffViewer({
                             disabled={applyingKey !== null}
                             title={btnTitle}
                             className={`shrink-0 w-6 text-center font-bold transition-opacity ${btnColor} disabled:opacity-30 ${
-                              isHovered ? "opacity-100" : "opacity-0"
+                              isBlockHovered || isCtrlLineHovered ? "opacity-100" : "opacity-0"
                             }`}
                           >
                             {isApplying ? "…" : btnLabel}
@@ -272,7 +280,7 @@ export function InteractiveDiffViewer({
             closeCtxMenu();
           }}
           onStageLine={() => {
-            handleApply(buildLinePatch(fileDiff, ctxMenu.hunkIdx, ctxMenu.lineIdx), `l:${ctxMenu.hunkIdx}:${ctxMenu.lineIdx}`);
+            handleApply(buildLinePatch(fileDiff, ctxMenu.hunkIdx, ctxMenu.lineIdx, staged), `l:${ctxMenu.hunkIdx}:${ctxMenu.lineIdx}`);
             closeCtxMenu();
           }}
           onClose={closeCtxMenu}

@@ -132,37 +132,41 @@ export function parseDiffIntoHunks(diff: string): FileDiff[] {
 export function buildLinePatch(
   fileDiff: FileDiff,
   hunkIdx: number,
-  lineIdx: number
+  lineIdx: number,
+  staged: boolean = false
 ): string {
   const hunk = fileDiff.hunks[hunkIdx];
   const lines = hunk.lines;
   const target = lines[lineIdx];
   if (!target || target.type === "context") return "";
 
-  // When staging a '+' line: '-' (removed) lines exist in the old file (index) and
-  // can anchor the patch even when they are adjacent to the target.
-  // When staging a '-' line (reverse): '+' (added) lines serve the same role.
-  // Lines of the same type as the target do NOT exist in the old file, so skip them.
-  const anchorType: ParsedLine["type"] = target.type === "added" ? "removed" : "added";
+  // The patch is applied to the INDEX via `git apply --cached`.
+  // Only lines that physically exist in that index can serve as context anchors:
+  //   - staging   (staged=false): source is the current index → removed lines exist, added do not
+  //   - unstaging (staged=true) : source is the staged index  → added lines exist, removed do not
+  // Basing anchorType on target.type instead of direction was the root of the bug:
+  // e.g. staging a removed line would pick added lines as anchors, but those don't
+  // exist in the index, causing `git apply` to fail.
+  const anchorType: ParsedLine["type"] = staged ? "added" : "removed";
 
-  // Collect context + anchor lines before target, skipping over same-type-as-target lines.
+  // Collect context + anchor lines before target.
   const beforeRaw: ParsedLine[] = [];
   for (let i = lineIdx - 1; i >= 0; i--) {
     const l = lines[i];
     if (l.type === "context" || l.type === anchorType) {
       beforeRaw.unshift(l);
     }
-    // same-type lines don't exist in the old file — skip silently
+    // Lines not in the source index (opposite type) — skip silently
   }
 
-  // Collect context + anchor lines after target, skipping over same-type-as-target lines.
+  // Collect context + anchor lines after target.
   const afterRaw: ParsedLine[] = [];
   for (let i = lineIdx + 1; i < lines.length; i++) {
     const l = lines[i];
     if (l.type === "context" || l.type === anchorType) {
       afterRaw.push(l);
     }
-    // same-type lines don't exist in the old file — skip silently
+    // Lines not in the source index — skip silently
   }
 
   // Represent anchor lines as context in the patch: they are NOT being changed by this
