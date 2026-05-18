@@ -5,6 +5,7 @@ import {
   listDirEntries,
   getDiff,
   getCommitDiff,
+  getGitFileBlob,
   runDifftool,
   getLfsLockableExtensions,
   lfsLockFile,
@@ -14,6 +15,7 @@ import {
 import { type TreeNode, makeNode, patchNode } from "../tabs/DirectoryTreeTab";
 import { DiffViewer } from "../shared/DiffViewer";
 import { InteractiveDiffViewer } from "../shared/InteractiveDiffViewer";
+import { ImageDiffViewer, type ImageDiffMode } from "../shared/ImageDiffViewer";
 
 // ─── constants ────────────────────────────────────────────────────────────────
 
@@ -393,6 +395,8 @@ function SidebarQuickDiff({ repoPath, selectedDiff, pendingFilePreview, onRefres
   const [pendingDiff, setPendingDiff] = useState("");
   const [pendingLoading, setPendingLoading] = useState(false);
   const [imagePreviewSrc, setImagePreviewSrc] = useState<string | null>(null);
+  const [imageDiffSrcs, setImageDiffSrcs] = useState<{ before: string; after: string } | null>(null);
+  const [imageDiffMode, setImageDiffMode] = useState<ImageDiffMode>("side-by-side");
   const [localRefresh, setLocalRefresh] = useState(0);
 
   const isCommitMode = !!selectedDiff;
@@ -429,15 +433,16 @@ function SidebarQuickDiff({ repoPath, selectedDiff, pendingFilePreview, onRefres
   // ── Pending file preview (from PendingTab) ──
   useEffect(() => {
     if (!pendingFilePreview || isCommitMode || !repoPath) {
-      setPendingDiff(""); setImagePreviewSrc(null); return;
+      setPendingDiff(""); setImagePreviewSrc(null); setImageDiffSrcs(null); return;
     }
 
-    if (pendingFilePreview.isUntracked) {
-      const absPath = repoPath.replace(/\\/g, "/") + "/" + pendingFilePreview.filename;
-      const ext = ("." + pendingFilePreview.filename.split(".").pop()).toLowerCase();
+    const ext = ("." + pendingFilePreview.filename.split(".").pop()).toLowerCase();
+    const absPath = repoPath.replace(/\\/g, "/") + "/" + pendingFilePreview.filename;
 
+    if (pendingFilePreview.isUntracked) {
       setPendingLoading(true);
       setImagePreviewSrc(null);
+      setImageDiffSrcs(null);
       setPendingDiff("");
 
       if (IMAGE_EXTS.has(ext)) {
@@ -465,27 +470,42 @@ function SidebarQuickDiff({ repoPath, selectedDiff, pendingFilePreview, onRefres
       return;
     }
 
-    const ext = ("." + pendingFilePreview.filename.split(".").pop()).toLowerCase();
     if (IMAGE_EXTS.has(ext)) {
-      const absPath = repoPath.replace(/\\/g, "/") + "/" + pendingFilePreview.filename;
+      const mime = IMAGE_MIME[ext] ?? "application/octet-stream";
+      // staged: compare HEAD vs index; unstaged: compare HEAD vs working dir
+      const refSpec = pendingFilePreview.staged ? ":0" : "HEAD";
       setPendingLoading(true);
       setImagePreviewSrc(null);
+      setImageDiffSrcs(null);
       setPendingDiff("");
-      readFile(absPath)
-        .then((bytes) => {
-          const mime = IMAGE_MIME[ext] ?? "application/octet-stream";
-          let binary = "";
-          for (let i = 0; i < bytes.length; i += 8192) {
-            binary += String.fromCharCode(...bytes.subarray(i, i + 8192));
+
+      Promise.all([
+        getGitFileBlob(repoPath, refSpec, pendingFilePreview.filename)
+          .then((b64) => `data:${mime};base64,${b64}`)
+          .catch(() => null),
+        readFile(absPath)
+          .then((bytes) => {
+            let binary = "";
+            for (let i = 0; i < bytes.length; i += 8192) {
+              binary += String.fromCharCode(...bytes.subarray(i, i + 8192));
+            }
+            return `data:${mime};base64,${btoa(binary)}`;
+          })
+          .catch(() => null),
+      ])
+        .then(([beforeSrc, afterSrc]) => {
+          if (beforeSrc && afterSrc) {
+            setImageDiffSrcs({ before: beforeSrc, after: afterSrc });
+          } else if (afterSrc) {
+            setImagePreviewSrc(afterSrc);
           }
-          setImagePreviewSrc(`data:${mime};base64,${btoa(binary)}`);
         })
-        .catch(() => setImagePreviewSrc(null))
         .finally(() => setPendingLoading(false));
       return;
     }
 
     setImagePreviewSrc(null);
+    setImageDiffSrcs(null);
     setPendingLoading(true);
     getDiff(repoPath, pendingFilePreview.staged, pendingFilePreview.filename, contextLines, undefined, ignoreWhitespace)
       .then((d) => setPendingDiff(d))
@@ -513,6 +533,7 @@ function SidebarQuickDiff({ repoPath, selectedDiff, pendingFilePreview, onRefres
 
   const displayDiff = showingPendingPreview ? pendingDiff : diff;
   const displayLoading = showingPendingPreview ? pendingLoading : loadingDiff;
+  const isImageDiff = !displayLoading && showingPendingPreview && !!imageDiffSrcs;
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
@@ -535,40 +556,67 @@ function SidebarQuickDiff({ repoPath, selectedDiff, pendingFilePreview, onRefres
             ))}
           </div>
         )}
-        <div className="flex gap-0.5 shrink-0 ml-auto items-center">
-          <label className="flex items-center gap-0.5 cursor-pointer select-none text-xs text-gray-600 dark:text-gray-400 px-1" title="Ignore whitespace changes (-w)">
-            <input
-              type="checkbox"
-              checked={ignoreWhitespace}
-              onChange={(e) => setIgnoreWhitespace(e.target.checked)}
-              className="w-3 h-3 cursor-pointer"
-            />
-            Ignore Whitespace
-          </label>
-          <button
-            onClick={handleDiffTool}
-            disabled={!isCommitMode && !showingPendingPreview}
-            title="Open in Diff Tool (git difftool)"
-            className="px-1.5 py-0.5 text-xs rounded bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-40"
-          >
-            Diff Tool
-          </button>
-          <button
-            onClick={() => changeContext(CONTEXT_STEP)}
-            title={`More context (+${CONTEXT_STEP} lines)`}
-            className="px-1.5 py-0.5 text-xs rounded bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600"
-          >
-            More
-          </button>
-          <button
-            onClick={() => changeContext(-CONTEXT_STEP)}
-            disabled={contextLines === 0}
-            title={`Less context (-${CONTEXT_STEP} lines)`}
-            className="px-1.5 py-0.5 text-xs rounded bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-40"
-          >
-            Less
-          </button>
-        </div>
+        {isImageDiff ? (
+          /* Image diff mode: show Side by side / Slider radio buttons */
+          <div className="flex gap-3 ml-auto items-center text-xs">
+            <label className="flex items-center gap-1.5 cursor-pointer select-none text-gray-600 dark:text-gray-400">
+              <input
+                type="radio"
+                name="img-diff-mode"
+                checked={imageDiffMode === "side-by-side"}
+                onChange={() => setImageDiffMode("side-by-side")}
+                className="cursor-pointer"
+              />
+              Side by side
+            </label>
+            <label className="flex items-center gap-1.5 cursor-pointer select-none text-gray-600 dark:text-gray-400">
+              <input
+                type="radio"
+                name="img-diff-mode"
+                checked={imageDiffMode === "slider"}
+                onChange={() => setImageDiffMode("slider")}
+                className="cursor-pointer"
+              />
+              Before / After slider
+            </label>
+          </div>
+        ) : (
+          /* Text diff mode: show normal controls */
+          <div className="flex gap-0.5 shrink-0 ml-auto items-center">
+            <label className="flex items-center gap-0.5 cursor-pointer select-none text-xs text-gray-600 dark:text-gray-400 px-1" title="Ignore whitespace changes (-w)">
+              <input
+                type="checkbox"
+                checked={ignoreWhitespace}
+                onChange={(e) => setIgnoreWhitespace(e.target.checked)}
+                className="w-3 h-3 cursor-pointer"
+              />
+              Ignore Whitespace
+            </label>
+            <button
+              onClick={handleDiffTool}
+              disabled={!isCommitMode && !showingPendingPreview}
+              title="Open in Diff Tool (git difftool)"
+              className="px-1.5 py-0.5 text-xs rounded bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-40"
+            >
+              Diff Tool
+            </button>
+            <button
+              onClick={() => changeContext(CONTEXT_STEP)}
+              title={`More context (+${CONTEXT_STEP} lines)`}
+              className="px-1.5 py-0.5 text-xs rounded bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600"
+            >
+              More
+            </button>
+            <button
+              onClick={() => changeContext(-CONTEXT_STEP)}
+              disabled={contextLines === 0}
+              title={`Less context (-${CONTEXT_STEP} lines)`}
+              className="px-1.5 py-0.5 text-xs rounded bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-40"
+            >
+              Less
+            </button>
+          </div>
+        )}
       </div>
 
       {/* ── File header ── */}
@@ -589,6 +637,13 @@ function SidebarQuickDiff({ repoPath, selectedDiff, pendingFilePreview, onRefres
       <div className="flex-1 overflow-hidden">
         {displayLoading ? (
           <div className="p-2 text-xs text-gray-400">Loading...</div>
+        ) : showingPendingPreview && imageDiffSrcs ? (
+          <ImageDiffViewer
+            beforeSrc={imageDiffSrcs.before}
+            afterSrc={imageDiffSrcs.after}
+            filename={pendingFilePreview?.filename}
+            mode={imageDiffMode}
+          />
         ) : showingPendingPreview && imagePreviewSrc ? (
           <div className="flex items-center justify-center h-full p-4 overflow-auto bg-gray-50 dark:bg-gray-900">
             <img src={imagePreviewSrc} alt={pendingFilePreview?.filename} className="max-w-full max-h-full object-contain" />
@@ -613,11 +668,13 @@ function SidebarQuickDiff({ repoPath, selectedDiff, pendingFilePreview, onRefres
         )}
       </div>
 
-      {/* ── Footer ── */}
-      <div className="shrink-0 px-2 py-0.5 text-xs text-gray-400 dark:text-gray-500 bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 flex justify-between">
-        <span>{isCommitMode ? "Commit diff" : showingPendingPreview ? "Pending preview" : "—"}</span>
-        <span>Context: {contextLines} lines</span>
-      </div>
+      {/* ── Footer — hidden in image diff mode ── */}
+      {!isImageDiff && (
+        <div className="shrink-0 px-2 py-0.5 text-xs text-gray-400 dark:text-gray-500 bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 flex justify-between">
+          <span>{isCommitMode ? "Commit diff" : showingPendingPreview ? "Pending preview" : "—"}</span>
+          <span>Context: {contextLines} lines</span>
+        </div>
+      )}
     </div>
   );
 }

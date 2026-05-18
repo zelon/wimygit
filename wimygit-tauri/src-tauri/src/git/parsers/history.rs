@@ -268,6 +268,33 @@ pub async fn get_diff(
     Ok(result.stdout)
 }
 
+/// Return the raw bytes of a file at a given git ref (e.g. "HEAD", ":0") as a base64 string.
+/// ref_spec examples: "HEAD" → HEAD revision, ":0" → index (staged) revision.
+#[tauri::command]
+pub async fn get_git_file_blob(cwd: String, ref_spec: String, file_path: String) -> Result<String, String> {
+    use std::process::Command;
+    use base64::Engine;
+
+    let git_path = crate::git::executor::find_git_path()?;
+    let object = format!("{}:{}", ref_spec, file_path);
+
+    let mut cmd = Command::new(&git_path);
+    cmd.args(["show", &object]).current_dir(&cwd);
+
+    #[cfg(target_os = "windows")]
+    {
+        use std::os::windows::process::CommandExt;
+        cmd.creation_flags(0x0800_0000);
+    }
+
+    let output = cmd.output().map_err(|e| format!("Failed to run git show: {}", e))?;
+    if !output.status.success() {
+        return Err(String::from_utf8_lossy(&output.stderr).to_string());
+    }
+
+    Ok(base64::engine::general_purpose::STANDARD.encode(&output.stdout))
+}
+
 /// Apply a patch string to the index (--cached) or working tree.
 /// Writes the patch to a temp file and runs `git apply`.
 #[tauri::command]

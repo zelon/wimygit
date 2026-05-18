@@ -356,6 +356,11 @@ export async function getCommitParents(cwd: string, commitId: string): Promise<s
   return invoke<string[]>("get_commit_parents", { cwd, commitId });
 }
 
+/** Returns base64-encoded raw bytes of a file at the given git ref (e.g. "HEAD" or ":0" for index). */
+export async function getGitFileBlob(cwd: string, refSpec: string, filePath: string): Promise<string> {
+  return invoke<string>("get_git_file_blob", { cwd, refSpec, filePath });
+}
+
 export async function runDifftool(cwd: string, args: string[]): Promise<void> {
   return invoke<void>("run_difftool", { cwd, args });
 }
