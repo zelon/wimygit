@@ -6,6 +6,7 @@ import {
   getDiff,
   getCommitDiff,
   getGitFileBlob,
+  smudgeLfsPointer,
   runDifftool,
   getLfsLockableExtensions,
   lfsLockFile,
@@ -380,6 +381,27 @@ const IMAGE_MIME: Record<string, string> = {
 
 const CHECKER = "repeating-conic-gradient(#d1d5db 0% 25%, #ffffff 0% 50%) 0 0 / 12px 12px";
 
+const LFS_POINTER_MAGIC = "version https://git-lfs.github.com/spec/v1";
+
+/**
+ * Convert raw bytes (from readFile) to a data URL for the given MIME type.
+ * If the bytes are a Git LFS pointer, `git lfs smudge` is invoked via Tauri
+ * to fetch the real binary before encoding.
+ */
+async function bytesToDataUrl(bytes: Uint8Array, mime: string, repoPath: string): Promise<string> {
+  const prefix = new TextDecoder("utf-8", { fatal: false }).decode(bytes.slice(0, LFS_POINTER_MAGIC.length));
+  if (prefix === LFS_POINTER_MAGIC) {
+    const pointer = new TextDecoder("utf-8").decode(bytes);
+    const b64 = await smudgeLfsPointer(repoPath, pointer);
+    return `data:${mime};base64,${b64}`;
+  }
+  let binary = "";
+  for (let i = 0; i < bytes.length; i += 8192) {
+    binary += String.fromCharCode(...bytes.subarray(i, i + 8192));
+  }
+  return `data:${mime};base64,${btoa(binary)}`;
+}
+
 function base64ByteSize(dataUrl: string): number {
   const b64 = dataUrl.slice(dataUrl.indexOf(",") + 1);
   const padding = (b64.match(/=+$/) ?? [""])[0].length;
@@ -548,15 +570,10 @@ function SidebarQuickDiff({ repoPath, selectedDiff, pendingFilePreview, onRefres
       setPendingDiff("");
 
       if (IMAGE_EXTS.has(ext)) {
+        const mime = IMAGE_MIME[ext] ?? "application/octet-stream";
         readFile(absPath)
-          .then((bytes) => {
-            const mime = IMAGE_MIME[ext] ?? "application/octet-stream";
-            let binary = "";
-            for (let i = 0; i < bytes.length; i += 8192) {
-              binary += String.fromCharCode(...bytes.subarray(i, i + 8192));
-            }
-            setImagePreviewSrc(`data:${mime};base64,${btoa(binary)}`);
-          })
+          .then((bytes) => bytesToDataUrl(bytes, mime, repoPath))
+          .then((src) => setImagePreviewSrc(src))
           .catch(() => setImagePreviewSrc(null))
           .finally(() => setPendingLoading(false));
       } else {
@@ -586,13 +603,7 @@ function SidebarQuickDiff({ repoPath, selectedDiff, pendingFilePreview, onRefres
             .then((b64) => `data:${mime};base64,${b64}`)
             .catch(() => null)
         : readFile(absPath)
-            .then((bytes) => {
-              let binary = "";
-              for (let i = 0; i < bytes.length; i += 8192) {
-                binary += String.fromCharCode(...bytes.subarray(i, i + 8192));
-              }
-              return `data:${mime};base64,${btoa(binary)}`;
-            })
+            .then((bytes) => bytesToDataUrl(bytes, mime, repoPath))
             .catch(() => null);
 
       Promise.all([

@@ -169,6 +169,7 @@ pub fn run() {
       git::get_commit_diff,
       git::get_diff,
       git::get_git_file_blob,
+      git::smudge_lfs_pointer,
       git::apply_patch,
       // Git tag commands
       git::get_tags,

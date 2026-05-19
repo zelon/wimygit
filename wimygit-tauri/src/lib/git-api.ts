@@ -356,9 +356,16 @@ export async function getCommitParents(cwd: string, commitId: string): Promise<s
   return invoke<string[]>("get_commit_parents", { cwd, commitId });
 }
 
-/** Returns base64-encoded raw bytes of a file at the given git ref (e.g. "HEAD" or ":0" for index). */
+/** Returns base64-encoded raw bytes of a file at the given git ref (e.g. "HEAD" or ":0" for index).
+ *  Automatically smudges Git LFS pointers so the caller always receives real binary content. */
 export async function getGitFileBlob(cwd: string, refSpec: string, filePath: string): Promise<string> {
   return invoke<string>("get_git_file_blob", { cwd, refSpec, filePath });
+}
+
+/** Smudge a raw LFS pointer string and return the actual file content as base64.
+ *  Used for working-tree files read via readFile() that turn out to be LFS pointers. */
+export async function smudgeLfsPointer(cwd: string, pointer: string): Promise<string> {
+  return invoke<string>("smudge_lfs_pointer", { cwd, pointer });
 }
 
 export async function runDifftool(cwd: string, args: string[]): Promise<void> {

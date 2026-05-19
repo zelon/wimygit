@@ -268,8 +268,130 @@ pub async fn get_diff(
     Ok(result.stdout)
 }
 
+// ── LFS helpers ──────────────────────────────────────────────────────────────
+
+const LFS_MAGIC: &[u8] = b"version https://git-lfs.github.com/spec/v1";
+
+/// Parse `oid sha256:<hex>` from an LFS pointer.
+fn lfs_parse_oid(pointer: &[u8]) -> Option<String> {
+    let text = std::str::from_utf8(pointer).ok()?;
+    text.lines()
+        .find_map(|l| l.strip_prefix("oid sha256:"))
+        .map(|s| s.trim().to_string())
+}
+
+/// Resolve the git common directory for `cwd` by running
+/// `git rev-parse --git-common-dir`.  Returns an absolute path.
+fn lfs_git_common_dir(git_path: &str, cwd: &str) -> Option<std::path::PathBuf> {
+    use std::process::Command;
+
+    let mut cmd = Command::new(git_path);
+    cmd.args(["rev-parse", "--git-common-dir"]).current_dir(cwd);
+
+    #[cfg(target_os = "windows")]
+    {
+        use std::os::windows::process::CommandExt;
+        cmd.creation_flags(0x0800_0000);
+    }
+
+    let out = cmd.output().ok()?;
+    if !out.status.success() {
+        return None;
+    }
+
+    let raw = String::from_utf8_lossy(&out.stdout).trim().to_string();
+    let p = std::path::Path::new(&raw);
+    if p.is_absolute() {
+        Some(p.to_path_buf())
+    } else {
+        Some(std::path::Path::new(cwd).join(p))
+    }
+}
+
+/// Look up an LFS object in the local cache and return its contents.
+/// Path pattern: `<git-common-dir>/lfs/objects/<oid[0..2]>/<oid[2..4]>/<oid>`
+fn lfs_read_cached(git_path: &str, cwd: &str, oid: &str) -> Option<Vec<u8>> {
+    if oid.len() < 4 {
+        return None;
+    }
+    let git_dir = lfs_git_common_dir(git_path, cwd)?;
+    let obj_path = git_dir
+        .join("lfs")
+        .join("objects")
+        .join(&oid[..2])
+        .join(&oid[2..4])
+        .join(oid);
+    std::fs::read(obj_path).ok()
+}
+
+/// Resolve an LFS pointer to actual binary content:
+/// 1. Try the local object cache (no subprocess, works offline).
+/// 2. Fall back to `git lfs smudge` via stdin pipe.
+fn lfs_resolve(git_path: &str, cwd: &str, pointer: &[u8]) -> Result<Vec<u8>, String> {
+    use std::io::Write;
+    use std::process::{Command, Stdio};
+
+    // ── 1. Local cache ──────────────────────────────────────────────────────
+    if let Some(oid) = lfs_parse_oid(pointer) {
+        if let Some(bytes) = lfs_read_cached(git_path, cwd, &oid) {
+            return Ok(bytes);
+        }
+    }
+
+    // ── 2. git lfs smudge (fetches from remote if necessary) ────────────────
+    let mut smudge_cmd = Command::new(git_path);
+    smudge_cmd
+        .args(["lfs", "smudge"])
+        .current_dir(cwd)
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped());
+
+    #[cfg(target_os = "windows")]
+    {
+        use std::os::windows::process::CommandExt;
+        smudge_cmd.creation_flags(0x0800_0000);
+    }
+
+    let mut child = smudge_cmd
+        .spawn()
+        .map_err(|e| format!("Failed to spawn git lfs smudge: {}", e))?;
+
+    {
+        let mut stdin = child
+            .stdin
+            .take()
+            .ok_or_else(|| "Failed to open stdin for git lfs smudge".to_string())?;
+        stdin
+            .write_all(pointer)
+            .map_err(|e| format!("Failed to write LFS pointer to smudge stdin: {}", e))?;
+        // drop → pipe closed → child sees EOF
+    }
+
+    let out = child
+        .wait_with_output()
+        .map_err(|e| format!("Failed to wait for git lfs smudge: {}", e))?;
+
+    if !out.status.success() {
+        return Err(format!(
+            "git lfs smudge failed: {}",
+            String::from_utf8_lossy(&out.stderr)
+        ));
+    }
+
+    // If smudge silently returned the pointer again the object is unavailable.
+    if out.stdout.starts_with(LFS_MAGIC) {
+        return Err("LFS object not available locally and could not be fetched".to_string());
+    }
+
+    Ok(out.stdout)
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 /// Return the raw bytes of a file at a given git ref (e.g. "HEAD", ":0") as a base64 string.
 /// ref_spec examples: "HEAD" → HEAD revision, ":0" → index (staged) revision.
+/// Git LFS pointers are resolved automatically via the local cache or `git lfs smudge`.
 #[tauri::command]
 pub async fn get_git_file_blob(cwd: String, ref_spec: String, file_path: String) -> Result<String, String> {
     use std::process::Command;
@@ -292,7 +414,23 @@ pub async fn get_git_file_blob(cwd: String, ref_spec: String, file_path: String)
         return Err(String::from_utf8_lossy(&output.stderr).to_string());
     }
 
+    if output.stdout.starts_with(LFS_MAGIC) {
+        let bytes = lfs_resolve(&git_path, &cwd, &output.stdout)?;
+        return Ok(base64::engine::general_purpose::STANDARD.encode(&bytes));
+    }
+
     Ok(base64::engine::general_purpose::STANDARD.encode(&output.stdout))
+}
+
+/// Smudge a raw LFS pointer string and return the actual file content as base64.
+/// Used for working-tree files read via readFile() that turn out to be LFS pointers
+/// (i.e. when lfs.smudge is disabled or checkout used GIT_LFS_SKIP_SMUDGE).
+#[tauri::command]
+pub async fn smudge_lfs_pointer(cwd: String, pointer: String) -> Result<String, String> {
+    use base64::Engine;
+    let git_path = crate::git::executor::find_git_path()?;
+    let bytes = lfs_resolve(&git_path, &cwd, pointer.as_bytes())?;
+    Ok(base64::engine::general_purpose::STANDARD.encode(&bytes))
 }
 
 /// Apply a patch string to the index (--cached) or working tree.
