@@ -498,7 +498,11 @@ function SidebarQuickDiff({ repoPath, selectedDiff, pendingFilePreview, onRefres
       setLoadingDiff(true);
 
       const mime = IMAGE_MIME[ext] ?? "application/octet-stream";
-      const parentRef = currentMode.parentRef;
+      // currentMode.parentRef can be stale on first render (modes state not yet updated),
+      // so derive parentRef directly from selectedDiff.parents.
+      const parentRef = activeMode === "combined"
+        ? (selectedDiff.parents.length === 1 ? selectedDiff.parents[0] : undefined)
+        : selectedDiff.parents[parseInt(activeMode.replace("parent", ""), 10)];
 
       if (status === "A" || !parentRef) {
         // 추가된 파일 — 현재 커밋의 이미지만 표시
@@ -539,12 +543,15 @@ function SidebarQuickDiff({ repoPath, selectedDiff, pendingFilePreview, onRefres
     setImagePreviewSrc(null);
     setImageDiffSrcs(null);
     setLoadingDiff(true);
+    const textParentRef = activeMode === "combined"
+      ? (selectedDiff.parents.length === 1 ? selectedDiff.parents[0] : undefined)
+      : selectedDiff.parents[parseInt(activeMode.replace("parent", ""), 10)];
     getCommitDiff(
       repoPath,
       selectedDiff.commitId,
       filename,
       filename2 ?? undefined,
-      currentMode.parentRef,
+      textParentRef,
       contextLines,
       ignoreWhitespace,
     )
