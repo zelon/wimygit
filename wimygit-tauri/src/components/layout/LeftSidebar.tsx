@@ -408,7 +408,7 @@ function SingleImagePreview({ src, label, filename }: { src: string; label: stri
       {/* Info bar */}
       <div className="shrink-0 flex items-center justify-center gap-2 px-2 py-1 border-b border-gray-700 text-xs bg-gray-900 select-none">
         <span className="inline-flex items-center overflow-hidden rounded shrink-0">
-          <span className={`px-1.5 py-0.5 font-semibold text-white leading-4 ${label === "NEW FILE" ? "bg-orange-600" : "bg-gray-500"}`}>
+          <span className={`px-1.5 py-0.5 font-semibold text-white leading-4 ${label === "NEW FILE" ? "bg-orange-600" : label === "DELETED" ? "bg-red-700" : "bg-gray-500"}`}>
             {label}
           </span>
         </span>
@@ -458,13 +458,70 @@ function SidebarQuickDiff({ repoPath, selectedDiff, pendingFilePreview, onRefres
 
   // ── Commit diff (from History tab) ──
   useEffect(() => {
-    if (!selectedDiff || !repoPath) { setDiff(""); return; }
+    if (!selectedDiff || !repoPath) {
+      setDiff("");
+      setImagePreviewSrc(null);
+      setImageDiffSrcs(null);
+      return;
+    }
+
+    const { filename, filename2, status } = selectedDiff.file;
+    const currentFilename = filename2 ?? filename;
+    const ext = ("." + currentFilename.split(".").pop()).toLowerCase();
+
+    if (IMAGE_EXTS.has(ext)) {
+      setDiff("");
+      setImagePreviewSrc(null);
+      setImageDiffSrcs(null);
+      setLoadingDiff(true);
+
+      const mime = IMAGE_MIME[ext] ?? "application/octet-stream";
+      const parentRef = currentMode.parentRef;
+
+      if (status === "A" || !parentRef) {
+        // 추가된 파일 — 현재 커밋의 이미지만 표시
+        getGitFileBlob(repoPath, selectedDiff.commitId, currentFilename)
+          .then((b64) => setImagePreviewSrc(`data:${mime};base64,${b64}`))
+          .catch(() => setImagePreviewSrc(null))
+          .finally(() => setLoadingDiff(false));
+      } else if (status === "D") {
+        // 삭제된 파일 — 부모 커밋의 이미지만 표시
+        getGitFileBlob(repoPath, parentRef, filename)
+          .then((b64) => setImagePreviewSrc(`data:${mime};base64,${b64}`))
+          .catch(() => setImagePreviewSrc(null))
+          .finally(() => setLoadingDiff(false));
+      } else {
+        // 수정/이름변경 — before/after 비교
+        Promise.all([
+          getGitFileBlob(repoPath, parentRef, filename)
+            .then((b64) => `data:${mime};base64,${b64}`)
+            .catch(() => null),
+          getGitFileBlob(repoPath, selectedDiff.commitId, currentFilename)
+            .then((b64) => `data:${mime};base64,${b64}`)
+            .catch(() => null),
+        ])
+          .then(([beforeSrc, afterSrc]) => {
+            if (beforeSrc && afterSrc) {
+              setImageDiffSrcs({ before: beforeSrc, after: afterSrc });
+            } else if (afterSrc) {
+              setImagePreviewSrc(afterSrc);
+            } else if (beforeSrc) {
+              setImagePreviewSrc(beforeSrc);
+            }
+          })
+          .finally(() => setLoadingDiff(false));
+      }
+      return;
+    }
+
+    setImagePreviewSrc(null);
+    setImageDiffSrcs(null);
     setLoadingDiff(true);
     getCommitDiff(
       repoPath,
       selectedDiff.commitId,
-      selectedDiff.file.filename,
-      selectedDiff.file.filename2 ?? undefined,
+      filename,
+      filename2 ?? undefined,
       currentMode.parentRef,
       contextLines,
       ignoreWhitespace,
@@ -584,7 +641,12 @@ function SidebarQuickDiff({ repoPath, selectedDiff, pendingFilePreview, onRefres
 
   const displayDiff = showingPendingPreview ? pendingDiff : diff;
   const displayLoading = showingPendingPreview ? pendingLoading : loadingDiff;
-  const isImageDiff = !displayLoading && showingPendingPreview && (!!imageDiffSrcs || !!imagePreviewSrc);
+  const isImageDiff = !displayLoading && (!!imageDiffSrcs || !!imagePreviewSrc);
+
+  // label for SingleImagePreview in commit mode
+  const commitImageLabel = isCommitMode && selectedDiff
+    ? selectedDiff.file.status === "D" ? "DELETED" : "NEW FILE"
+    : "NEW FILE";
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
@@ -688,18 +750,18 @@ function SidebarQuickDiff({ repoPath, selectedDiff, pendingFilePreview, onRefres
       <div className="flex-1 overflow-hidden">
         {displayLoading ? (
           <div className="p-2 text-xs text-gray-400">Loading...</div>
-        ) : showingPendingPreview && imageDiffSrcs ? (
+        ) : imageDiffSrcs ? (
           <ImageDiffViewer
             beforeSrc={imageDiffSrcs.before}
             afterSrc={imageDiffSrcs.after}
-            filename={pendingFilePreview?.filename}
+            filename={isCommitMode ? (selectedDiff?.file.display ?? selectedDiff?.file.filename) : pendingFilePreview?.filename}
             mode={imageDiffMode}
           />
-        ) : showingPendingPreview && imagePreviewSrc ? (
+        ) : imagePreviewSrc ? (
           <SingleImagePreview
             src={imagePreviewSrc}
-            label={pendingFilePreview?.isUntracked ? "UNTRACKED" : "NEW FILE"}
-            filename={pendingFilePreview?.filename}
+            label={isCommitMode ? commitImageLabel : (pendingFilePreview?.isUntracked ? "UNTRACKED" : "NEW FILE")}
+            filename={isCommitMode ? (selectedDiff?.file.filename2 ?? selectedDiff?.file.filename) : pendingFilePreview?.filename}
           />
         ) : showingPendingPreview && pendingFilePreview && !pendingFilePreview.isUntracked ? (
           <InteractiveDiffViewer
