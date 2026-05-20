@@ -338,6 +338,23 @@ export function SidebarQuickDiff({ repoPath, selectedDiff, pendingFilePreview, o
   const displayLoading = showingPendingPreview ? pendingLoading : loadingDiff;
   const isImageDiff = !displayLoading && (!!imageDiffSrcs || !!imagePreviewSrc);
 
+  useEffect(() => {
+    if (!isImageDiff) return;
+    const handler = (e: KeyboardEvent) => {
+      const tag = (e.target as HTMLElement).tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA" || (e.target as HTMLElement).isContentEditable) return;
+      if (e.key === "s" || e.key === "S") {
+        setImageDiffMode((prev) => {
+          const next = prev === "side-by-side" ? "slider" : "side-by-side";
+          localStorage.setItem("image_diff_mode", next);
+          return next;
+        });
+      }
+    };
+    document.addEventListener("keydown", handler);
+    return () => document.removeEventListener("keydown", handler);
+  }, [isImageDiff]);
+
   // label for SingleImagePreview in commit mode
   const commitImageLabel = isCommitMode && selectedDiff
     ? selectedDiff.file.status === "D" ? "DELETED" : "NEW FILE"
