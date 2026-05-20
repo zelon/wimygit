@@ -138,7 +138,9 @@ export function SidebarQuickDiff({ repoPath, selectedDiff, pendingFilePreview, o
   const [pendingLoading, setPendingLoading] = useState(false);
   const [imagePreviewSrc, setImagePreviewSrc] = useState<string | null>(null);
   const [imageDiffSrcs, setImageDiffSrcs] = useState<{ before: string; after: string } | null>(null);
-  const [imageDiffMode, setImageDiffMode] = useState<ImageDiffMode>("side-by-side");
+  const [imageDiffMode, setImageDiffMode] = useState<ImageDiffMode>(
+    () => (localStorage.getItem("image_diff_mode") as ImageDiffMode | null) ?? "side-by-side"
+  );
   const [localRefresh, setLocalRefresh] = useState(0);
 
   const isCommitMode = !!selectedDiff;
@@ -370,7 +372,7 @@ export function SidebarQuickDiff({ repoPath, selectedDiff, pendingFilePreview, o
                 type="radio"
                 name="img-diff-mode"
                 checked={imageDiffMode === "side-by-side"}
-                onChange={() => setImageDiffMode("side-by-side")}
+                onChange={() => { setImageDiffMode("side-by-side"); localStorage.setItem("image_diff_mode", "side-by-side"); }}
                 className="cursor-pointer"
               />
               Side by side
@@ -380,7 +382,7 @@ export function SidebarQuickDiff({ repoPath, selectedDiff, pendingFilePreview, o
                 type="radio"
                 name="img-diff-mode"
                 checked={imageDiffMode === "slider"}
-                onChange={() => setImageDiffMode("slider")}
+                onChange={() => { setImageDiffMode("slider"); localStorage.setItem("image_diff_mode", "slider"); }}
                 className="cursor-pointer"
               />
               Before / After slider
