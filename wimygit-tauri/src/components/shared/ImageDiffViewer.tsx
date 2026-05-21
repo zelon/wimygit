@@ -147,22 +147,24 @@ export function ImageDiffViewer({ beforeSrc, afterSrc, filename, mode }: ImageDi
   }, [mode, applyWheelZoom]);
 
   // Slider handle drag
-  const onSliderMouseDown = useCallback((e: React.MouseEvent) => {
+  const onSliderPointerDown = useCallback((e: React.PointerEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    e.currentTarget.setPointerCapture(e.pointerId);
     sliderDragging.current = true;
   }, []);
 
   // Pan drag
-  const onPanMouseDown = useCallback((e: React.MouseEvent) => {
-    if (e.button !== 0) return;
+  const onPanPointerDown = useCallback((e: React.PointerEvent) => {
+    if (e.pointerType === "mouse" && e.button !== 0) return;
     e.preventDefault();
+    e.currentTarget.setPointerCapture(e.pointerId);
     panDragging.current = true;
     setIsPanDragging(true);
     panStart.current = { mouseX: e.clientX, mouseY: e.clientY, panX: panOffset.x, panY: panOffset.y };
   }, [panOffset.x, panOffset.y]);
 
-  const onMouseMove = useCallback((e: MouseEvent) => {
+  const onPointerMove = useCallback((e: PointerEvent) => {
     if (sliderDragging.current && containerRef.current) {
       const rect = containerRef.current.getBoundingClientRect();
       setSliderPct(Math.min(100, Math.max(0, ((e.clientX - rect.left) / rect.width) * 100)));
@@ -174,7 +176,7 @@ export function ImageDiffViewer({ beforeSrc, afterSrc, filename, mode }: ImageDi
     }
   }, []);
 
-  const onMouseUp = useCallback(() => {
+  const onPointerUp = useCallback(() => {
     sliderDragging.current = false;
     if (panDragging.current) {
       panDragging.current = false;
@@ -184,13 +186,13 @@ export function ImageDiffViewer({ beforeSrc, afterSrc, filename, mode }: ImageDi
   }, []);
 
   useEffect(() => {
-    window.addEventListener("mousemove", onMouseMove);
-    window.addEventListener("mouseup", onMouseUp);
+    window.addEventListener("pointermove", onPointerMove);
+    window.addEventListener("pointerup", onPointerUp);
     return () => {
-      window.removeEventListener("mousemove", onMouseMove);
-      window.removeEventListener("mouseup", onMouseUp);
+      window.removeEventListener("pointermove", onPointerMove);
+      window.removeEventListener("pointerup", onPointerUp);
     };
-  }, [onMouseMove, onMouseUp]);
+  }, [onPointerMove, onPointerUp]);
 
   const resetView = useCallback(() => {
     setZoom(1);
@@ -289,7 +291,8 @@ export function ImageDiffViewer({ beforeSrc, afterSrc, filename, mode }: ImageDi
           <div
             ref={leftPanelRef}
             className={`flex-1 bg-black overflow-hidden relative border-r border-gray-600 ${panelCursor}`}
-            onMouseDown={onPanMouseDown}
+            onPointerDown={onPanPointerDown}
+            style={{ touchAction: "none" }}
           >
             <img
               src={beforeSrc}
@@ -302,7 +305,8 @@ export function ImageDiffViewer({ beforeSrc, afterSrc, filename, mode }: ImageDi
           <div
             ref={rightPanelRef}
             className={`flex-1 bg-black overflow-hidden relative ${panelCursor}`}
-            onMouseDown={onPanMouseDown}
+            onPointerDown={onPanPointerDown}
+            style={{ touchAction: "none" }}
           >
             <img
               src={afterSrc}
@@ -343,7 +347,8 @@ export function ImageDiffViewer({ beforeSrc, afterSrc, filename, mode }: ImageDi
       <div
         ref={containerRef}
         className={`relative flex-1 overflow-hidden bg-black select-none ${panelCursor}`}
-        onMouseDown={onPanMouseDown}
+        onPointerDown={onPanPointerDown}
+        style={{ touchAction: "none" }}
       >
         {zoomControls}
 
@@ -379,12 +384,12 @@ export function ImageDiffViewer({ beforeSrc, afterSrc, filename, mode }: ImageDi
         {/* Divider — always at sliderPct% of the container in screen space */}
         <div
           className="absolute top-0 bottom-0 w-0.5 bg-white shadow-lg z-20"
-          style={{ left: `calc(${sliderPct}% - 1px)` }}
-          onMouseDown={onSliderMouseDown}
+          style={{ left: `calc(${sliderPct}% - 1px)`, touchAction: "none" }}
+          onPointerDown={onSliderPointerDown}
         >
           <div
             className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-6 h-6 rounded-full bg-white shadow-md border border-gray-300 flex items-center justify-center cursor-col-resize"
-            onMouseDown={onSliderMouseDown}
+            onPointerDown={onSliderPointerDown}
           >
             <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
               <path d="M3 2L1 5L3 8M7 2L9 5L7 8" stroke="#6b7280" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
