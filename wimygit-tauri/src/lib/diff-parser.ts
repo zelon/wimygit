@@ -211,6 +211,124 @@ export function buildLinePatch(
   return `${fileHeader}\n${hunkHeader}\n${hunkLines.join("\n")}\n`;
 }
 
+// ─── Merge Conflict Parser ────────────────────────────────────────────────────
+
+export type ConflictResolution = "ours" | "theirs" | "both" | "unresolved";
+
+export interface ConflictBlock {
+  index: number;
+  oursLines: string[];
+  theirsLines: string[];
+  oursLabel: string;   // text after "<<<<<<<"
+  theirsLabel: string; // text after ">>>>>>>"
+}
+
+export type ConflictSegment =
+  | { kind: "text"; lines: string[] }
+  | { kind: "block"; blockIndex: number };
+
+export interface ParsedConflictFile {
+  blocks: ConflictBlock[];
+  segments: ConflictSegment[];
+}
+
+export function parseConflictMarkers(content: string): ParsedConflictFile {
+  const eol = content.includes("\r\n") ? "\r\n" : "\n";
+  const rawLines = content.split(eol);
+  // strip trailing empty line from split
+  const lines = rawLines[rawLines.length - 1] === "" ? rawLines.slice(0, -1) : rawLines;
+
+  const blocks: ConflictBlock[] = [];
+  const segments: ConflictSegment[] = [];
+
+  type State = "normal" | "ours" | "theirs";
+  let state: State = "normal";
+  let normalBuf: string[] = [];
+  let oursBuf: string[] = [];
+  let theirsBuf: string[] = [];
+  let oursLabel = "";
+  let theirsLabel = "";
+
+  for (const line of lines) {
+    if (state === "normal") {
+      if (line.startsWith("<<<<<<<")) {
+        if (normalBuf.length > 0) segments.push({ kind: "text", lines: normalBuf });
+        normalBuf = [];
+        oursLabel = line.slice(8).trim();
+        oursBuf = [];
+        state = "ours";
+      } else {
+        normalBuf.push(line);
+      }
+    } else if (state === "ours") {
+      if (line.startsWith("=======")) {
+        theirsBuf = [];
+        state = "theirs";
+      } else {
+        oursBuf.push(line);
+      }
+    } else {
+      if (line.startsWith(">>>>>>>")) {
+        theirsLabel = line.slice(8).trim();
+        const blockIndex = blocks.length;
+        blocks.push({ index: blockIndex, oursLines: oursBuf, theirsLines: theirsBuf, oursLabel, theirsLabel });
+        segments.push({ kind: "block", blockIndex });
+        state = "normal";
+        normalBuf = [];
+      } else {
+        theirsBuf.push(line);
+      }
+    }
+  }
+
+  if (normalBuf.length > 0) segments.push({ kind: "text", lines: normalBuf });
+
+  return { blocks, segments };
+}
+
+export function resolveConflicts(
+  parsed: ParsedConflictFile,
+  resolutions: Map<number, ConflictResolution>,
+  originalContent: string,
+): string {
+  const eol = originalContent.includes("\r\n") ? "\r\n" : "\n";
+  const out: string[] = [];
+
+  for (const seg of parsed.segments) {
+    if (seg.kind === "text") {
+      out.push(...seg.lines);
+    } else {
+      const block = parsed.blocks[seg.blockIndex];
+      const r = resolutions.get(seg.blockIndex) ?? "unresolved";
+      if (r === "ours") {
+        out.push(...block.oursLines);
+      } else if (r === "theirs") {
+        out.push(...block.theirsLines);
+      } else if (r === "both") {
+        out.push(...block.oursLines, ...block.theirsLines);
+      } else {
+        // unresolved: round-trip the original markers
+        out.push(`<<<<<<< ${block.oursLabel}`);
+        out.push(...block.oursLines);
+        out.push("=======");
+        out.push(...block.theirsLines);
+        out.push(`>>>>>>> ${block.theirsLabel}`);
+      }
+    }
+  }
+
+  return out.join(eol) + eol;
+}
+
+export function hasUnresolvedConflicts(
+  parsed: ParsedConflictFile,
+  resolutions: Map<number, ConflictResolution>,
+): boolean {
+  return parsed.blocks.some((b) => (resolutions.get(b.index) ?? "unresolved") === "unresolved");
+}
+
+// ─── End Merge Conflict Parser ────────────────────────────────────────────────
+
 // Build a minimal valid patch for a single contiguous block of changed lines.
 export function buildBlockPatch(
   fileDiff: FileDiff,

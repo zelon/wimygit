@@ -6,6 +6,7 @@ interface RepoStateBannerProps {
   repoPath: string;
   refreshKey: number;
   onRefresh: () => void;
+  conflictCount?: number;
 }
 
 const STATE_CONFIG: Record<string, { label: string; color: string }> = {
@@ -35,7 +36,7 @@ const STATE_CONFIG: Record<string, { label: string; color: string }> = {
   },
 };
 
-export function RepoStateBanner({ repoPath, refreshKey, onRefresh }: RepoStateBannerProps) {
+export function RepoStateBanner({ repoPath, refreshKey, onRefresh, conflictCount = 0 }: RepoStateBannerProps) {
   const [repoState, setRepoState] = useState<RepoState | null>(null);
   const [running, setRunning] = useState(false);
 
@@ -106,13 +107,23 @@ export function RepoStateBanner({ repoPath, refreshKey, onRefresh }: RepoStateBa
           </>
         )}
         {isMerge && (
-          <button
-            disabled={running}
-            onClick={() => runAction(["merge", "--abort"])}
-            className="px-2.5 py-0.5 rounded bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white font-medium"
-          >
-            Abort Merge
-          </button>
+          <>
+            <button
+              disabled={running || conflictCount > 0}
+              onClick={() => runAction(["merge", "--continue"])}
+              title={conflictCount > 0 ? `${conflictCount} conflict(s) must be resolved first` : ""}
+              className="px-2.5 py-0.5 rounded bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white font-medium"
+            >
+              Continue
+            </button>
+            <button
+              disabled={running}
+              onClick={() => runAction(["merge", "--abort"])}
+              className="px-2.5 py-0.5 rounded bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white font-medium"
+            >
+              Abort Merge
+            </button>
+          </>
         )}
         {isCherryPick && (
           <>

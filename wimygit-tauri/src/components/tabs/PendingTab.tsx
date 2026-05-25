@@ -24,6 +24,7 @@ import {
   type LfsLock,
 } from "../../lib";
 import { getSyncStatus, SyncStatusBar, type SyncStatus } from "./SyncStatusBar";
+import { MergeEditor } from "../shared/MergeEditor";
 
 const AI_API_KEY_STORAGE = "wimygit_ai_api_key";
 
@@ -60,6 +61,8 @@ interface PendingTabProps {
   onLfsLockCountChange?: (count: number) => void;
   onShowInWorkspaceFile?: (absolutePath: string) => void;
   onShowInHistoryFile?: (absolutePath: string) => void;
+  onOpenMergeEditor?: (file: FileStatus) => void;
+  onConflictCountChange?: (count: number) => void;
 }
 
 function statusIcon(file: FileStatus): { icon: string; cls: string } {
@@ -177,13 +180,14 @@ interface UnstagedCtxMenuProps {
   onUnlockLfs: () => void;
   onShowInWorkspaceFile?: (absolutePath: string) => void;
   onShowInHistoryFile?: (absolutePath: string) => void;
+  onResolveMerge?: () => void;
 }
 
 function UnstagedCtxMenu({
   x, y, repoPath, files, hasUntracked, hasUnmerged,
   isLocked, isModified,
   onClose, onStage, onRevert, onRefresh, onDiff, onDeleteFiles, onUnlockLfs,
-  onShowInWorkspaceFile, onShowInHistoryFile,
+  onShowInWorkspaceFile, onShowInHistoryFile, onResolveMerge,
 }: UnstagedCtxMenuProps) {
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -249,9 +253,14 @@ function UnstagedCtxMenu({
         style={{ position: "fixed", top: pos.top, left: pos.left, zIndex: 9999 }}
         className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded shadow-lg py-1 text-sm min-w-[200px]"
       >
-        {/* MergeTool — unmerged 파일, Stage 보다 먼저 표시 */}
+        {/* Resolve / MergeTool — unmerged 파일, Stage 보다 먼저 표시 */}
         {hasUnmerged && isSingle && (
           <>
+            {onResolveMerge && (
+              <button className={btnClass} onClick={() => { onResolveMerge(); onClose(); }}>
+                <span>Resolve</span>
+              </button>
+            )}
             <button className={btnClass} onClick={async () => {
               try { await runMergetool(repoPath, [firstFile]); } catch { /* ignore */ }
               onClose();
@@ -517,12 +526,15 @@ interface SectionHeaderProps {
   label: string;
   count: number;
   action?: { label: string; onClick: () => void };
+  icon?: string;
+  iconClass?: string;
 }
 
-function SectionHeader({ label, count, action }: SectionHeaderProps) {
+function SectionHeader({ label, count, action, icon, iconClass }: SectionHeaderProps) {
   return (
     <div className="shrink-0 flex items-center justify-between px-3 py-1 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-      <span className="text-xs font-medium text-gray-600 dark:text-gray-300">
+      <span className="text-xs font-medium text-gray-600 dark:text-gray-300 flex items-center gap-1">
+        {icon && <span className={iconClass}>{icon}</span>}
         {label} <span className="text-gray-400">({count})</span>
       </span>
       {action && (
@@ -539,7 +551,7 @@ function SectionHeader({ label, count, action }: SectionHeaderProps) {
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
-export function PendingTab({ repoPath, refreshKey, silentRefreshKey, onFilePreview, onLfsLockCountChange, onShowInWorkspaceFile, onShowInHistoryFile }: PendingTabProps) {
+export function PendingTab({ repoPath, refreshKey, silentRefreshKey, onFilePreview, onLfsLockCountChange, onShowInWorkspaceFile, onShowInHistoryFile, onOpenMergeEditor, onConflictCountChange }: PendingTabProps) {
   const [status, setStatus] = useState<GitStatus | null>(null);
   const [syncStatus, setSyncStatus] = useState<SyncStatus | null>(null);
   const [loading, setLoading] = useState(true);
@@ -561,6 +573,7 @@ export function PendingTab({ repoPath, refreshKey, silentRefreshKey, onFilePrevi
     x: number; y: number; files: string[];
     isLocked: boolean; isModified: boolean;
     hasUntracked: boolean; hasUnmerged: boolean;
+    unmergedFile?: FileStatus;
   } | null>(null);
   const [stagedCtxMenu, setStagedCtxMenu] = useState<{
     x: number; y: number; files: string[];
@@ -589,6 +602,7 @@ export function PendingTab({ repoPath, refreshKey, silentRefreshKey, onFilePrevi
       setLfsLocks(locks);
       setHasLfsLockable(hasLockable);
       onLfsLockCountChange?.(locks.length);
+      onConflictCountChange?.(result.unmerged.length);
       setError(null);
     } catch (e) {
       if (gen === fetchGenRef.current) setError(String(e));
@@ -641,9 +655,7 @@ export function PendingTab({ repoPath, refreshKey, silentRefreshKey, onFilePrevi
   };
 
   const handleUnstagedClick = (filename: string, ctrlKey: boolean, shiftKey: boolean) => {
-    // 현재 전체 unstaged 파일 목록 (unmerged + modified + untracked)
     const allUnstagedNames = [
-      ...(status?.unmerged ?? []),
       ...(status?.modified ?? []),
       ...(status?.untracked ?? []),
     ].map((f) => f.filename);
@@ -800,6 +812,9 @@ export function PendingTab({ repoPath, refreshKey, silentRefreshKey, onFilePrevi
       const found = [...(status?.untracked ?? [])].find((u) => u.filename === f);
       return !!found;
     });
+    const unmergedFile = targetFiles.length === 1
+      ? (status?.unmerged ?? []).find((u) => u.filename === targetFiles[0])
+      : undefined;
     const hasUnmerged = targetFiles.some((f) => {
       const found = [...(status?.unmerged ?? [])].find((u) => u.filename === f);
       return !!found;
@@ -813,6 +828,7 @@ export function PendingTab({ repoPath, refreshKey, silentRefreshKey, onFilePrevi
       isModified: file.unstaged_status === "Modified",
       hasUntracked,
       hasUnmerged,
+      unmergedFile,
     });
   };
 
@@ -1034,6 +1050,48 @@ export function PendingTab({ repoPath, refreshKey, silentRefreshKey, onFilePrevi
       {/* ── Unstaged files + Locked files ── */}
       <div className="flex-1 flex flex-col overflow-hidden">
 
+        {/* ── Conflicts ── */}
+        {unmergedFiles.length > 0 && (
+          <div className="flex flex-col border-b border-gray-200 dark:border-gray-700 overflow-hidden" style={{ maxHeight: "35%" }}>
+            <SectionHeader
+              label="Conflicts"
+              count={unmergedFiles.length}
+              icon="⚠"
+              iconClass="text-amber-500"
+            />
+            <div className="overflow-y-auto min-h-[2.5rem]">
+              {unmergedFiles.map((file) => (
+                <div key={file.filename} className="group">
+                  <FileRow
+                    file={file}
+                    isSelected={false}
+                    onClick={() => {}}
+                    onContextMenu={(e) => handleUnstagedContextMenu(e, file.filename, file, false)}
+                    actions={
+                      <>
+                        <button
+                          onClick={() => onOpenMergeEditor?.(file)}
+                          title="Resolve conflict"
+                          className="px-1.5 text-xs text-indigo-600 dark:text-indigo-400 hover:underline"
+                        >
+                          Resolve
+                        </button>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); runMergetool(repoPath, [file.filename]); }}
+                          title="Open in external merge tool"
+                          className="px-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-xs"
+                        >
+                          Ext.
+                        </button>
+                      </>
+                    }
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* ── Unstaged files ── */}
         <div
           className={`flex flex-col overflow-hidden${hasLfsLockable && lfsLocks.length > 0 ? "" : " flex-1"}`}
@@ -1041,7 +1099,7 @@ export function PendingTab({ repoPath, refreshKey, silentRefreshKey, onFilePrevi
         >
           <SectionHeader
             label="Unstaged files"
-            count={unstagedFiles.length + unmergedFiles.length}
+            count={unstagedFiles.length}
             action={
               unstagedFiles.length > 0
                 ? { label: "Stage All", onClick: handleStageAll }
@@ -1050,22 +1108,6 @@ export function PendingTab({ repoPath, refreshKey, silentRefreshKey, onFilePrevi
           />
 
           <div className="flex-1 overflow-y-auto min-h-[2.5rem]">
-            {unmergedFiles.length > 0 && (
-              <div className="px-3 py-0.5 text-xs font-medium text-yellow-700 dark:text-yellow-400 bg-yellow-50 dark:bg-yellow-900/20 border-b border-yellow-200 dark:border-yellow-800">
-                {unmergedFiles.length} conflict{unmergedFiles.length > 1 ? "s" : ""}
-              </div>
-            )}
-            {unmergedFiles.map((file) => (
-              <div key={file.filename} className="group">
-                <FileRow
-                  file={file}
-                  isSelected={selectedUnstaged.has(file.filename)}
-                  onClick={(e) => handleUnstagedClick(file.filename, e.ctrlKey || e.metaKey, e.shiftKey)}
-                  onContextMenu={(e) => handleUnstagedContextMenu(e, file.filename, file, false)}
-                  actions={<></>}
-                />
-              </div>
-            ))}
             {unstagedFiles.length === 0 ? (
               <div className="px-3 py-1.5 text-xs text-gray-400 italic">No unstaged changes</div>
             ) : (
@@ -1175,6 +1217,7 @@ export function PendingTab({ repoPath, refreshKey, silentRefreshKey, onFilePrevi
           onUnlockLfs={() => handleUnlockLfs(ctxMenu.files[0])}
           onShowInWorkspaceFile={onShowInWorkspaceFile}
           onShowInHistoryFile={onShowInHistoryFile}
+          onResolveMerge={ctxMenu.unmergedFile ? () => onOpenMergeEditor?.(ctxMenu.unmergedFile!) : undefined}
         />
       )}
 

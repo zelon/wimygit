@@ -5,6 +5,8 @@ import { getCurrentWindow } from "@tauri-apps/api/window";
 import { APP_NAME } from "./constants";
 import { Header, TabBar, RepoTabBar, GitLogPanel, LeftSidebar, RepoStateBanner } from "./components/layout";
 import { PendingTab } from "./components/tabs";
+import { MergeEditor } from "./components/shared/MergeEditor";
+import type { FileStatus } from "./lib";
 
 // Lazy-loaded tabs (not needed at startup)
 const HistoryTab = lazy(() => import("./components/tabs/HistoryTab").then(m => ({ default: m.HistoryTab })));
@@ -103,6 +105,8 @@ function App() {
     stagedSet: Set<string>;
     modifiedSet: Set<string>;
   } | null>(null);
+  const [activeMergeFile, setActiveMergeFile] = useState<FileStatus | null>(null);
+  const [conflictCount, setConflictCount] = useState(0);
 
   // Set window title (visible in taskbar)
   useEffect(() => {
@@ -336,6 +340,8 @@ function App() {
     setShowTimeLapse(false);
     setLfsWarning(null);
     setLfsLockCount(0);
+    setActiveMergeFile(null);
+    setConflictCount(0);
   }, [activeRepoId]);
 
   // LFS 설치 여부 확인 (레포 변경 시)
@@ -475,7 +481,17 @@ function App() {
             repoPath={activeRepo.repoPath}
             refreshKey={activeRepo.refreshKey}
             onRefresh={handleRefresh}
+            conflictCount={conflictCount}
           />
+          {activeMergeFile ? (
+            <MergeEditor
+              repoPath={activeRepo.repoPath}
+              file={activeMergeFile}
+              onResolved={() => { setActiveMergeFile(null); handleRefresh(); }}
+              onClose={() => setActiveMergeFile(null)}
+            />
+          ) : (
+            <>
           <TabBar
             tabs={BASE_INNER_TABS.map((tab) => {
               if (tab.id === "pending" && lfsLockCount > 0)
@@ -494,6 +510,8 @@ function App() {
               silentRefreshKey={activeRepo.silentRefreshKey}
               onFilePreview={(filename, staged, isUntracked) => { setSelectedDiff(null); setPendingFilePreview({ filename, staged, isUntracked }); }}
               onLfsLockCountChange={setLfsLockCount}
+              onOpenMergeEditor={setActiveMergeFile}
+              onConflictCountChange={setConflictCount}
               onShowInWorkspaceFile={(absolutePath) => {
                 (async () => {
                   const fileExists = await exists(absolutePath);
@@ -578,6 +596,8 @@ function App() {
               />
             )}
           </Suspense>
+            </>
+          )}
           {/* TimeLapse overlay */}
           {showTimeLapse && selectedFilePath && (
             <Suspense fallback={null}>
