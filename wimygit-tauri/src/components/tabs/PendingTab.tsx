@@ -15,6 +15,7 @@ import {
   runMergetool,
   openInFileManager,
   getMergeInfo,
+  resolveConflictUsing,
   type GitStatus,
   type FileStatus,
   type MergeInfo,
@@ -415,6 +416,79 @@ function UnstagedCtxMenu({
   );
 }
 
+// ─── Conflict Context Menu ────────────────────────────────────────────────────
+
+interface ConflictCtxMenuProps {
+  x: number;
+  y: number;
+  files: string[];
+  singleFile?: FileStatus;
+  onClose: () => void;
+  onResolveOurs: (files: string[]) => void;
+  onResolveTheirs: (files: string[]) => void;
+  onOpenMergeEditor?: () => void;
+  onMergetool?: () => void;
+}
+
+function ConflictCtxMenu({
+  x, y, files, singleFile,
+  onClose, onResolveOurs, onResolveTheirs, onOpenMergeEditor, onMergetool,
+}: ConflictCtxMenuProps) {
+  const menuRef = useRef<HTMLDivElement>(null);
+  const [pos, setPos] = useState({ top: y, left: x });
+  useEffect(() => {
+    if (menuRef.current) {
+      const rect = menuRef.current.getBoundingClientRect();
+      let newTop = y;
+      let newLeft = x;
+      if (y + rect.height > window.innerHeight) newTop = window.innerHeight - rect.height - 4;
+      if (x + rect.width > window.innerWidth) newLeft = window.innerWidth - rect.width - 4;
+      if (newTop !== y || newLeft !== x) setPos({ top: newTop, left: newLeft });
+    }
+  }, [x, y]);
+
+  const isSingle = files.length === 1;
+  const btnClass = "w-full text-left px-4 py-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center justify-between";
+  const sep = <div className="border-t border-gray-200 dark:border-gray-700 my-1" />;
+  const label = isSingle ? "" : ` (${files.length} files)`;
+
+  return createPortal(
+    <>
+      <div
+        style={{ position: "fixed", inset: 0, zIndex: 9998 }}
+        onClick={onClose}
+        onContextMenu={(e) => { e.preventDefault(); onClose(); }}
+      />
+      <div
+        ref={menuRef}
+        style={{ position: "fixed", top: pos.top, left: pos.left, zIndex: 9999 }}
+        className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded shadow-lg py-1 text-sm min-w-[220px]"
+      >
+        {isSingle && onOpenMergeEditor && (
+          <>
+            <button className={btnClass} onClick={() => { onOpenMergeEditor(); onClose(); }}>
+              <span>Resolve</span>
+            </button>
+            {onMergetool && (
+              <button className={btnClass} onClick={() => { onMergetool(); onClose(); }}>
+                <span>MergeTool</span>
+              </button>
+            )}
+            {sep}
+          </>
+        )}
+        <button className={btnClass} onClick={() => { onResolveOurs(files); onClose(); }}>
+          <span className="text-blue-600 dark:text-blue-400">Resolve using OURS{label}</span>
+        </button>
+        <button className={btnClass} onClick={() => { onResolveTheirs(files); onClose(); }}>
+          <span className="text-orange-600 dark:text-orange-400">Resolve using THEIRS{label}</span>
+        </button>
+      </div>
+    </>,
+    document.body
+  );
+}
+
 // ─── Staged Context Menu ──────────────────────────────────────────────────────
 
 interface StagedCtxMenuProps {
@@ -569,6 +643,8 @@ export function PendingTab({ repoPath, refreshKey, silentRefreshKey, onFilePrevi
   const [previewKey, setPreviewKey] = useState<string | null>(null);
   const [selectedUnstaged, setSelectedUnstaged] = useState<Set<string>>(new Set());
   const lastClickedUnstagedRef = useRef<string | null>(null);
+  const [selectedConflicts, setSelectedConflicts] = useState<Set<string>>(new Set());
+  const lastClickedConflictRef = useRef<string | null>(null);
 
   // LFS state
   const [lfsLocks, setLfsLocks] = useState<LfsLock[]>([]);
@@ -582,6 +658,10 @@ export function PendingTab({ repoPath, refreshKey, silentRefreshKey, onFilePrevi
   } | null>(null);
   const [stagedCtxMenu, setStagedCtxMenu] = useState<{
     x: number; y: number; files: string[];
+  } | null>(null);
+  const [conflictCtxMenu, setConflictCtxMenu] = useState<{
+    x: number; y: number; files: string[];
+    singleFile?: FileStatus;
   } | null>(null);
 
   const fetchGenRef = useRef(0);
@@ -625,6 +705,7 @@ export function PendingTab({ repoPath, refreshKey, silentRefreshKey, onFilePrevi
     fetchStatus();
     setPreviewKey(null);
     setSelectedUnstaged(new Set());
+    setSelectedConflicts(new Set());
     return () => { fetchGenRef.current++; };
   }, [repoPath, refreshKey]);
 
@@ -846,6 +927,67 @@ export function PendingTab({ repoPath, refreshKey, silentRefreshKey, onFilePrevi
     e.preventDefault();
     e.stopPropagation();
     setStagedCtxMenu({ x: e.clientX, y: e.clientY, files: [filename] });
+  };
+
+  const handleConflictClick = (filename: string, ctrlKey: boolean, shiftKey: boolean) => {
+    const allNames = (status?.unmerged ?? []).map((f) => f.filename);
+    if (shiftKey && lastClickedConflictRef.current) {
+      const anchorIdx = allNames.indexOf(lastClickedConflictRef.current);
+      const currentIdx = allNames.indexOf(filename);
+      if (anchorIdx !== -1 && currentIdx !== -1) {
+        const start = Math.min(anchorIdx, currentIdx);
+        const end = Math.max(anchorIdx, currentIdx);
+        const range = allNames.slice(start, end + 1);
+        setSelectedConflicts((prev) => {
+          const next = ctrlKey ? new Set(prev) : new Set<string>();
+          for (const f of range) next.add(f);
+          return next;
+        });
+      }
+    } else if (ctrlKey) {
+      setSelectedConflicts((prev) => {
+        const next = new Set(prev);
+        if (next.has(filename)) next.delete(filename);
+        else next.add(filename);
+        return next;
+      });
+      lastClickedConflictRef.current = filename;
+    } else {
+      setSelectedConflicts(new Set([filename]));
+      lastClickedConflictRef.current = filename;
+    }
+    setPreviewKey(`u:${filename}`);
+    const file = (status?.unmerged ?? []).find((f) => f.filename === filename);
+    if (file) onFilePreview?.(filename, false);
+  };
+
+  const handleConflictContextMenu = (e: React.MouseEvent, filename: string, file: FileStatus) => {
+    e.preventDefault();
+    e.stopPropagation();
+    let targetFiles: string[];
+    if (selectedConflicts.has(filename)) {
+      targetFiles = [...selectedConflicts];
+    } else {
+      setSelectedConflicts(new Set([filename]));
+      targetFiles = [filename];
+    }
+    lastClickedConflictRef.current = filename;
+    setConflictCtxMenu({
+      x: e.clientX,
+      y: e.clientY,
+      files: targetFiles,
+      singleFile: targetFiles.length === 1 ? file : undefined,
+    });
+  };
+
+  const handleResolveUsing = async (side: "ours" | "theirs", files: string[]) => {
+    try {
+      await resolveConflictUsing(repoPath, side, files);
+      setSelectedConflicts(new Set());
+      await fetchStatus();
+    } catch (e) {
+      setError(String(e));
+    }
   };
 
   const handleStageAll = () => {
@@ -1086,13 +1228,13 @@ export function PendingTab({ repoPath, refreshKey, silentRefreshKey, onFilePrevi
                 <div key={file.filename} className="group">
                   <FileRow
                     file={file}
-                    isSelected={false}
-                    onClick={() => {}}
-                    onContextMenu={(e) => handleUnstagedContextMenu(e, file.filename, file, false)}
+                    isSelected={selectedConflicts.has(file.filename)}
+                    onClick={(e) => handleConflictClick(file.filename, e.ctrlKey || e.metaKey, e.shiftKey)}
+                    onContextMenu={(e) => handleConflictContextMenu(e, file.filename, file)}
                     actions={
                       <>
                         <button
-                          onClick={() => onOpenMergeEditor?.(file)}
+                          onClick={(e) => { e.stopPropagation(); onOpenMergeEditor?.(file); }}
                           title="Resolve conflict"
                           className="px-1.5 text-xs text-indigo-600 dark:text-indigo-400 hover:underline"
                         >
@@ -1202,6 +1344,21 @@ export function PendingTab({ repoPath, refreshKey, silentRefreshKey, onFilePrevi
         )}
 
       </div>
+
+      {/* ── Conflict Context Menu ── */}
+      {conflictCtxMenu && (
+        <ConflictCtxMenu
+          x={conflictCtxMenu.x}
+          y={conflictCtxMenu.y}
+          files={conflictCtxMenu.files}
+          singleFile={conflictCtxMenu.singleFile}
+          onClose={() => setConflictCtxMenu(null)}
+          onResolveOurs={(files) => handleResolveUsing("ours", files)}
+          onResolveTheirs={(files) => handleResolveUsing("theirs", files)}
+          onOpenMergeEditor={conflictCtxMenu.singleFile ? () => onOpenMergeEditor?.(conflictCtxMenu.singleFile!) : undefined}
+          onMergetool={conflictCtxMenu.singleFile ? () => runMergetool(repoPath, [conflictCtxMenu.singleFile!.filename]) : undefined}
+        />
+      )}
 
       {/* ── Staged Context Menu ── */}
       {stagedCtxMenu && (

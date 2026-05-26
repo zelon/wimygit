@@ -496,6 +496,15 @@ export interface MergeInfo {
   base: string;
 }
 
+export async function resolveConflictUsing(
+  cwd: string,
+  side: "ours" | "theirs",
+  files: string[]
+): Promise<void> {
+  await runGitSimple(["checkout", `--${side}`, "--", ...files], cwd);
+  await runGitSimple(["add", "--", ...files], cwd);
+}
+
 export async function getMergeInfo(cwd: string): Promise<MergeInfo | null> {
   try {
     const ours = (await runGitSimple(["rev-parse", "--abbrev-ref", "HEAD"], cwd)).trim();
