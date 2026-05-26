@@ -426,13 +426,14 @@ interface ConflictCtxMenuProps {
   onClose: () => void;
   onResolveOurs: (files: string[]) => void;
   onResolveTheirs: (files: string[]) => void;
+  onMarkResolved: (files: string[]) => void;
   onOpenMergeEditor?: () => void;
   onMergetool?: () => void;
 }
 
 function ConflictCtxMenu({
   x, y, files, singleFile,
-  onClose, onResolveOurs, onResolveTheirs, onOpenMergeEditor, onMergetool,
+  onClose, onResolveOurs, onResolveTheirs, onMarkResolved, onOpenMergeEditor, onMergetool,
 }: ConflictCtxMenuProps) {
   const menuRef = useRef<HTMLDivElement>(null);
   const [pos, setPos] = useState({ top: y, left: x });
@@ -474,6 +475,17 @@ function ConflictCtxMenu({
                 <span>Open External Merge Tool</span>
               </button>
             )}
+            <button className={btnClass} onClick={() => { onMarkResolved(files); onClose(); }}>
+              <span>Mark as Resolved</span>
+            </button>
+            {sep}
+          </>
+        )}
+        {!isSingle && (
+          <>
+            <button className={btnClass} onClick={() => { onMarkResolved(files); onClose(); }}>
+              <span>Mark as Resolved{label}</span>
+            </button>
             {sep}
           </>
         )}
@@ -1354,6 +1366,7 @@ export function PendingTab({ repoPath, refreshKey, silentRefreshKey, onFilePrevi
           onClose={() => setConflictCtxMenu(null)}
           onResolveOurs={(files) => handleResolveUsing("ours", files)}
           onResolveTheirs={(files) => handleResolveUsing("theirs", files)}
+          onMarkResolved={handleStage}
           onOpenMergeEditor={conflictCtxMenu.singleFile ? () => onOpenMergeEditor?.(conflictCtxMenu.singleFile!) : undefined}
           onMergetool={conflictCtxMenu.singleFile ? () => runMergetool(repoPath, [conflictCtxMenu.singleFile!.filename]) : undefined}
         />
