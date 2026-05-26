@@ -467,21 +467,21 @@ function ConflictCtxMenu({
         {isSingle && onOpenMergeEditor && (
           <>
             <button className={btnClass} onClick={() => { onOpenMergeEditor(); onClose(); }}>
-              <span>Resolve</span>
+              <span>Open Merge Editor</span>
             </button>
             {onMergetool && (
               <button className={btnClass} onClick={() => { onMergetool(); onClose(); }}>
-                <span>MergeTool</span>
+                <span>Open External Merge Tool</span>
               </button>
             )}
             {sep}
           </>
         )}
         <button className={btnClass} onClick={() => { onResolveOurs(files); onClose(); }}>
-          <span className="text-blue-600 dark:text-blue-400">Resolve using OURS{label}</span>
+          <span className="text-blue-600 dark:text-blue-400">Accept Ours{label}</span>
         </button>
         <button className={btnClass} onClick={() => { onResolveTheirs(files); onClose(); }}>
-          <span className="text-orange-600 dark:text-orange-400">Resolve using THEIRS{label}</span>
+          <span className="text-orange-600 dark:text-orange-400">Accept Theirs{label}</span>
         </button>
       </div>
     </>,
