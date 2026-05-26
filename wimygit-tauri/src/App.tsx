@@ -4,6 +4,7 @@ import { exists } from "@tauri-apps/plugin-fs";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { APP_NAME } from "./constants";
 import { Header, TabBar, RepoTabBar, GitLogPanel, LeftSidebar, RepoStateBanner } from "./components/layout";
+import type { PendingFilePreview } from "./components/layout/SidebarQuickDiff";
 import { PendingTab } from "./components/tabs";
 import { MergeEditor } from "./components/shared/MergeEditor";
 import type { FileStatus } from "./lib";
@@ -90,7 +91,7 @@ function App() {
   const [plugins, setPlugins] = useState<PluginInfo[]>([]);
   const [openError, setOpenError] = useState<string | null>(null);
   const [selectedDiff, setSelectedDiff] = useState<SelectedDiffInfo | null>(null);
-  const [pendingFilePreview, setPendingFilePreview] = useState<{ filename: string; staged: boolean; isUntracked?: boolean } | null>(null);
+  const [pendingFilePreview, setPendingFilePreview] = useState<PendingFilePreview | null>(null);
   const [selectedFilePath, setSelectedFilePath] = useState<string | null>(null);
   const [workspaceHighlight, setWorkspaceHighlight] = useState<{ path: string; triggerCount: number } | null>(null);
   const [showTimeLapse, setShowTimeLapse] = useState(false);
