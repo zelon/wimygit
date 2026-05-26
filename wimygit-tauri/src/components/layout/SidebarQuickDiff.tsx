@@ -4,6 +4,7 @@ import {
   getDiff,
   getCommitDiff,
   getGitFileBlob,
+  getConflictDiff,
   smudgeLfsPointer,
   runDifftool,
   readTextFile,
@@ -45,7 +46,16 @@ export interface PendingFilePreview {
   filename: string;
   staged: boolean;
   isUntracked?: boolean;
+  isConflict?: boolean;
 }
+
+type ConflictViewMode = "unified" | "ours" | "theirs";
+
+const CONFLICT_MODES: { mode: ConflictViewMode; label: string }[] = [
+  { mode: "unified", label: "UNIFIED" },
+  { mode: "ours", label: "BASE → OURS" },
+  { mode: "theirs", label: "BASE → THEIRS" },
+];
 
 const IMAGE_EXTS = new Set([".png", ".jpg", ".jpeg", ".gif", ".svg", ".webp", ".bmp", ".ico", ".tiff", ".avif"]);
 const IMAGE_MIME: Record<string, string> = {
@@ -130,6 +140,7 @@ export interface SidebarQuickDiffProps {
 export function SidebarQuickDiff({ repoPath, selectedDiff, pendingFilePreview, onRefresh }: SidebarQuickDiffProps) {
   const [modes, setModes] = useState<DiffMode[]>([{ kind: "combined", label: "Diff" }]);
   const [activeMode, setActiveMode] = useState<DiffModeKind>("combined");
+  const [conflictViewMode, setConflictViewMode] = useState<ConflictViewMode>("unified");
   const [contextLines, setContextLines] = useState(DEFAULT_CONTEXT);
   const [ignoreWhitespace, setIgnoreWhitespace] = useState(false);
   const [diff, setDiff] = useState("");
@@ -154,6 +165,11 @@ export function SidebarQuickDiff({ repoPath, selectedDiff, pendingFilePreview, o
     setModes(newModes);
     setActiveMode(newModes[0].kind);
   }, [selectedDiff]);
+
+  // ── Reset conflict view mode when file changes ──
+  useEffect(() => {
+    setConflictViewMode("unified");
+  }, [pendingFilePreview?.filename]);
 
   // ── Commit diff (from History tab) ──
   useEffect(() => {
@@ -244,6 +260,18 @@ export function SidebarQuickDiff({ repoPath, selectedDiff, pendingFilePreview, o
       setPendingDiff(""); setImagePreviewSrc(null); setImageDiffSrcs(null); return;
     }
 
+    // Conflict file — show UNIFIED / BASE→OURS / BASE→THEIRS
+    if (pendingFilePreview.isConflict) {
+      setImagePreviewSrc(null);
+      setImageDiffSrcs(null);
+      setPendingLoading(true);
+      getConflictDiff(repoPath, pendingFilePreview.filename, conflictViewMode, contextLines, ignoreWhitespace)
+        .then((d) => setPendingDiff(d))
+        .catch(() => setPendingDiff(""))
+        .finally(() => setPendingLoading(false));
+      return;
+    }
+
     const ext = ("." + pendingFilePreview.filename.split(".").pop()).toLowerCase();
     const absPath = repoPath.replace(/\\/g, "/") + "/" + pendingFilePreview.filename;
 
@@ -314,7 +342,7 @@ export function SidebarQuickDiff({ repoPath, selectedDiff, pendingFilePreview, o
       .then((d) => setPendingDiff(d))
       .catch(() => setPendingDiff(""))
       .finally(() => setPendingLoading(false));
-  }, [pendingFilePreview, isCommitMode, repoPath, contextLines, ignoreWhitespace, localRefresh]);
+  }, [pendingFilePreview, isCommitMode, repoPath, contextLines, ignoreWhitespace, localRefresh, conflictViewMode]);
 
   // ── Diff Tool ──
   const handleDiffTool = async () => {
@@ -377,6 +405,23 @@ export function SidebarQuickDiff({ repoPath, selectedDiff, pendingFilePreview, o
                   }`}
               >
                 {m.label}
+              </button>
+            ))}
+          </div>
+        )}
+        {/* Conflict view mode buttons — only shown for conflict files */}
+        {showingPendingPreview && pendingFilePreview?.isConflict && (
+          <div className="flex gap-0.5 flex-1 min-w-0 overflow-x-auto">
+            {CONFLICT_MODES.map(({ mode, label }) => (
+              <button
+                key={mode}
+                onClick={() => setConflictViewMode(mode)}
+                className={`shrink-0 px-1.5 py-0.5 text-xs rounded transition-colors whitespace-nowrap ${conflictViewMode === mode
+                  ? "bg-white dark:bg-gray-600 shadow text-gray-900 dark:text-white"
+                  : "text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700"
+                  }`}
+              >
+                {label}
               </button>
             ))}
           </div>
@@ -453,7 +498,9 @@ export function SidebarQuickDiff({ repoPath, selectedDiff, pendingFilePreview, o
       )}
       {showingPendingPreview && pendingFilePreview && (
         <div className="shrink-0 px-2 py-1 text-xs border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-850 text-gray-700 dark:text-gray-300 truncate flex items-center gap-1">
-          <span className="text-gray-400 shrink-0">{pendingFilePreview.staged ? "staged" : "unstaged"}</span>
+          <span className={`shrink-0 ${pendingFilePreview.isConflict ? "text-amber-500" : "text-gray-400"}`}>
+            {pendingFilePreview.isConflict ? "conflict" : pendingFilePreview.staged ? "staged" : "unstaged"}
+          </span>
           <span title={pendingFilePreview.filename}>{pendingFilePreview.filename}</span>
         </div>
       )}
@@ -475,7 +522,7 @@ export function SidebarQuickDiff({ repoPath, selectedDiff, pendingFilePreview, o
             label={isCommitMode ? commitImageLabel : (pendingFilePreview?.isUntracked ? "UNTRACKED" : "NEW FILE")}
             filename={isCommitMode ? (selectedDiff?.file.filename2 ?? selectedDiff?.file.filename) : pendingFilePreview?.filename}
           />
-        ) : showingPendingPreview && pendingFilePreview && !pendingFilePreview.isUntracked ? (
+        ) : showingPendingPreview && pendingFilePreview && !pendingFilePreview.isUntracked && !pendingFilePreview.isConflict ? (
           <InteractiveDiffViewer
             diff={pendingDiff}
             repoPath={repoPath}

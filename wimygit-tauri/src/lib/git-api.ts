@@ -496,6 +496,26 @@ export interface MergeInfo {
   base: string;
 }
 
+export async function getConflictDiff(
+  cwd: string,
+  filename: string,
+  mode: "unified" | "ours" | "theirs",
+  contextLines: number = 3,
+  ignoreWhitespace: boolean = false,
+): Promise<string> {
+  if (mode === "unified") {
+    return getDiff(cwd, false, filename, contextLines, undefined, ignoreWhitespace);
+  }
+  const baseResult = await runGit(["merge-base", "HEAD", "MERGE_HEAD"], cwd);
+  if (baseResult.exit_code !== 0) throw new Error("Not in a merge conflict state");
+  const base = baseResult.stdout.trim();
+  const ref = mode === "ours" ? "HEAD" : "MERGE_HEAD";
+  const args = ["diff", `-U${contextLines}`];
+  if (ignoreWhitespace) args.push("-w");
+  args.push(base, ref, "--", filename);
+  return runGitSimple(args, cwd);
+}
+
 export async function resolveConflictUsing(
   cwd: string,
   side: "ours" | "theirs",

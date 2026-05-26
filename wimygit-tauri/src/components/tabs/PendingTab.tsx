@@ -60,7 +60,7 @@ interface PendingTabProps {
   repoPath: string;
   refreshKey: number;
   silentRefreshKey?: number;
-  onFilePreview?: (filename: string, staged: boolean, isUntracked?: boolean) => void;
+  onFilePreview?: (filename: string, staged: boolean, isUntracked?: boolean, isConflict?: boolean) => void;
   onLfsLockCountChange?: (count: number) => void;
   onShowInWorkspaceFile?: (absolutePath: string) => void;
   onShowInHistoryFile?: (absolutePath: string) => void;
@@ -957,8 +957,7 @@ export function PendingTab({ repoPath, refreshKey, silentRefreshKey, onFilePrevi
       lastClickedConflictRef.current = filename;
     }
     setPreviewKey(`u:${filename}`);
-    const file = (status?.unmerged ?? []).find((f) => f.filename === filename);
-    if (file) onFilePreview?.(filename, false);
+    onFilePreview?.(filename, false, false, true);
   };
 
   const handleConflictContextMenu = (e: React.MouseEvent, filename: string, file: FileStatus) => {

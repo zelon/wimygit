@@ -508,7 +508,7 @@ function App() {
               repoPath={activeRepo.repoPath}
               refreshKey={activeRepo.refreshKey}
               silentRefreshKey={activeRepo.silentRefreshKey}
-              onFilePreview={(filename, staged, isUntracked) => { setSelectedDiff(null); setPendingFilePreview({ filename, staged, isUntracked }); }}
+              onFilePreview={(filename, staged, isUntracked, isConflict) => { setSelectedDiff(null); setPendingFilePreview({ filename, staged, isUntracked, isConflict }); }}
               onLfsLockCountChange={setLfsLockCount}
               onOpenMergeEditor={setActiveMergeFile}
               onConflictCountChange={setConflictCount}
