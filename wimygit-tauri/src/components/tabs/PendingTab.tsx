@@ -14,8 +14,10 @@ import {
   runDifftool,
   runMergetool,
   openInFileManager,
+  getMergeInfo,
   type GitStatus,
   type FileStatus,
+  type MergeInfo,
   getLfsLocks,
   getLfsLockableExtensions,
   lfsUnlockFile,
@@ -528,19 +530,21 @@ interface SectionHeaderProps {
   action?: { label: string; onClick: () => void };
   icon?: string;
   iconClass?: string;
+  extra?: React.ReactNode;
 }
 
-function SectionHeader({ label, count, action, icon, iconClass }: SectionHeaderProps) {
+function SectionHeader({ label, count, action, icon, iconClass, extra }: SectionHeaderProps) {
   return (
     <div className="shrink-0 flex items-center justify-between px-3 py-1 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-      <span className="text-xs font-medium text-gray-600 dark:text-gray-300 flex items-center gap-1">
+      <span className="text-xs font-medium text-gray-600 dark:text-gray-300 flex items-center gap-1 flex-1 min-w-0">
         {icon && <span className={iconClass}>{icon}</span>}
         {label} <span className="text-gray-400">({count})</span>
+        {extra}
       </span>
       {action && (
         <button
           onClick={action.onClick}
-          className="text-xs text-blue-600 dark:text-blue-400 hover:underline"
+          className="text-xs text-blue-600 dark:text-blue-400 hover:underline shrink-0"
         >
           {action.label}
         </button>
@@ -553,6 +557,7 @@ function SectionHeader({ label, count, action, icon, iconClass }: SectionHeaderP
 
 export function PendingTab({ repoPath, refreshKey, silentRefreshKey, onFilePreview, onLfsLockCountChange, onShowInWorkspaceFile, onShowInHistoryFile, onOpenMergeEditor, onConflictCountChange }: PendingTabProps) {
   const [status, setStatus] = useState<GitStatus | null>(null);
+  const [mergeInfo, setMergeInfo] = useState<MergeInfo | null>(null);
   const [syncStatus, setSyncStatus] = useState<SyncStatus | null>(null);
   const [loading, setLoading] = useState(true);
   const [commitMessage, setCommitMessage] = useState("");
@@ -603,6 +608,11 @@ export function PendingTab({ repoPath, refreshKey, silentRefreshKey, onFilePrevi
       setHasLfsLockable(hasLockable);
       onLfsLockCountChange?.(locks.length);
       onConflictCountChange?.(result.unmerged.length);
+      if (result.unmerged.length > 0) {
+        getMergeInfo(repoPath).then(setMergeInfo).catch(() => setMergeInfo(null));
+      } else {
+        setMergeInfo(null);
+      }
       setError(null);
     } catch (e) {
       if (gen === fetchGenRef.current) setError(String(e));
@@ -1058,6 +1068,18 @@ export function PendingTab({ repoPath, refreshKey, silentRefreshKey, onFilePrevi
               count={unmergedFiles.length}
               icon="⚠"
               iconClass="text-amber-500"
+              extra={mergeInfo && (
+                <span className="ml-1 flex items-center gap-0.5 font-normal truncate">
+                  <span className="text-blue-500">OURS</span>
+                  <span className="text-gray-400">({mergeInfo.ours})</span>
+                  <span className="text-gray-400 mx-0.5">/</span>
+                  <span className="text-gray-500">BASE</span>
+                  <span className="text-gray-400">({mergeInfo.base})</span>
+                  <span className="text-gray-400 mx-0.5">/</span>
+                  <span className="text-orange-500">THEIRS</span>
+                  <span className="text-gray-400">({mergeInfo.theirs})</span>
+                </span>
+              )}
             />
             <div className="overflow-y-auto min-h-[2.5rem]">
               {unmergedFiles.map((file) => (

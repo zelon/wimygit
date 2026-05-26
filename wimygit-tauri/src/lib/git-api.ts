@@ -488,6 +488,44 @@ export async function updatePlugin(pluginDir: string): Promise<string> {
   return invoke<string>("run_git_simple", { args: ["pull"], cwd: pluginDir });
 }
 
+// ============= Merge Info =============
+
+export interface MergeInfo {
+  ours: string;
+  theirs: string;
+  base: string;
+}
+
+export async function getMergeInfo(cwd: string): Promise<MergeInfo | null> {
+  try {
+    const ours = (await runGitSimple(["rev-parse", "--abbrev-ref", "HEAD"], cwd)).trim();
+
+    const mergeHeadResult = await runGit(["rev-parse", "MERGE_HEAD"], cwd);
+    if (mergeHeadResult.exit_code !== 0) return null;
+    const mergeHead = mergeHeadResult.stdout.trim();
+
+    const theirsNameResult = await runGit(["name-rev", "--name-only", "--no-undefined", mergeHead], cwd);
+    let theirs = theirsNameResult.exit_code === 0
+      ? theirsNameResult.stdout.trim().replace(/[~^]\d*$/, "")
+      : mergeHead.slice(0, 8);
+    theirs = theirs.replace(/^remotes\//, "");
+
+    const baseResult = await runGit(["merge-base", "HEAD", "MERGE_HEAD"], cwd);
+    let base = "";
+    if (baseResult.exit_code === 0) {
+      const baseHash = baseResult.stdout.trim();
+      const baseNameResult = await runGit(["name-rev", "--name-only", "--no-undefined", baseHash], cwd);
+      base = baseNameResult.exit_code === 0
+        ? baseNameResult.stdout.trim().replace(/[~^]\d*$/, "").replace(/^remotes\//, "")
+        : (await runGit(["rev-parse", "--short", baseHash], cwd)).stdout.trim();
+    }
+
+    return { ours, theirs, base };
+  } catch {
+    return null;
+  }
+}
+
 // ============= App commands =============
 
 export async function getExecutableDir(): Promise<string> {
