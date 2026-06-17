@@ -15,6 +15,8 @@ import type {
   PluginArgument,
   FileCommit,
   BlameEntry,
+  BranchDiffCommit,
+  BranchDiffFile,
 } from "./git-types";
 
 // ============= Git Executor =============
@@ -553,6 +555,67 @@ export async function getMergeInfo(cwd: string): Promise<MergeInfo | null> {
   } catch {
     return null;
   }
+}
+
+// ============= Branch Diff =============
+
+const SEP = "\x1f";
+
+export async function getBranchDiffCommits(
+  cwd: string,
+  base: string,
+  compare: string
+): Promise<BranchDiffCommit[]> {
+  const out = await runGitSimple(
+    ["log", `${base}..${compare}`, `--format=%H${SEP}%h${SEP}%an${SEP}%ai${SEP}%s`],
+    cwd
+  );
+  return out
+    .split("\n")
+    .filter(Boolean)
+    .map((line) => {
+      const parts = line.split(SEP);
+      const [hash, short_hash, author, date] = parts;
+      const subject = parts.slice(4).join(SEP);
+      return { hash, short_hash, author, date, subject };
+    });
+}
+
+export async function getBranchDiffFiles(
+  cwd: string,
+  base: string,
+  compare: string,
+  commitHash?: string
+): Promise<BranchDiffFile[]> {
+  const args = commitHash
+    ? ["diff", "--numstat", `${commitHash}^!`]
+    : ["diff", "--numstat", `${base}...${compare}`];
+  const out = await runGitSimple(args, cwd);
+  return out
+    .split("\n")
+    .filter(Boolean)
+    .map((line) => {
+      const [added, deleted, filename] = line.split("\t");
+      return {
+        filename,
+        added: added === "-" ? 0 : parseInt(added, 10),
+        deleted: deleted === "-" ? 0 : parseInt(deleted, 10),
+      };
+    });
+}
+
+export async function getBranchFileDiff(
+  cwd: string,
+  base: string,
+  compare: string,
+  filePath: string,
+  commitHash?: string,
+  contextLines: number = 3
+): Promise<string> {
+  const args = commitHash
+    ? ["diff", `-U${contextLines}`, `${commitHash}^!`, "--", filePath]
+    : ["diff", `-U${contextLines}`, `${base}...${compare}`, "--", filePath];
+  return runGitSimple(args, cwd);
 }
 
 // ============= App commands =============

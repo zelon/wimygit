@@ -130,14 +130,21 @@ function SingleImagePreview({ src, label, filename }: { src: string; label: stri
   );
 }
 
+export interface BranchFileDiffInfo {
+  diff: string;
+  filename: string;
+  loading?: boolean;
+}
+
 export interface SidebarQuickDiffProps {
   repoPath: string;
   selectedDiff?: SelectedDiffInfo | null;
   pendingFilePreview?: PendingFilePreview | null;
+  branchFileDiff?: BranchFileDiffInfo | null;
   onRefresh?: () => void;
 }
 
-export function SidebarQuickDiff({ repoPath, selectedDiff, pendingFilePreview, onRefresh }: SidebarQuickDiffProps) {
+export function SidebarQuickDiff({ repoPath, selectedDiff, pendingFilePreview, branchFileDiff, onRefresh }: SidebarQuickDiffProps) {
   const [modes, setModes] = useState<DiffMode[]>([{ kind: "combined", label: "Diff" }]);
   const [activeMode, setActiveMode] = useState<DiffModeKind>("combined");
   const [conflictViewMode, setConflictViewMode] = useState<ConflictViewMode>("unified");
@@ -156,6 +163,7 @@ export function SidebarQuickDiff({ repoPath, selectedDiff, pendingFilePreview, o
 
   const isCommitMode = !!selectedDiff;
   const showingPendingPreview = !isCommitMode && !!pendingFilePreview;
+  const showingBranchFileDiff = !isCommitMode && !pendingFilePreview && !!branchFileDiff;
   const currentMode = modes.find((m) => m.kind === activeMode) ?? modes[0];
 
   // ── Rebuild commit modes when selection changes ──
@@ -362,8 +370,8 @@ export function SidebarQuickDiff({ repoPath, selectedDiff, pendingFilePreview, o
 
   const changeContext = (delta: number) => setContextLines((prev) => Math.max(0, prev + delta));
 
-  const displayDiff = showingPendingPreview ? pendingDiff : diff;
-  const displayLoading = showingPendingPreview ? pendingLoading : loadingDiff;
+  const displayDiff = showingBranchFileDiff ? (branchFileDiff?.diff ?? "") : showingPendingPreview ? pendingDiff : diff;
+  const displayLoading = showingBranchFileDiff ? (branchFileDiff?.loading ?? false) : showingPendingPreview ? pendingLoading : loadingDiff;
   const isImageDiff = !displayLoading && (!!imageDiffSrcs || !!imagePreviewSrc);
 
   useEffect(() => {
@@ -504,6 +512,12 @@ export function SidebarQuickDiff({ repoPath, selectedDiff, pendingFilePreview, o
           <span title={pendingFilePreview.filename}>{pendingFilePreview.filename}</span>
         </div>
       )}
+      {showingBranchFileDiff && branchFileDiff && (
+        <div className="shrink-0 px-2 py-1 text-xs border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-850 text-gray-700 dark:text-gray-300 truncate flex items-center gap-1">
+          <span className="shrink-0 text-blue-500">branch diff</span>
+          <span title={branchFileDiff.filename}>{branchFileDiff.filename}</span>
+        </div>
+      )}
 
       {/* ── Diff viewer / Image preview ── */}
       <div className="flex-1 overflow-hidden">
@@ -537,7 +551,7 @@ export function SidebarQuickDiff({ repoPath, selectedDiff, pendingFilePreview, o
         ) : (
           <DiffViewer
             diff={displayDiff}
-            placeholder={isCommitMode ? "No diff available" : showingPendingPreview ? "No changes" : "Select a file from History or Pending Changes"}
+            placeholder={isCommitMode ? "No diff available" : showingBranchFileDiff ? "No diff" : showingPendingPreview ? "No changes" : "Select a file from History, Pending Changes, or Branch Diff"}
           />
         )}
       </div>
@@ -545,7 +559,7 @@ export function SidebarQuickDiff({ repoPath, selectedDiff, pendingFilePreview, o
       {/* ── Footer — hidden in image diff mode ── */}
       {!isImageDiff && (
         <div className="shrink-0 px-2 py-0.5 text-xs text-gray-400 dark:text-gray-500 bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 flex justify-between">
-          <span>{isCommitMode ? "Commit diff" : showingPendingPreview ? "Pending preview" : "—"}</span>
+          <span>{isCommitMode ? "Commit diff" : showingBranchFileDiff ? "Branch diff" : showingPendingPreview ? "Pending preview" : "—"}</span>
           <span>Context: {contextLines} lines</span>
         </div>
       )}

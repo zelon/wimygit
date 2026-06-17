@@ -14,9 +14,10 @@ interface BranchTabProps {
   refreshKey: number;
   silentRefreshKey?: number;
   onRefresh: () => void;
+  onOpenCompare?: (base: string, compare: string) => void;
 }
 
-export function BranchTab({ repoPath, refreshKey, silentRefreshKey, onRefresh }: BranchTabProps) {
+export function BranchTab({ repoPath, refreshKey, silentRefreshKey, onRefresh, onOpenCompare }: BranchTabProps) {
   const [branches, setBranches] = useState<BranchInfo[]>([]);
   const [currentBranch, setCurrentBranch] = useState<string>("");
   const [loading, setLoading] = useState(true);
@@ -24,6 +25,7 @@ export function BranchTab({ repoPath, refreshKey, silentRefreshKey, onRefresh }:
   const [newBranchName, setNewBranchName] = useState("");
   const [showNewBranch, setShowNewBranch] = useState(false);
   const [filter, setFilter] = useState<"all" | "local" | "remote">("local");
+  const [selectedForCompare, setSelectedForCompare] = useState<string[]>([]);
 
   const fetchGenRef = useRef(0);
 
@@ -49,6 +51,7 @@ export function BranchTab({ repoPath, refreshKey, silentRefreshKey, onRefresh }:
 
   useEffect(() => {
     fetchBranches();
+    setSelectedForCompare([]);
     return () => { fetchGenRef.current++; };
   }, [repoPath, refreshKey]);
 
@@ -122,6 +125,24 @@ export function BranchTab({ repoPath, refreshKey, silentRefreshKey, onRefresh }:
     }
   };
 
+  const handleCtrlClick = (branchName: string) => {
+    setSelectedForCompare((prev) => {
+      if (prev.includes(branchName)) return prev.filter((n) => n !== branchName);
+      if (prev.length < 2) return [...prev, branchName];
+      // Replace oldest selection
+      return [prev[1], branchName];
+    });
+  };
+
+  const handleCompare = () => {
+    if (!onOpenCompare) return;
+    if (selectedForCompare.length === 2) {
+      onOpenCompare(selectedForCompare[0], selectedForCompare[1]);
+    } else {
+      onOpenCompare("", "");
+    }
+  };
+
   const filteredBranches = branches.filter((b) => {
     if (filter === "local") return !b.is_remote;
     if (filter === "remote") return b.is_remote;
@@ -152,7 +173,7 @@ export function BranchTab({ repoPath, refreshKey, silentRefreshKey, onRefresh }:
       )}
 
       {/* Toolbar */}
-      <div className="flex items-center gap-4 mb-4">
+      <div className="flex items-center gap-4 mb-3 flex-wrap">
         <div className="flex gap-1 bg-gray-100 dark:bg-gray-800 rounded p-1">
           {(["local", "remote", "all"] as const).map((f) => (
             <button
@@ -174,7 +195,40 @@ export function BranchTab({ repoPath, refreshKey, silentRefreshKey, onRefresh }:
         >
           + New Branch
         </button>
+        {onOpenCompare && (
+          <button
+            onClick={handleCompare}
+            className={`px-3 py-1.5 text-sm rounded transition-colors ${
+              selectedForCompare.length === 2
+                ? "bg-blue-600 text-white hover:bg-blue-700"
+                : "bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600"
+            }`}
+            title={selectedForCompare.length === 2 ? "Compare selected branches" : "Compare two branches (Ctrl+click to select)"}
+          >
+            {selectedForCompare.length === 2 ? "⇄ Compare (2)" : "⇄ Compare"}
+          </button>
+        )}
       </div>
+
+      {/* Selection hint */}
+      {selectedForCompare.length === 1 && (
+        <div className="mb-3 px-3 py-2 text-xs text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/20 rounded border border-blue-200 dark:border-blue-700 flex items-center justify-between">
+          <span>
+            <span className="font-medium">"{selectedForCompare[0]}"</span> selected — Ctrl+click another branch to compare
+          </span>
+          <button onClick={() => setSelectedForCompare([])} className="ml-2 text-blue-400 hover:text-blue-600 dark:hover:text-blue-200">✕</button>
+        </div>
+      )}
+      {selectedForCompare.length === 2 && (
+        <div className="mb-3 px-3 py-2 text-xs text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/20 rounded border border-blue-200 dark:border-blue-700 flex items-center justify-between">
+          <span>
+            <span className="font-medium">"{selectedForCompare[0]}"</span>
+            {" ⇄ "}
+            <span className="font-medium">"{selectedForCompare[1]}"</span>
+          </span>
+          <button onClick={() => setSelectedForCompare([])} className="ml-2 text-blue-400 hover:text-blue-600 dark:hover:text-blue-200">✕</button>
+        </div>
+      )}
 
       {/* New Branch Input */}
       {showNewBranch && (
@@ -213,10 +267,13 @@ export function BranchTab({ repoPath, refreshKey, silentRefreshKey, onRefresh }:
               key={branch.name}
               branch={branch}
               isCurrent={branch.name === currentBranch}
+              isSelectedForCompare={selectedForCompare.includes(branch.name)}
+              compareOrder={selectedForCompare.indexOf(branch.name)}
               onCheckout={handleCheckout}
               onDelete={handleDeleteBranch}
               onMerge={handleMerge}
-                          />
+              onCtrlClick={onOpenCompare ? handleCtrlClick : undefined}
+            />
           ))}
         {filter !== "local" && remoteBranches.length > 0 && (
           <>
@@ -230,10 +287,13 @@ export function BranchTab({ repoPath, refreshKey, silentRefreshKey, onRefresh }:
                 key={branch.name}
                 branch={branch}
                 isCurrent={false}
+                isSelectedForCompare={selectedForCompare.includes(branch.name)}
+                compareOrder={selectedForCompare.indexOf(branch.name)}
                 onCheckout={handleCheckout}
                 onDelete={() => {}}
                 onMerge={handleMerge}
-                              />
+                onCtrlClick={onOpenCompare ? handleCtrlClick : undefined}
+              />
             ))}
           </>
         )}
@@ -246,39 +306,57 @@ export function BranchTab({ repoPath, refreshKey, silentRefreshKey, onRefresh }:
 interface BranchRowProps {
   branch: BranchInfo;
   isCurrent: boolean;
+  isSelectedForCompare: boolean;
+  compareOrder: number; // -1 = not selected, 0 = first, 1 = second
   onCheckout: (name: string) => void;
   onDelete: (name: string) => void;
   onMerge: (name: string) => void;
+  onCtrlClick?: (name: string) => void;
 }
 
 function BranchRow({
   branch,
   isCurrent,
+  isSelectedForCompare,
+  compareOrder,
   onCheckout,
   onDelete,
   onMerge,
+  onCtrlClick,
 }: BranchRowProps) {
   return (
     <div
-      className={`flex items-center gap-3 px-3 py-2 rounded ${
-        isCurrent
+      onClick={(e) => { if (e.ctrlKey && onCtrlClick) { e.preventDefault(); onCtrlClick(branch.name); } }}
+      className={`flex items-center gap-3 px-3 py-2 rounded cursor-default select-none ${
+        isSelectedForCompare
+          ? "bg-blue-50 dark:bg-blue-900/30 ring-2 ring-blue-400 dark:ring-blue-500"
+          : isCurrent
           ? "bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800"
+          : onCtrlClick
+          ? "hover:bg-gray-100 dark:hover:bg-gray-800"
           : "hover:bg-gray-100 dark:hover:bg-gray-800"
       }`}
     >
-      <div className="flex-1">
+      {/* Compare order badge */}
+      {isSelectedForCompare && compareOrder >= 0 && (
+        <span className="shrink-0 w-5 h-5 flex items-center justify-center rounded-full bg-blue-500 text-white text-xs font-bold">
+          {compareOrder + 1}
+        </span>
+      )}
+
+      <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
-          {isCurrent && (
+          {isCurrent && !isSelectedForCompare && (
             <span className="text-green-600 dark:text-green-400">●</span>
           )}
-          <span className={`font-medium ${branch.is_remote ? "text-gray-500" : ""}`}>
+          <span className={`font-medium truncate ${branch.is_remote ? "text-gray-500" : ""}`}>
             {branch.name}
           </span>
           {branch.upstream && (
-            <span className="text-xs text-gray-400">→ {branch.upstream}</span>
+            <span className="text-xs text-gray-400 shrink-0">→ {branch.upstream}</span>
           )}
           {(branch.ahead > 0 || branch.behind > 0) && (
-            <span className="text-xs text-gray-500">
+            <span className="text-xs text-gray-500 shrink-0">
               {branch.ahead > 0 && <span className="text-green-600">↑{branch.ahead}</span>}
               {branch.behind > 0 && <span className="text-red-600 ml-1">↓{branch.behind}</span>}
             </span>
@@ -289,7 +367,7 @@ function BranchRow({
           {branch.commit_message && <span className="ml-2">{branch.commit_message}</span>}
         </div>
       </div>
-      <div className="flex gap-1">
+      <div className="flex gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
         {!isCurrent && !branch.is_remote && (
           <>
             <button

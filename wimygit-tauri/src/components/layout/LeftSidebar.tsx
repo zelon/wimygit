@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { type SelectedDiffInfo } from "../../lib";
 import { WorkspaceTree } from "./WorkspaceTree";
-import { SidebarQuickDiff, type PendingFilePreview } from "./SidebarQuickDiff";
+import { SidebarQuickDiff, type PendingFilePreview, type BranchFileDiffInfo } from "./SidebarQuickDiff";
 
 // ─── constants ────────────────────────────────────────────────────────────────
 
@@ -17,12 +17,13 @@ interface LeftSidebarProps {
   refreshKey: number;
   selectedDiff?: SelectedDiffInfo | null;
   pendingFilePreview?: PendingFilePreview | null;
+  branchFileDiff?: BranchFileDiffInfo | null;
   onFileSelect?: (path: string | null) => void;
   onRefresh?: () => void;
   highlightPath?: { path: string; triggerCount: number } | null;
 }
 
-export function LeftSidebar({ repoPath, refreshKey, selectedDiff, pendingFilePreview, onFileSelect, onRefresh, highlightPath }: LeftSidebarProps) {
+export function LeftSidebar({ repoPath, refreshKey, selectedDiff, pendingFilePreview, branchFileDiff, onFileSelect, onRefresh, highlightPath }: LeftSidebarProps) {
   const [width, setWidth] = useState(() => {
     const quarter = Math.round(window.innerWidth / 4);
     return Math.max(MIN_SIDEBAR_WIDTH, quarter);
@@ -49,6 +50,15 @@ export function LeftSidebar({ repoPath, refreshKey, selectedDiff, pendingFilePre
     }
     prevPendingFilePreview.current = pendingFilePreview;
   }, [pendingFilePreview]);
+
+  const prevBranchFileDiff = useRef<BranchFileDiffInfo | null | undefined>(undefined);
+  useEffect(() => {
+    if (branchFileDiff && branchFileDiff !== prevBranchFileDiff.current) {
+      setActiveTab("quickdiff");
+      localStorage.setItem("sidebar_tab", "quickdiff");
+    }
+    prevBranchFileDiff.current = branchFileDiff;
+  }, [branchFileDiff]);
 
   // Auto-switch to Workspace tab when highlightPath is set
   useEffect(() => {
@@ -155,6 +165,7 @@ export function LeftSidebar({ repoPath, refreshKey, selectedDiff, pendingFilePre
               repoPath={repoPath}
               selectedDiff={selectedDiff}
               pendingFilePreview={pendingFilePreview}
+              branchFileDiff={branchFileDiff}
               onRefresh={onRefresh}
             />
           )}

@@ -26,6 +26,7 @@ interface HistoryTabProps {
   onShowInWorkspace?: () => void;
   onShowInWorkspaceFile?: (absolutePath: string) => void;
   onShowInHistoryFile?: (absolutePath: string) => void;
+  onOpenCompare?: (base: string, compare: string) => void;
 }
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
@@ -89,9 +90,10 @@ interface ContextMenuProps {
   onRefresh: () => void;
   onOpenCreateBranch: (commitHash: string) => void;
   onOpenCreateTag: (commitHash: string) => void;
+  onOpenCompare?: (base: string, compare: string) => void;
 }
 
-function ContextMenu({ x, y, commit, repoPath, localOnlyBranches, staleBranches, onClose, onRefresh, onOpenCreateBranch, onOpenCreateTag }: ContextMenuProps) {
+function ContextMenu({ x, y, commit, repoPath, localOnlyBranches, staleBranches, onClose, onRefresh, onOpenCreateBranch, onOpenCreateTag, onOpenCompare }: ContextMenuProps) {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -185,6 +187,18 @@ function ContextMenu({ x, y, commit, repoPath, localOnlyBranches, staleBranches,
         },
       })),
     ] : []),
+    ...(onOpenCompare ? (() => {
+      const localBranchRefs = parseRefNames(commit.ref_names)
+        .filter(r => r.kind === "branch" || r.kind === "head");
+      if (localBranchRefs.length === 0) return [];
+      return [
+        { label: "──", action: () => { } },
+        ...localBranchRefs.map(ref => ({
+          label: `⇄ Compare '${ref.label}' with…`,
+          action: () => { onClose(); onOpenCompare("", ref.label); },
+        })),
+      ];
+    })() : []),
   ];
 
   return (
@@ -241,7 +255,7 @@ function FileContextMenu({ x, y, absolutePath, onClose, onShowInWorkspace, onSho
 
 const PAGE_SIZE = 100;
 
-export function HistoryTab({ repoPath, filePath, refreshKey, silentRefreshKey, onRefresh, onFileSelect, onClearPath, onShowInWorkspace, onShowInWorkspaceFile, onShowInHistoryFile }: HistoryTabProps) {
+export function HistoryTab({ repoPath, filePath, refreshKey, silentRefreshKey, onRefresh, onFileSelect, onClearPath, onShowInWorkspace, onShowInWorkspaceFile, onShowInHistoryFile, onOpenCompare }: HistoryTabProps) {
   const [commits, setCommits] = useState<CommitInfo[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -258,6 +272,7 @@ export function HistoryTab({ repoPath, filePath, refreshKey, silentRefreshKey, o
   const [filesLoading, setFilesLoading] = useState(false);
   const [selectedFile, setSelectedFile] = useState<CommitFile | null>(null);
 
+  const [selectedForCompare, setSelectedForCompare] = useState<string[]>([]);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; commit: CommitInfo } | null>(null);
   const [createBranchModal, setCreateBranchModal] = useState<{ commitHash: string; hasRemotes: boolean } | null>(null);
   const [createTagModal, setCreateTagModal] = useState<string | null>(null); // commit hash
@@ -292,6 +307,7 @@ export function HistoryTab({ repoPath, filePath, refreshKey, silentRefreshKey, o
     setCommitFiles([]);
     setSelectedFile(null);
     setParents([]);
+    setSelectedForCompare([]);
     loadHistory(0);
     return () => { loadHistoryGenRef.current++; };
   }, [repoPath, refreshKey, loadHistory]);
@@ -331,6 +347,7 @@ export function HistoryTab({ repoPath, filePath, refreshKey, silentRefreshKey, o
     setSelectedCommit(commit);
     setSelectedFile(null);
     setCommitFiles([]);
+    setSelectedForCompare([commit.hash]);
     setFilesLoading(true);
     try {
       const [files, parentHashes] = await Promise.all([
@@ -343,6 +360,16 @@ export function HistoryTab({ repoPath, filePath, refreshKey, silentRefreshKey, o
       setFilesLoading(false);
     }
   }, [repoPath]);
+
+  // ── Ctrl+click commit → toggle compare selection ──────────────────────────
+
+  const handleCtrlClickCommit = useCallback((hash: string) => {
+    setSelectedForCompare((prev) => {
+      if (prev.includes(hash)) return prev.filter((h) => h !== hash);
+      if (prev.length < 2) return [...prev, hash];
+      return [prev[1], hash]; // FIFO: replace oldest
+    });
+  }, []);
 
   // ── select file → notify parent for Quick Diff ────────────────────────────
 
@@ -454,26 +481,74 @@ export function HistoryTab({ repoPath, filePath, refreshKey, silentRefreshKey, o
           </button>
         )}
       </div>
+      {/* ── Compare selection banner ── */}
+      {selectedForCompare.length > 0 && (
+        <div className="shrink-0 flex items-center justify-between px-3 py-1.5 text-xs bg-blue-50 dark:bg-blue-900/20 border-b border-blue-200 dark:border-blue-700 text-blue-700 dark:text-blue-300">
+          {selectedForCompare.length === 1 ? (
+            <span>
+              <span className="font-mono font-medium">{selectedForCompare[0].slice(0, 7)}</span> selected — Ctrl+click another commit to compare
+            </span>
+          ) : (
+            <span className="flex items-center gap-2">
+              <span className="font-mono font-medium">{selectedForCompare[0].slice(0, 7)}</span>
+              <span>⇄</span>
+              <span className="font-mono font-medium">{selectedForCompare[1].slice(0, 7)}</span>
+            </span>
+          )}
+          <div className="flex items-center gap-2 ml-3">
+            {selectedForCompare.length === 2 && onOpenCompare && (
+              <button
+                onClick={() => onOpenCompare(selectedForCompare[0], selectedForCompare[1])}
+                className="px-2 py-0.5 rounded bg-blue-600 text-white text-xs hover:bg-blue-700"
+              >
+                ⇄ Compare (2)
+              </button>
+            )}
+            <button
+              onClick={() => setSelectedForCompare([])}
+              className="text-blue-400 hover:text-blue-600 dark:hover:text-blue-200"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* ── Top: commit list ── */}
       <div className="flex-[3] overflow-y-auto border-b border-gray-200 dark:border-gray-700">
         {commits.map((commit, idx) => {
           const refs = parseRefNames(commit.ref_names);
           const isSelected = selectedCommit?.hash === commit.hash;
+          const compareOrder = selectedForCompare.indexOf(commit.hash);
+          const isSelectedForCompare = compareOrder >= 0;
           const relative = formatRelativeTime(commit.timestamp);
           const graphRow = graphRows[idx];
           return (
             <div
               key={commit.hash}
-              onClick={() => handleSelectCommit(commit)}
+              onClick={(e) => {
+                if (e.ctrlKey) { handleCtrlClickCommit(commit.hash); }
+                else { handleSelectCommit(commit); }
+              }}
               onContextMenu={(e) => { e.preventDefault(); setContextMenu({ x: e.clientX, y: e.clientY, commit }); }}
-              className={`flex items-center gap-2 px-2 cursor-pointer border-b border-gray-100 dark:border-gray-800 ${isSelected ? "bg-blue-50 dark:bg-blue-900/30" : "hover:bg-gray-50 dark:hover:bg-gray-800"
-                }`}
+              className={`flex items-center gap-2 px-2 cursor-pointer border-b border-gray-100 dark:border-gray-800 select-none ${
+                isSelectedForCompare
+                  ? "ring-2 ring-inset ring-blue-400 dark:ring-blue-500 " + (isSelected ? "bg-blue-50 dark:bg-blue-900/30" : "bg-blue-50/40 dark:bg-blue-900/10")
+                  : isSelected
+                  ? "bg-blue-50 dark:bg-blue-900/30"
+                  : "hover:bg-gray-50 dark:hover:bg-gray-800"
+              }`}
               style={{ height: ROW_H }}
             >
               {/* Graph (SVG) */}
               {graphRow && <GraphSvg row={graphRow} />}
               {/* Message (with inline refs) */}
               <div className="flex-1 min-w-0 flex items-center gap-1">
+                {isSelectedForCompare && selectedForCompare.length === 2 && (
+                  <span className="shrink-0 w-4 h-4 flex items-center justify-center rounded-full bg-blue-500 text-white text-[10px] font-bold leading-none">
+                    {compareOrder + 1}
+                  </span>
+                )}
                 {refs.map((r, i) => {
                   const isStale = r.kind === "remote" && staleBranches.has(r.label);
                   const isLocalOnly = (r.kind === "branch" || r.kind === "head") && localOnlyBranches.has(r.label);
@@ -627,7 +702,8 @@ export function HistoryTab({ repoPath, filePath, refreshKey, silentRefreshKey, o
             const remotes = await getRemotes(repoPath).catch(() => []);
             setCreateBranchModal({ commitHash: hash, hasRemotes: remotes.length > 0 });
           }}
-          onOpenCreateTag={(hash) => setCreateTagModal(hash)} />
+          onOpenCreateTag={(hash) => setCreateTagModal(hash)}
+          onOpenCompare={onOpenCompare} />
       )}
       {createBranchModal && (
         <CreateBranchModal

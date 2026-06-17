@@ -4,7 +4,7 @@ import { exists } from "@tauri-apps/plugin-fs";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { APP_NAME } from "./constants";
 import { Header, TabBar, RepoTabBar, GitLogPanel, LeftSidebar, RepoStateBanner } from "./components/layout";
-import type { PendingFilePreview } from "./components/layout/SidebarQuickDiff";
+import type { PendingFilePreview, BranchFileDiffInfo } from "./components/layout/SidebarQuickDiff";
 import { PendingTab } from "./components/tabs";
 import { MergeEditor } from "./components/shared/MergeEditor";
 import type { FileStatus } from "./lib";
@@ -18,6 +18,7 @@ const TagTab = lazy(() => import("./components/tabs/TagTab").then(m => ({ defaul
 const WorktreeTab = lazy(() => import("./components/tabs/WorktreeTab").then(m => ({ default: m.WorktreeTab })));
 const PluginTab = lazy(() => import("./components/tabs/PluginTab").then(m => ({ default: m.PluginTab })));
 const TimeLapsePanel = lazy(() => import("./components/layout/TimeLapsePanel").then(m => ({ default: m.TimeLapsePanel })));
+const BranchDiffTab = lazy(() => import("./components/tabs/BranchDiffTab").then(m => ({ default: m.BranchDiffTab })));
 import {
   isGitRepository,
   getRepositoryRoot,
@@ -108,6 +109,10 @@ function App() {
   } | null>(null);
   const [activeMergeFile, setActiveMergeFile] = useState<FileStatus | null>(null);
   const [conflictCount, setConflictCount] = useState(0);
+  const [branchDiffOpen, setBranchDiffOpen] = useState(false);
+  const [branchFileDiff, setBranchFileDiff] = useState<BranchFileDiffInfo | null>(null);
+  const [branchDiffInitialBase, setBranchDiffInitialBase] = useState<string | undefined>();
+  const [branchDiffInitialCompare, setBranchDiffInitialCompare] = useState<string | undefined>();
 
   // Set window title (visible in taskbar)
   useEffect(() => {
@@ -343,6 +348,10 @@ function App() {
     setLfsLockCount(0);
     setActiveMergeFile(null);
     setConflictCount(0);
+    setBranchDiffOpen(false);
+    setBranchFileDiff(null);
+    setBranchDiffInitialBase(undefined);
+    setBranchDiffInitialCompare(undefined);
   }, [activeRepoId]);
 
   // LFS 설치 여부 확인 (레포 변경 시)
@@ -471,6 +480,7 @@ function App() {
           refreshKey={activeRepo.refreshKey}
           selectedDiff={selectedDiff}
           pendingFilePreview={pendingFilePreview}
+          branchFileDiff={branchFileDiff}
           onFileSelect={setSelectedFilePath}
           onRefresh={handleRefresh}
           highlightPath={workspaceHighlight}
@@ -494,15 +504,29 @@ function App() {
           ) : (
             <>
           <TabBar
-            tabs={BASE_INNER_TABS.map((tab) => {
-              if (tab.id === "pending" && lfsLockCount > 0)
-                return { ...tab, label: `Pending Changes [${lfsLockCount} Locked]` };
-              if (tab.id === "worktrees" && worktreeCount >= 2)
-                return { ...tab, label: `Worktrees [+${worktreeCount}]` };
-              return tab;
-            })}
+            tabs={[
+              ...BASE_INNER_TABS.map((tab) => {
+                if (tab.id === "pending" && lfsLockCount > 0)
+                  return { ...tab, label: `Pending Changes [${lfsLockCount} Locked]` };
+                if (tab.id === "worktrees" && worktreeCount >= 2)
+                  return { ...tab, label: `Worktrees [+${worktreeCount}]` };
+                return tab;
+              }),
+              ...(branchDiffOpen
+                ? [{ id: "branch-diff", label: "⇄ Compare", closeable: true }]
+                : []),
+            ]}
             activeTab={activeRepo.activeTab}
             onTabChange={handleTabChange}
+            onTabClose={(tabId) => {
+              if (tabId === "branch-diff") {
+                setBranchDiffOpen(false);
+                setBranchFileDiff(null);
+                if (activeRepo.activeTab === "branch-diff") {
+                  handleTabChange("branches");
+                }
+              }
+            }}
           />
           <div className={activeRepo.activeTab === "pending" ? "contents" : "hidden"}>
             <PendingTab
@@ -551,6 +575,12 @@ function App() {
                   })();
                 }}
                 onShowInHistoryFile={(absolutePath) => setSelectedFilePath(absolutePath)}
+                onOpenCompare={(base, compare) => {
+                  setBranchDiffInitialBase(base || undefined);
+                  setBranchDiffInitialCompare(compare || undefined);
+                  setBranchDiffOpen(true);
+                  handleTabChange("branch-diff");
+                }}
               />
             )}
             {activeRepo.activeTab === "branches" && (
@@ -559,6 +589,25 @@ function App() {
                 refreshKey={activeRepo.refreshKey}
                 silentRefreshKey={activeRepo.silentRefreshKey}
                 onRefresh={handleRefresh}
+                onOpenCompare={(base, compare) => {
+                  setBranchDiffInitialBase(base || undefined);
+                  setBranchDiffInitialCompare(compare || undefined);
+                  setBranchDiffOpen(true);
+                  handleTabChange("branch-diff");
+                }}
+              />
+            )}
+            {activeRepo.activeTab === "branch-diff" && branchDiffOpen && (
+              <BranchDiffTab
+                repoPath={activeRepo.repoPath}
+                refreshKey={activeRepo.refreshKey}
+                initialBase={branchDiffInitialBase}
+                initialCompare={branchDiffInitialCompare}
+                onFileSelect={(diff, filename) => {
+                  setSelectedDiff(null);
+                  setPendingFilePreview(null);
+                  setBranchFileDiff({ diff, filename });
+                }}
               />
             )}
             {activeRepo.activeTab === "remotes" && (

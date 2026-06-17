@@ -153,6 +153,22 @@ export interface FileCommit {
   author_date: string;
 }
 
+// A commit in a branch-to-branch comparison
+export interface BranchDiffCommit {
+  hash: string;
+  short_hash: string;
+  subject: string;
+  author: string;
+  date: string;
+}
+
+// A file changed between two branches (with +/- line counts)
+export interface BranchDiffFile {
+  filename: string;
+  added: number;
+  deleted: number;
+}
+
 // A single blamed line (from git blame --line-porcelain)
 export interface BlameEntry {
   commit_hash: string;
