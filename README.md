@@ -1,5 +1,5 @@
 # wimygit
-A lightweight Git GUI client for Windows, inspired by Perforce P4V.
+A cross-platform Git GUI client for Windows, macOS, and Linux.
 
 ## Features
 
@@ -13,13 +13,12 @@ A lightweight Git GUI client for Windows, inspired by Perforce P4V.
 - **Tag Management** - Create and manage Git tags
 - **Quick Diff** - Compare commits with parent commits (^1, ^2, etc.)
 - **Plugin System** - Extend functionality with plugins
-- **Command Line Support** - Open directories directly via command line arguments
 
 
 ## Screenshot
-![Screenshot](https://raw.githubusercontent.com/zelon/wimygit/master/ScreenShot.png)
-![Screenshot1](https://raw.githubusercontent.com/zelon/wimygit/master/ScreenShot1.png)
-![Screenshot2](https://raw.githubusercontent.com/zelon/wimygit/master/ScreenShot2.png)
+![Screenshot](https://raw.githubusercontent.com/zelon/wimygit/main/ScreenShot.png)
+![Screenshot1](https://raw.githubusercontent.com/zelon/wimygit/main/ScreenShot1.png)
+![Screenshot2](https://raw.githubusercontent.com/zelon/wimygit/main/ScreenShot2.png)
 
 ## Installation
 
@@ -31,7 +30,7 @@ winget install Wimysoft.wimygit
 
 ### Manual Installation
 
-Download the latest release from [GitHub Releases](https://github.com/zelon/wimygit/releases), extract the zip file, and run the executable.
+Download the latest release for your platform from [GitHub Releases](https://github.com/zelon/wimygit/releases): `.msi`/`.exe` for Windows, `.dmg` for macOS, or `.deb`/`.rpm`/`.AppImage` for Linux.
 
 
 #### For MACOS
@@ -44,17 +43,27 @@ xattr -c /Applications/Wimygit.app
 
 | Component | Technology |
 |-----------|------------|
-| Language  | C# |
-| Framework | .NET 10.0 |
-| GUI       | WPF |
-| Platform  | Windows |
-| IDE       | Visual Studio 2026 |
+| Backend   | Rust, [Tauri 2](https://tauri.app/) |
+| Frontend  | React 19, TypeScript, Vite, Tailwind CSS |
+| Platform  | Windows, macOS, Linux |
+| IDE       | VS Code (recommended) |
+
+### Setup
+
+```bash
+cd wimygit-tauri
+npm install
+npm run tauri:dev    # run the app in development mode
+npm run tauri:build  # build a release bundle for your platform
+```
+
+Requirements: Node.js 24+, a stable Rust toolchain, and (on Linux) `libwebkit2gtk-4.1-dev`, `libappindicator3-dev`, `librsvg2-dev`.
 
 ## Coding Style
 
-Following the CoreFX team's coding guidelines:
-- [Coding Style Guide](https://github.com/dotnet/runtime/blob/main/docs/coding-guidelines/coding-style.md)
-- [.editorconfig](https://github.com/dotnet/runtime/blob/main/.editorconfig)
+- TypeScript/React code is linted with ESLint (`npm run lint` in `wimygit-tauri/`).
+- Rust code follows standard `rustfmt` formatting.
+- See [`.editorconfig`](.editorconfig) for shared editor settings.
 
 ## Contributing
 
@@ -66,4 +75,4 @@ Following the CoreFX team's coding guidelines:
 
 ## Tags
 
-`c#` `wpf` `windows` `git` `git-client` `desktop-app`
+`rust` `tauri` `react` `typescript` `windows` `macos` `linux` `git` `git-client` `desktop-app`
