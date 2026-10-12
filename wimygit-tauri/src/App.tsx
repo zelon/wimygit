@@ -7,6 +7,7 @@ import { Header, TabBar, RepoTabBar, GitLogPanel, LeftSidebar, RepoStateBanner }
 import type { PendingFilePreview, BranchFileDiffInfo } from "./components/layout/SidebarQuickDiff";
 import { PendingTab } from "./components/tabs";
 import { MergeEditor } from "./components/shared/MergeEditor";
+import { SettingsModal } from "./components/shared/SettingsModal";
 import type { FileStatus } from "./lib";
 
 // Lazy-loaded tabs (not needed at startup)
@@ -100,6 +101,7 @@ function App() {
   const [lfsLockCount, setLfsLockCount] = useState(0);
   const [worktreeCount, setWorktreeCount] = useState(0);
   const [showPluginModal, setShowPluginModal] = useState(false);
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [autoFetchSettings, setAutoFetchSettings] = useState<AutoFetchSettings>(loadAutoFetchSettings);
   const [lfsUnlockConfirm, setLfsUnlockConfirm] = useState<{
     repoPath: string;
@@ -448,6 +450,7 @@ function App() {
         onClose={handleCloseRepo}
         onAdd={() => handleOpenRepo()}
         onPluginClick={() => setShowPluginModal(true)}
+        onSettingsClick={() => setShowSettingsModal(true)}
       />
 
       {/* LFS 경고 배너 */}
@@ -706,6 +709,11 @@ function App() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Settings modal */}
+      {showSettingsModal && (
+        <SettingsModal onClose={() => setShowSettingsModal(false)} />
       )}
     </div>
   );

@@ -27,8 +27,7 @@ import {
     type LfsLock,
 } from "../../lib";
 import { getSyncStatus, SyncStatusBar, type SyncStatus } from "./SyncStatusBar";
-
-const AI_API_KEY_STORAGE = "wimygit_ai_api_key";
+import { AI_API_KEY_CHANGED_EVENT, AI_API_KEY_STORAGE } from "../../constants";
 
 async function generateAiCommitMessage(
     stagedDiff: string,
@@ -960,6 +959,16 @@ export function PendingTab({
         () => localStorage.getItem(AI_API_KEY_STORAGE) ?? "",
     );
     const [showApiKeyInput, setShowApiKeyInput] = useState(false);
+
+    // Keep apiKey in sync when the Settings modal saves a new key while this
+    // tab stays mounted (same-tab localStorage writes don't emit "storage").
+    useEffect(() => {
+        const handleApiKeyChanged = (e: Event) => {
+            setApiKey((e as CustomEvent<string>).detail ?? "");
+        };
+        window.addEventListener(AI_API_KEY_CHANGED_EVENT, handleApiKeyChanged);
+        return () => window.removeEventListener(AI_API_KEY_CHANGED_EVENT, handleApiKeyChanged);
+    }, []);
     const [error, setError] = useState<string | null>(null);
     const [previewKey, setPreviewKey] = useState<string | null>(null);
     const [selectedUnstaged, setSelectedUnstaged] = useState<Set<string>>(

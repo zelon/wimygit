@@ -17,9 +17,10 @@ interface RepoTabBarProps {
   onClose: (id: string) => void;
   onAdd: () => void;
   onPluginClick: () => void;
+  onSettingsClick: () => void;
 }
 
-export function RepoTabBar({ tabs, activeId, onSelect, onClose, onAdd, onPluginClick }: RepoTabBarProps) {
+export function RepoTabBar({ tabs, activeId, onSelect, onClose, onAdd, onPluginClick, onSettingsClick }: RepoTabBarProps) {
   const [isMaximized, setIsMaximized] = useState(false);
   const [version, setVersion] = useState("");
   useEffect(() => {
@@ -43,7 +44,7 @@ export function RepoTabBar({ tabs, activeId, onSelect, onClose, onAdd, onPluginC
       className="flex items-end h-9 bg-gray-100 dark:bg-gray-950 border-b border-gray-200 dark:border-gray-800 shrink-0 select-none"
     >
       {/* Left: hamburger + logo */}
-      <div className="self-center"><HamburgerMenu onPluginClick={onPluginClick} /></div>
+      <div className="self-center"><HamburgerMenu onPluginClick={onPluginClick} onSettingsClick={onSettingsClick} /></div>
       <span
         data-tauri-drag-region
         className="text-xs font-semibold text-gray-500 dark:text-gray-400 tracking-wide px-2 shrink-0 self-center"

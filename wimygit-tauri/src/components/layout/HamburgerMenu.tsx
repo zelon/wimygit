@@ -10,13 +10,14 @@ const LATEST_API = "https://api.github.com/repos/zelon/wimygit/releases/latest";
 
 interface HamburgerMenuProps {
   onPluginClick: () => void;
+  onSettingsClick: () => void;
 }
 
 function Separator() {
   return <div className="my-1 border-t border-gray-200 dark:border-gray-700" />;
 }
 
-export function HamburgerMenu({ onPluginClick }: HamburgerMenuProps) {
+export function HamburgerMenu({ onPluginClick, onSettingsClick }: HamburgerMenuProps) {
   const [open, setOpen] = useState(false);
   const [checking, setChecking] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -113,6 +114,12 @@ export function HamburgerMenu({ onPluginClick }: HamburgerMenuProps) {
 
       {open && (
         <div className="absolute left-0 top-full z-50 min-w-[320px] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-lg py-1">
+          <button
+            className={itemClass}
+            onClick={() => closeAndRun(onSettingsClick)}
+          >
+            Settings...
+          </button>
           <button
             className={itemClass}
             onClick={() => closeAndRun(onPluginClick)}
