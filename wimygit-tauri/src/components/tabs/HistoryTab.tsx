@@ -356,10 +356,28 @@ export function HistoryTab({ repoPath, filePath, refreshKey, silentRefreshKey, o
       ]);
       setCommitFiles(files);
       setParents(parentHashes);
+
+      // Path is filtered to a single file → auto-select that file within the
+      // commit so Quick Diff updates immediately, without an extra click.
+      const relPath = filePath
+        ? filePath.replace(/\\/g, "/").replace(repoPath.replace(/\\/g, "/"), "").replace(/^\//, "")
+        : "";
+      if (relPath) {
+        const matched = files.find((f) => f.filename === relPath || f.filename2 === relPath);
+        if (matched) {
+          setSelectedFile(matched);
+          onFileSelect?.({
+            commitId: commit.hash,
+            commit,
+            file: matched,
+            parents: parentHashes,
+          });
+        }
+      }
     } finally {
       setFilesLoading(false);
     }
-  }, [repoPath]);
+  }, [repoPath, filePath, onFileSelect]);
 
   // ── Ctrl+click commit → toggle compare selection ──────────────────────────
 
