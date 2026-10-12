@@ -5,7 +5,7 @@ import {
   getLfsLockableExtensions,
   lfsLockFile,
 } from "../../lib";
-import { type TreeNode, makeNode, patchNode } from "../tabs/DirectoryTreeTab";
+import { type TreeNode, makeNode, patchNode } from "../tabs/directory-tree-node";
 
 // ─── path helpers ─────────────────────────────────────────────────────────────
 
@@ -85,7 +85,9 @@ export function WorkspaceTree({ repoPath, refreshKey, onFileSelect, onRefresh, s
 
   // Track the latest selectPath in a ref so async callbacks can read it without deps
   const selectPathRef = useRef<string | null | undefined>(selectPath?.path);
-  selectPathRef.current = selectPath?.path;
+  useEffect(() => {
+    selectPathRef.current = selectPath?.path;
+  }, [selectPath?.path]);
 
   // Expands all ancestor directories of targetPath and selects the file.
   // Must be called only after root nodes are loaded.
@@ -120,7 +122,9 @@ export function WorkspaceTree({ repoPath, refreshKey, onFileSelect, onRefresh, s
 
   // Ref so the load effect can call the latest expandToPath without it being a dep
   const expandToPathRef = useRef(expandToPath);
-  expandToPathRef.current = expandToPath;
+  useEffect(() => {
+    expandToPathRef.current = expandToPath;
+  }, [expandToPath]);
 
   // When selectPath changes on an already-mounted tree, expand immediately.
   // (Fresh-mount case is handled inside the load effect below.)

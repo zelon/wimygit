@@ -13,7 +13,8 @@ import {
   type SelectedDiffInfo,
 } from "../../lib";
 import { invoke } from "@tauri-apps/api/core";
-import { computeGraphLayout, computeLinearLayout, GraphSvg, ROW_H } from "./GitGraph";
+import { GraphSvg, ROW_H } from "./GitGraph";
+import { computeGraphLayout, computeLinearLayout } from "./git-graph-layout";
 
 interface HistoryTabProps {
   repoPath: string;
@@ -288,7 +289,7 @@ export function HistoryTab({ repoPath, filePath, refreshKey, silentRefreshKey, o
   const loadHistory = useCallback(async (skip = 0) => {
     if (!repoPath) return;
     const gen = ++loadHistoryGenRef.current;
-    skip === 0 ? setLoading(true) : setLoadingMore(true);
+    if (skip === 0) setLoading(true); else setLoadingMore(true);
     try {
       const result = await getHistory(repoPath, filePath ?? "", skip, PAGE_SIZE, allBranches, searchQuery || undefined);
       if (gen !== loadHistoryGenRef.current) return;

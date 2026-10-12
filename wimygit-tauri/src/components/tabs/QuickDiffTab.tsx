@@ -87,7 +87,7 @@ export function QuickDiffTab({ repoPath, refreshKey }: QuickDiffTabProps) {
     try {
       const d = await getDiff(repoPath, mode === "staged", file.filename);
       setDiff(d);
-    } catch (e) {
+    } catch {
       setDiff("");
     } finally {
       setDiffLoading(false);

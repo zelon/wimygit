@@ -26,7 +26,8 @@ import {
     writeTextFile,
     type LfsLock,
 } from "../../lib";
-import { getSyncStatus, SyncStatusBar, type SyncStatus } from "./SyncStatusBar";
+import { SyncStatusBar } from "./SyncStatusBar";
+import { getSyncStatus, type SyncStatus } from "../../lib";
 import { AI_API_KEY_CHANGED_EVENT, AI_API_KEY_STORAGE } from "../../constants";
 
 async function generateAiCommitMessage(
@@ -1634,7 +1635,7 @@ export function PendingTab({
                                         previewKey === `s:${file.filename}`
                                     }
                                     isLocked={lockedSet.has(file.filename)}
-                                    onClick={(_e) =>
+                                    onClick={() =>
                                         handleFileClick(file.filename, true)
                                     }
                                     onContextMenu={(e) =>
