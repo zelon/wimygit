@@ -87,6 +87,7 @@ interface ContextMenuProps {
   repoPath: string;
   localOnlyBranches: Set<string>;
   staleBranches: Set<string>;
+  selectedForCompare: string[];
   onClose: () => void;
   onRefresh: () => void;
   onOpenCreateBranch: (commitHash: string) => void;
@@ -94,7 +95,7 @@ interface ContextMenuProps {
   onOpenCompare?: (base: string, compare: string) => void;
 }
 
-function ContextMenu({ x, y, commit, repoPath, localOnlyBranches, staleBranches, onClose, onRefresh, onOpenCreateBranch, onOpenCreateTag, onOpenCompare }: ContextMenuProps) {
+function ContextMenu({ x, y, commit, repoPath, localOnlyBranches, staleBranches, selectedForCompare, onClose, onRefresh, onOpenCreateBranch, onOpenCreateTag, onOpenCompare }: ContextMenuProps) {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -118,6 +119,13 @@ function ContextMenu({ x, y, commit, repoPath, localOnlyBranches, staleBranches,
     .map(r => r.label);
 
   const items: { label: string; action: () => void; danger?: boolean }[] = [
+    ...(selectedForCompare.length === 2 && onOpenCompare ? [
+      {
+        label: "⇄ Compare commits",
+        action: () => { onClose(); onOpenCompare(selectedForCompare[0], selectedForCompare[1]); },
+      },
+      { label: "──", action: () => { } },
+    ] : []),
     { label: "Checkout", action: () => run(["checkout", commit.hash]) },
     {
       label: "Create Branch here…", action: () => {
@@ -503,39 +511,6 @@ export function HistoryTab({ repoPath, filePath, refreshKey, silentRefreshKey, o
           </button>
         )}
       </div>
-      {/* ── Compare selection banner ── */}
-      {selectedForCompare.length > 0 && (
-        <div className="shrink-0 flex items-center justify-between px-3 py-1.5 text-xs bg-blue-50 dark:bg-blue-900/20 border-b border-blue-200 dark:border-blue-700 text-blue-700 dark:text-blue-300">
-          {selectedForCompare.length === 1 ? (
-            <span>
-              <span className="font-mono font-medium">{selectedForCompare[0].slice(0, 7)}</span> selected — Ctrl+click another commit to compare
-            </span>
-          ) : (
-            <span className="flex items-center gap-2">
-              <span className="font-mono font-medium">{selectedForCompare[0].slice(0, 7)}</span>
-              <span>⇄</span>
-              <span className="font-mono font-medium">{selectedForCompare[1].slice(0, 7)}</span>
-            </span>
-          )}
-          <div className="flex items-center gap-2 ml-3">
-            {selectedForCompare.length === 2 && onOpenCompare && (
-              <button
-                onClick={() => onOpenCompare(selectedForCompare[0], selectedForCompare[1])}
-                className="px-2 py-0.5 rounded bg-blue-600 text-white text-xs hover:bg-blue-700"
-              >
-                ⇄ Compare (2)
-              </button>
-            )}
-            <button
-              onClick={() => setSelectedForCompare([])}
-              className="text-blue-400 hover:text-blue-600 dark:hover:text-blue-200"
-            >
-              ✕
-            </button>
-          </div>
-        </div>
-      )}
-
       {/* ── Top: commit list ── */}
       <div className="flex-[3] overflow-y-auto border-b border-gray-200 dark:border-gray-700">
         {commits.map((commit, idx) => {
@@ -718,6 +693,7 @@ export function HistoryTab({ repoPath, filePath, refreshKey, silentRefreshKey, o
       {contextMenu && (
         <ContextMenu x={contextMenu.x} y={contextMenu.y} commit={contextMenu.commit}
           repoPath={repoPath} localOnlyBranches={localOnlyBranches} staleBranches={staleBranches}
+          selectedForCompare={selectedForCompare}
           onClose={() => setContextMenu(null)}
           onRefresh={() => { setContextMenu(null); onRefresh(); }}
           onOpenCreateBranch={async (hash) => {
