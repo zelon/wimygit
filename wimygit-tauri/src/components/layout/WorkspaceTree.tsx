@@ -131,13 +131,17 @@ export function WorkspaceTree({ repoPath, refreshKey, onFileSelect, onRefresh, s
   const rootLoadedRef = useRef(false);
   useEffect(() => {
     if (selectPath && rootLoadedRef.current) {
+      // Run the action (it fetches + sets state internally) in response to the prop change.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       expandToPath(selectPath.path);
     }
   }, [selectPath, expandToPath]);
 
+  // Load root: standard data-fetch effect shape (loading flag set before the fetch starts).
   useEffect(() => {
     if (!repoPath) return;
     rootLoadedRef.current = false;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true);
     listDirEntries(repoPath)
       .then((entries) => {

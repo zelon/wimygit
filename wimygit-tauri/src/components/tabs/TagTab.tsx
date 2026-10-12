@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import {
   getTags,
   createTag,
@@ -31,7 +31,7 @@ export function TagTab({ repoPath, refreshKey, onRefresh }: TagTabProps) {
 
   const fetchGenRef = useRef(0);
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     if (!repoPath) return;
     const gen = ++fetchGenRef.current;
     setLoading(true);
@@ -49,12 +49,15 @@ export function TagTab({ repoPath, refreshKey, onRefresh }: TagTabProps) {
     } finally {
       if (gen === fetchGenRef.current) setLoading(false);
     }
-  };
+  }, [repoPath]);
 
   useEffect(() => {
     fetchData();
+    // gen is bumped on cleanup to invalidate any in-flight fetch from this
+    // effect run; always read live, not a snapshot.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     return () => { fetchGenRef.current++; };
-  }, [repoPath, refreshKey]);
+  }, [fetchData, refreshKey]);
 
   const handleCreate = async () => {
     if (!newName.trim()) {

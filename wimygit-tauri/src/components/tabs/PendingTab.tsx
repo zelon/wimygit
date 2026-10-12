@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useLayoutEffect, useRef, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { remove } from "@tauri-apps/plugin-fs";
 import { resolve } from "@tauri-apps/api/path";
@@ -260,7 +260,9 @@ function UnstagedCtxMenu({
 
     // 메뉴가 화면 밖으로 나가지 않도록 위치 조정
     const [pos, setPos] = useState({ top: y, left: x });
-    useEffect(() => {
+    // useLayoutEffect: measure + adjust position before paint, avoiding a
+    // 1-frame flash at the original (possibly off-screen) coordinates.
+    useLayoutEffect(() => {
         if (menuRef.current) {
             const rect = menuRef.current.getBoundingClientRect();
             let newTop = y;
@@ -270,6 +272,7 @@ function UnstagedCtxMenu({
             if (x + rect.width > window.innerWidth)
                 newLeft = window.innerWidth - rect.width - 4;
             if (newTop !== y || newLeft !== x)
+                // eslint-disable-next-line react-hooks/set-state-in-effect -- measuring the DOM then adjusting is the point of useLayoutEffect
                 setPos({ top: newTop, left: newLeft });
         }
     }, [x, y]);
@@ -611,7 +614,9 @@ function ConflictCtxMenu({
 }: ConflictCtxMenuProps) {
     const menuRef = useRef<HTMLDivElement>(null);
     const [pos, setPos] = useState({ top: y, left: x });
-    useEffect(() => {
+    // useLayoutEffect: measure + adjust position before paint, avoiding a
+    // 1-frame flash at the original (possibly off-screen) coordinates.
+    useLayoutEffect(() => {
         if (menuRef.current) {
             const rect = menuRef.current.getBoundingClientRect();
             let newTop = y;
@@ -621,6 +626,7 @@ function ConflictCtxMenu({
             if (x + rect.width > window.innerWidth)
                 newLeft = window.innerWidth - rect.width - 4;
             if (newTop !== y || newLeft !== x)
+                // eslint-disable-next-line react-hooks/set-state-in-effect -- measuring the DOM then adjusting is the point of useLayoutEffect
                 setPos({ top: newTop, left: newLeft });
         }
     }, [x, y]);
@@ -759,7 +765,9 @@ function StagedCtxMenu({
     const menuRef = useRef<HTMLDivElement>(null);
 
     const [pos, setPos] = useState({ top: y, left: x });
-    useEffect(() => {
+    // useLayoutEffect: measure + adjust position before paint, avoiding a
+    // 1-frame flash at the original (possibly off-screen) coordinates.
+    useLayoutEffect(() => {
         if (menuRef.current) {
             const rect = menuRef.current.getBoundingClientRect();
             let newTop = y;
@@ -769,6 +777,7 @@ function StagedCtxMenu({
             if (x + rect.width > window.innerWidth)
                 newLeft = window.innerWidth - rect.width - 4;
             if (newTop !== y || newLeft !== x)
+                // eslint-disable-next-line react-hooks/set-state-in-effect -- measuring the DOM then adjusting is the point of useLayoutEffect
                 setPos({ top: newTop, left: newLeft });
         }
     }, [x, y]);
@@ -1012,7 +1021,7 @@ export function PendingTab({
 
     const fetchGenRef = useRef(0);
 
-    const fetchStatus = async () => {
+    const fetchStatus = useCallback(async () => {
         if (!repoPath) return;
         const gen = ++fetchGenRef.current;
         setLoading(true);
@@ -1047,17 +1056,20 @@ export function PendingTab({
         } finally {
             if (gen === fetchGenRef.current) setLoading(false);
         }
-    };
+    }, [repoPath, onLfsLockCountChange, onConflictCountChange]);
 
     useEffect(() => {
         fetchStatus();
         setPreviewKey(null);
         setSelectedUnstaged(new Set());
         setSelectedConflicts(new Set());
+        // gen is bumped on cleanup to invalidate any in-flight fetch from this
+        // effect run; always read live, not a snapshot.
         return () => {
+            // eslint-disable-next-line react-hooks/exhaustive-deps
             fetchGenRef.current++;
         };
-    }, [repoPath, refreshKey]);
+    }, [fetchStatus, refreshKey]);
 
     const silentFetchGenRef = useRef(0);
 
@@ -1088,7 +1100,7 @@ export function PendingTab({
                 // silent refresh errors are ignored to avoid disrupting the user
             }
         })();
-    }, [repoPath, silentRefreshKey]);
+    }, [repoPath, silentRefreshKey, onLfsLockCountChange]);
 
     // ── File actions ──────────────────────────────────────────────────────────
 
@@ -1240,7 +1252,7 @@ export function PendingTab({
         window.addEventListener("keydown", onKeyDown, { capture: true });
         return () =>
             window.removeEventListener("keydown", onKeyDown, { capture: true });
-    }, []);
+    }, [fetchStatus]);
 
     const handleDeleteFiles = async (files: string[]) => {
         const absolutePaths = await Promise.all(

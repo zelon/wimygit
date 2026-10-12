@@ -310,6 +310,9 @@ export function HistoryTab({ repoPath, filePath, refreshKey, silentRefreshKey, o
     setParents([]);
     setSelectedForCompare([]);
     loadHistory(0);
+    // gen is bumped on cleanup to invalidate any in-flight fetch from this
+    // effect run; always read live, not a snapshot.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     return () => { loadHistoryGenRef.current++; };
   }, [repoPath, refreshKey, loadHistory]);
 
@@ -328,7 +331,7 @@ export function HistoryTab({ repoPath, filePath, refreshKey, silentRefreshKey, o
         // silent refresh errors are ignored
       }
     })();
-  }, [repoPath, silentRefreshKey]);
+  }, [repoPath, silentRefreshKey, filePath, allBranches, searchQuery]);
 
   useEffect(() => {
     if (!repoPath) return;

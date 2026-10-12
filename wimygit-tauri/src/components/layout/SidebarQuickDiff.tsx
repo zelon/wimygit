@@ -167,21 +167,29 @@ export function SidebarQuickDiff({ repoPath, selectedDiff, pendingFilePreview, b
   const currentMode = modes.find((m) => m.kind === activeMode) ?? modes[0];
 
   // ── Rebuild commit modes when selection changes ──
-  useEffect(() => {
-    if (!selectedDiff) return;
-    const newModes = buildDiffModes(selectedDiff.parents);
-    setModes(newModes);
-    setActiveMode(newModes[0].kind);
-  }, [selectedDiff]);
+  // Adjusted during render (not in an effect) per the React-recommended
+  // "track the previous prop in state" pattern — no extra render/flicker.
+  const [prevSelectedDiffForModes, setPrevSelectedDiffForModes] = useState(selectedDiff);
+  if (selectedDiff !== prevSelectedDiffForModes) {
+    setPrevSelectedDiffForModes(selectedDiff);
+    if (selectedDiff) {
+      const newModes = buildDiffModes(selectedDiff.parents);
+      setModes(newModes);
+      setActiveMode(newModes[0].kind);
+    }
+  }
 
   // ── Reset conflict view mode when file changes ──
-  useEffect(() => {
+  const [prevConflictFilename, setPrevConflictFilename] = useState(pendingFilePreview?.filename);
+  if (pendingFilePreview?.filename !== prevConflictFilename) {
+    setPrevConflictFilename(pendingFilePreview?.filename);
     setConflictViewMode("unified");
-  }, [pendingFilePreview?.filename]);
+  }
 
   // ── Commit diff (from History tab) ──
   useEffect(() => {
     if (!selectedDiff || !repoPath) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- clearing state when there's nothing to fetch, not deriving it from props
       setDiff("");
       setImagePreviewSrc(null);
       setImageDiffSrcs(null);
@@ -259,12 +267,12 @@ export function SidebarQuickDiff({ repoPath, selectedDiff, pendingFilePreview, b
       .then((d) => setDiff(d))
       .catch(() => setDiff(""))
       .finally(() => setLoadingDiff(false));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [repoPath, selectedDiff, activeMode, contextLines, ignoreWhitespace]);
 
   // ── Pending file preview (from PendingTab) ──
   useEffect(() => {
     if (!pendingFilePreview || isCommitMode || !repoPath) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- clearing state when there's nothing to fetch, not deriving it from props
       setPendingDiff(""); setImagePreviewSrc(null); setImageDiffSrcs(null); return;
     }
 

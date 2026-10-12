@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { type SelectedDiffInfo } from "../../lib";
 import { WorkspaceTree } from "./WorkspaceTree";
 import { SidebarQuickDiff, type PendingFilePreview, type BranchFileDiffInfo } from "./SidebarQuickDiff";
@@ -32,41 +32,49 @@ export function LeftSidebar({ repoPath, refreshKey, selectedDiff, pendingFilePre
     (localStorage.getItem("sidebar_tab") as LeftTab | null) ?? "workspace"
   );
 
-  // Auto-switch to Quick Diff when a commit file or pending file is selected
-  const prevSelectedDiff = useRef<SelectedDiffInfo | null | undefined>(undefined);
-  useEffect(() => {
-    if (selectedDiff && selectedDiff !== prevSelectedDiff.current) {
+  // Auto-switch to Quick Diff when a commit file or pending file is selected.
+  // Adjusted during render (not in an effect) per the React-recommended
+  // "storing the previous value in state to react to a prop change" pattern —
+  // this fires synchronously before paint, with no extra render/flicker.
+  const [prevSelectedDiff, setPrevSelectedDiff] = useState<SelectedDiffInfo | null | undefined>(undefined);
+  if (selectedDiff !== prevSelectedDiff) {
+    setPrevSelectedDiff(selectedDiff);
+    if (selectedDiff) {
       setActiveTab("quickdiff");
       localStorage.setItem("sidebar_tab", "quickdiff");
     }
-    prevSelectedDiff.current = selectedDiff;
-  }, [selectedDiff]);
+  }
 
-  const prevPendingFilePreview = useRef<PendingFilePreview | null | undefined>(undefined);
-  useEffect(() => {
-    if (pendingFilePreview && pendingFilePreview !== prevPendingFilePreview.current) {
+  const [prevPendingFilePreview, setPrevPendingFilePreview] = useState<PendingFilePreview | null | undefined>(undefined);
+  if (pendingFilePreview !== prevPendingFilePreview) {
+    setPrevPendingFilePreview(pendingFilePreview);
+    if (pendingFilePreview) {
       setActiveTab("quickdiff");
       localStorage.setItem("sidebar_tab", "quickdiff");
     }
-    prevPendingFilePreview.current = pendingFilePreview;
-  }, [pendingFilePreview]);
+  }
 
-  const prevBranchFileDiff = useRef<BranchFileDiffInfo | null | undefined>(undefined);
-  useEffect(() => {
-    if (branchFileDiff && branchFileDiff !== prevBranchFileDiff.current) {
+  const [prevBranchFileDiff, setPrevBranchFileDiff] = useState<BranchFileDiffInfo | null | undefined>(undefined);
+  if (branchFileDiff !== prevBranchFileDiff) {
+    setPrevBranchFileDiff(branchFileDiff);
+    if (branchFileDiff) {
       setActiveTab("quickdiff");
       localStorage.setItem("sidebar_tab", "quickdiff");
     }
-    prevBranchFileDiff.current = branchFileDiff;
-  }, [branchFileDiff]);
+  }
 
-  // Auto-switch to Workspace tab when highlightPath is set
-  useEffect(() => {
+  // Auto-switch to Workspace tab when highlightPath is set.
+  // highlightPath is a new object reference on every click (even for the same
+  // path), so comparing by reference reproduces the original "fires on every
+  // click" behavior.
+  const [prevHighlightPath, setPrevHighlightPath] = useState(highlightPath);
+  if (highlightPath !== prevHighlightPath) {
+    setPrevHighlightPath(highlightPath);
     if (highlightPath) {
       setActiveTab("workspace");
       localStorage.setItem("sidebar_tab", "workspace");
     }
-  }, [highlightPath]); // object reference always changes on each click, so effect always fires
+  }
 
   // ── double-click to toggle 3:1 / 1:3 ratio ──
   const handleDoubleClick = useCallback(() => {

@@ -74,6 +74,10 @@ export function QuickDiffTab({ repoPath, refreshKey }: QuickDiffTabProps) {
       })
       .catch(() => setFullDiff(""))
       .finally(() => setDiffLoading(false));
+    // selectedFile intentionally excluded: this effect refetches the FULL
+    // diff from git, which only needs to happen on repo/mode changes, not on
+    // every file selection — selecting a file shouldn't re-fetch everything.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [repoPath, refreshKey, mode]);
 
   // Load diff for selected file

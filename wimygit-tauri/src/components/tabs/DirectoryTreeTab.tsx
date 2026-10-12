@@ -358,9 +358,10 @@ export function DirectoryTreeTab({ repoPath, refreshKey }: DirectoryTreeTabProps
     }
   }, [repoPath]);
 
-  // Load root
+  // Load root: standard data-fetch effect shape (loading flag set before the fetch starts).
   useEffect(() => {
     if (!repoPath) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true);
     listDirEntries(repoPath)
       .then((entries) => {

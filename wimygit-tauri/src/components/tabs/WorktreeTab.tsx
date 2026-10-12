@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { resolve } from "@tauri-apps/api/path";
 import {
   getWorktrees,
@@ -46,7 +46,7 @@ export function WorktreeTab({ repoPath, refreshKey, onRefresh, onOpenRepo, onWor
 
   const fetchGenRef = useRef(0);
 
-  const fetchWorktrees = async () => {
+  const fetchWorktrees = useCallback(async () => {
     if (!repoPath) return;
     const gen = ++fetchGenRef.current;
     setLoading(true);
@@ -61,12 +61,15 @@ export function WorktreeTab({ repoPath, refreshKey, onRefresh, onOpenRepo, onWor
     } finally {
       if (gen === fetchGenRef.current) setLoading(false);
     }
-  };
+  }, [repoPath, onWorktreeCountChange]);
 
   useEffect(() => {
     fetchWorktrees();
+    // gen is bumped on cleanup to invalidate any in-flight fetch from this
+    // effect run; always read live, not a snapshot.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     return () => { fetchGenRef.current++; };
-  }, [repoPath, refreshKey]);
+  }, [fetchWorktrees, refreshKey]);
 
   const handleOpenAdd = async () => {
     setShowAdd(true);

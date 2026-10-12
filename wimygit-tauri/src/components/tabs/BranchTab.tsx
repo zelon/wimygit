@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import {
   getBranches,
   getCurrentBranch,
@@ -29,7 +29,7 @@ export function BranchTab({ repoPath, refreshKey, silentRefreshKey, onRefresh, o
 
   const fetchGenRef = useRef(0);
 
-  const fetchBranches = async () => {
+  const fetchBranches = useCallback(async () => {
     if (!repoPath) return;
     const gen = ++fetchGenRef.current;
     setLoading(true);
@@ -47,13 +47,17 @@ export function BranchTab({ repoPath, refreshKey, silentRefreshKey, onRefresh, o
     } finally {
       if (gen === fetchGenRef.current) setLoading(false);
     }
-  };
+  }, [repoPath]);
 
   useEffect(() => {
     fetchBranches();
     setSelectedForCompare([]);
+    // gen is bumped on cleanup to invalidate any in-flight fetch from this
+    // effect run; always read live, not a snapshot, so it's intentionally
+    // not "copied to a variable" per the usual exhaustive-deps suggestion.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     return () => { fetchGenRef.current++; };
-  }, [repoPath, refreshKey]);
+  }, [fetchBranches, refreshKey]);
 
   const silentFetchGenRef = useRef(0);
 

@@ -60,7 +60,7 @@ export function BranchDiffTab({ repoPath, refreshKey, onFileSelect, initialBase,
         // ignore
       }
     })();
-  }, [repoPath, refreshKey]);
+  }, [repoPath, refreshKey, initialBase, initialCompare]);
 
   // Load commits + files when base/compare changes
   useEffect(() => {

@@ -229,8 +229,12 @@ export function TimeLapsePanel({ repoPath, filePath, onClose }: TimeLapsePanelPr
   const [blameLoading, setBlameLoading] = useState(false);
   const [blameError, setBlameError] = useState<string | null>(null);
 
-  // Load file commit history on mount
+  // Load file commit history on mount. Kicking off a loading flag
+  // synchronously before starting the fetch is the standard data-fetching
+  // effect shape; there's no earlier point to set it without the flag lagging
+  // a frame behind the fetch actually starting.
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setCommitsLoading(true);
     setCommitsError(null);
     getFileCommits(repoPath, relPath)
@@ -244,10 +248,11 @@ export function TimeLapsePanel({ repoPath, filePath, onClose }: TimeLapsePanelPr
       .finally(() => setCommitsLoading(false));
   }, [repoPath, relPath]);
 
-  // Load blame whenever selected commit changes
+  // Load blame whenever selected commit changes (same data-fetch shape as above)
   useEffect(() => {
     if (selectedIdx < 0 || displayCommits.length === 0) return;
     const commit = displayCommits[selectedIdx];
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setBlameLoading(true);
     setBlameError(null);
     getBlameAtCommit(repoPath, commit.hash, relPath)

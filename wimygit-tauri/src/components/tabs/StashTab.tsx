@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import {
   getStashList,
   stashPush,
@@ -26,7 +26,7 @@ export function StashTab({ repoPath, refreshKey, onRefresh }: StashTabProps) {
 
   const fetchGenRef = useRef(0);
 
-  const fetchStashes = async () => {
+  const fetchStashes = useCallback(async () => {
     if (!repoPath) return;
     const gen = ++fetchGenRef.current;
     setLoading(true);
@@ -40,12 +40,15 @@ export function StashTab({ repoPath, refreshKey, onRefresh }: StashTabProps) {
     } finally {
       if (gen === fetchGenRef.current) setLoading(false);
     }
-  };
+  }, [repoPath]);
 
   useEffect(() => {
     fetchStashes();
+    // gen is bumped on cleanup to invalidate any in-flight fetch from this
+    // effect run; always read live, not a snapshot.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     return () => { fetchGenRef.current++; };
-  }, [repoPath, refreshKey]);
+  }, [fetchStashes, refreshKey]);
 
   const handleCreate = async () => {
     setError(null);

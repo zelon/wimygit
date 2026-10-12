@@ -88,8 +88,23 @@ function saveStoredTabs(tabs: RepoTabState[]) {
 }
 
 function App() {
-  const [repoTabs, setRepoTabs] = useState<RepoTabState[]>([]);
-  const [activeRepoId, setActiveRepoId] = useState<string>("");
+  const [repoTabs, setRepoTabs] = useState<RepoTabState[]>(() => {
+    const stored = loadStoredTabs();
+    return stored.map((s) => ({
+      id: s.id,
+      repoPath: s.repoPath,
+      repoName: s.repoName,
+      activeTab: "pending",
+      refreshKey: 0,
+      silentRefreshKey: 0,
+    }));
+  });
+  const [activeRepoId, setActiveRepoId] = useState<string>(() => {
+    const stored = loadStoredTabs();
+    if (stored.length === 0) return "";
+    const lastActive = localStorage.getItem("activeRepoId");
+    return stored.find((s) => s.id === lastActive)?.id ?? stored[0].id;
+  });
   const [plugins, setPlugins] = useState<PluginInfo[]>([]);
   const [openError, setOpenError] = useState<string | null>(null);
   const [selectedDiff, setSelectedDiff] = useState<SelectedDiffInfo | null>(null);
@@ -121,43 +136,30 @@ function App() {
     getCurrentWindow().setTitle(APP_NAME).catch(() => { });
   }, []);
 
-  // Restore previously opened repos on startup
+  // Validate the repo restored as active on startup (tabs/activeRepoId
+  // themselves come from the lazy useState initializers above).
   useEffect(() => {
     const stored = loadStoredTabs();
     if (stored.length === 0) return;
-
-    // Show tabs immediately, only validate active repo on startup
-    const tabs: RepoTabState[] = stored.map((s) => ({
-      id: s.id,
-      repoPath: s.repoPath,
-      repoName: s.repoName,
-      activeTab: "pending",
-      refreshKey: 0,
-      silentRefreshKey: 0,
-    }));
-    setRepoTabs(tabs);
     const lastActive = localStorage.getItem("activeRepoId");
-    const firstId = tabs.find((t) => t.id === lastActive)?.id ?? tabs[0].id;
-    setActiveRepoId(firstId);
+    const firstId = stored.find((s) => s.id === lastActive)?.id ?? stored[0].id;
+    const activeTab = stored.find((s) => s.id === firstId);
+    if (!activeTab) return;
 
-    // Only validate the active repo on startup
-    const activeTab = tabs.find((t) => t.id === firstId);
-    if (activeTab) {
-      isGitRepository(activeTab.repoPath).then((ok) => {
-        if (!ok) {
-          setRepoTabs((prev) => {
-            const next = prev.filter((t) => t.id !== firstId);
-            saveStoredTabs(next);
-            const newActive = next[0]?.id ?? "";
-            setActiveRepoId(newActive);
-            localStorage.setItem("activeRepoId", newActive);
-            return next;
-          });
-        }
-      }).catch(() => {
-        // ignore validation errors on startup
-      });
-    }
+    isGitRepository(activeTab.repoPath).then((ok) => {
+      if (!ok) {
+        setRepoTabs((prev) => {
+          const next = prev.filter((t) => t.id !== firstId);
+          saveStoredTabs(next);
+          const newActive = next[0]?.id ?? "";
+          setActiveRepoId(newActive);
+          localStorage.setItem("activeRepoId", newActive);
+          return next;
+        });
+      }
+    }).catch(() => {
+      // ignore validation errors on startup
+    });
   }, []);
 
   const activeRepo = repoTabs.find((t) => t.id === activeRepoId) ?? null;
@@ -340,8 +342,12 @@ function App() {
     [repoTabs, handleSelectRepo]
   );
 
-  // Clear file selections when switching repos
+  // Clear file selections when switching repos. Intentionally synchronous:
+  // this resets ~10 independent UI-only state slots together when the
+  // activeRepoId prop changes; splitting it into per-field derived state
+  // would be a much larger, riskier refactor for no behavior change.
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSelectedDiff(null);
     setPendingFilePreview(null);
     setSelectedFilePath(null);
@@ -388,6 +394,8 @@ function App() {
   }, []);
 
   useEffect(() => {
+    // Re-run the action (not deriving state from props) whenever the active repo changes.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     reloadPlugins();
   }, [activeRepoId, reloadPlugins]);
 

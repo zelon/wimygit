@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
 interface DiffLineCtxMenuProps {
@@ -17,13 +17,16 @@ export function DiffLineCtxMenu({
   const menuRef = useRef<HTMLDivElement>(null);
   const [pos, setPos] = useState({ top: y, left: x });
 
-  useEffect(() => {
+  // useLayoutEffect: measure + adjust position before paint, avoiding a 1-frame
+  // flash at the original (possibly off-screen) coordinates.
+  useLayoutEffect(() => {
     if (menuRef.current) {
       const rect = menuRef.current.getBoundingClientRect();
       let newTop = y;
       let newLeft = x;
       if (y + rect.height > window.innerHeight) newTop = window.innerHeight - rect.height - 4;
       if (x + rect.width > window.innerWidth) newLeft = window.innerWidth - rect.width - 4;
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- measuring the DOM then adjusting is the point of useLayoutEffect
       if (newTop !== y || newLeft !== x) setPos({ top: newTop, left: newLeft });
     }
   }, [x, y]);

@@ -67,6 +67,8 @@ export function ImageDiffViewer({ beforeSrc, afterSrc, filename, mode }: ImageDi
   // is always attached before src is set, avoiding the cached-data-URL race
   // where the browser fires onload synchronously before React attaches listeners.
   useEffect(() => {
+    // Clear the stale dimensions before starting the (subscription-based) load below.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setBeforeNatural(null);
     let cancelled = false;
     const img = new Image();
@@ -76,6 +78,7 @@ export function ImageDiffViewer({ beforeSrc, afterSrc, filename, mode }: ImageDi
   }, [beforeSrc]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setAfterNatural(null);
     let cancelled = false;
     const img = new Image();
@@ -95,11 +98,16 @@ export function ImageDiffViewer({ beforeSrc, afterSrc, filename, mode }: ImageDi
     return () => obs.disconnect();
   }, [mode]);
 
-  // Reset zoom/pan when images or mode change
-  useEffect(() => {
+  // Reset zoom/pan when images or mode change. Adjusted during render (not in
+  // an effect) per the React-recommended "track the previous key in state"
+  // pattern — fires synchronously before paint, with no extra render/flicker.
+  const resetKey = `${beforeSrc}|${afterSrc}|${mode}`;
+  const [prevResetKey, setPrevResetKey] = useState(resetKey);
+  if (resetKey !== prevResetKey) {
+    setPrevResetKey(resetKey);
     setZoom(1);
     setPanOffset({ x: 0, y: 0 });
-  }, [beforeSrc, afterSrc, mode]);
+  }
 
   // Zoom centered on cursor position within a panel rect.
   // transform-origin is "center" (50% 50%), so the coordinate system is:
