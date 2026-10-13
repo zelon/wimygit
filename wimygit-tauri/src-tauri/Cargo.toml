@@ -30,3 +30,6 @@ tauri-plugin-http = "2"
 tauri-plugin-dialog = "2"
 roxmltree = "0.21"
 base64 = "0.22"
+
+[target.'cfg(any(target_os = "macos", windows, target_os = "linux"))'.dependencies]
+tauri-plugin-window-state = "2"

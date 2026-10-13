@@ -125,9 +125,50 @@ fn get_config_dir() -> Result<String, String> {
     Ok(parent.to_string_lossy().to_string())
 }
 
+/// 네이티브 창/WebView 배경색을 앱 배경색(index.css의 body)과 맞춘다.
+/// 기본값(검은색)이면 창 크기 변경 시 WebView가 다시 그려지기 전까지
+/// 검은 영역이 드러나거나, 드래그 후 WebView2가 화면 버퍼를 다시 만들 때 깜빡여 보인다.
+fn apply_theme_background(app: &tauri::App) {
+  use tauri::{window::Color, Manager, Theme, WindowEvent};
+
+  fn color_for(theme: Theme) -> Color {
+    match theme {
+      Theme::Dark => Color(0x10, 0x18, 0x28, 0xff),  // tailwind gray-900
+      _ => Color(0xf9, 0xfa, 0xfb, 0xff),            // tailwind gray-50
+    }
+  }
+
+  let Some(window) = app.get_webview_window("main") else {
+    return;
+  };
+  if let Ok(theme) = window.theme() {
+    let _ = window.set_background_color(Some(color_for(theme)));
+  }
+  let w = window.clone();
+  window.on_window_event(move |e| {
+    if let WindowEvent::ThemeChanged(theme) = e {
+      let _ = w.set_background_color(Some(color_for(*theme)));
+    }
+  });
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-  tauri::Builder::default()
+  let builder = tauri::Builder::default();
+
+  // 창 크기/위치/최대화 상태를 저장·복원 (최소화 상태, 멀티 모니터, DPI 처리 포함).
+  // VISIBLE은 제외: 창은 프론트엔드 렌더링 후 main.tsx에서 show()하여 빈 프레임 노출을 막는다.
+  #[cfg(desktop)]
+  let builder = builder.plugin(
+    tauri_plugin_window_state::Builder::default()
+      .with_state_flags(
+        tauri_plugin_window_state::StateFlags::all()
+          - tauri_plugin_window_state::StateFlags::VISIBLE,
+      )
+      .build(),
+  );
+
+  builder
     .plugin(tauri_plugin_dialog::init())
     .plugin(tauri_plugin_http::init())
     .plugin(tauri_plugin_fs::init())
@@ -206,6 +247,7 @@ pub fn run() {
     ])
     .setup(|app| {
       git::init_app_handle(app.handle().clone());
+      apply_theme_background(app);
       if cfg!(debug_assertions) {
         app.handle().plugin(
           tauri_plugin_log::Builder::default()
