@@ -126,8 +126,7 @@ fn get_config_dir() -> Result<String, String> {
 }
 
 /// 네이티브 창/WebView 배경색을 앱 배경색(index.css의 body)과 맞춘다.
-/// 기본값(검은색)이면 창 크기 변경 시 WebView가 다시 그려지기 전까지
-/// 검은 영역이 드러나거나, 드래그 후 WebView2가 화면 버퍼를 다시 만들 때 깜빡여 보인다.
+/// 기본값(검은색)이면 창 크기 변경 시 WebView가 다시 그려지기 전까지 검은 영역이 드러난다.
 fn apply_theme_background(app: &tauri::App) {
   use tauri::{window::Color, Manager, Theme, WindowEvent};
 
