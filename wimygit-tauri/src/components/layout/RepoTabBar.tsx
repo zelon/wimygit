@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { getVersion } from "@tauri-apps/api/app";
 import { HamburgerMenu } from "./HamburgerMenu";
@@ -23,6 +23,7 @@ interface RepoTabBarProps {
 export function RepoTabBar({ tabs, activeId, onSelect, onClose, onAdd, onPluginClick, onSettingsClick }: RepoTabBarProps) {
   const [isMaximized, setIsMaximized] = useState(false);
   const [version, setVersion] = useState("");
+  const tabsScrollRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     getVersion().then(setVersion).catch(() => {});
     const appWindow = getCurrentWindow();
@@ -33,6 +34,27 @@ export function RepoTabBar({ tabs, activeId, onSelect, onClose, onAdd, onPluginC
     });
     return () => { unlisten.then((fn) => fn()); };
   }, []);
+
+  // Keep the active tab visible (e.g. on startup when the window is too narrow for all tabs)
+  // Also re-runs on container resize, since the saved window size is restored after the first render
+  useEffect(() => {
+    const container = tabsScrollRef.current;
+    if (!container) return;
+    const scrollActiveTabIntoView = () => {
+      const activeTab = container.querySelector<HTMLElement>(`[data-tab-id="${CSS.escape(activeId)}"]`);
+      if (!activeTab) return;
+      const containerRect = container.getBoundingClientRect();
+      const tabRect = activeTab.getBoundingClientRect();
+      if (tabRect.left < containerRect.left) {
+        container.scrollLeft -= containerRect.left - tabRect.left;
+      } else if (tabRect.right > containerRect.right) {
+        container.scrollLeft += tabRect.right - containerRect.right;
+      }
+    };
+    const observer = new ResizeObserver(scrollActiveTabIntoView);
+    observer.observe(container);
+    return () => observer.disconnect();
+  }, [activeId, tabs]);
 
   const handleMinimize = () => getCurrentWindow().minimize();
   const handleToggleMaximize = () => getCurrentWindow().toggleMaximize();
@@ -55,13 +77,14 @@ export function RepoTabBar({ tabs, activeId, onSelect, onClose, onAdd, onPluginC
 
       {/* Repo tabs: not a drag region itself so its scrollbar stays draggable; the strip above it drags the window */}
       <div
+        ref={tabsScrollRef}
         className="flex items-end overflow-x-auto overflow-y-hidden flex-1 gap-0.5 ml-1"
         onWheel={(e) => {
           if (e.deltaX === 0) e.currentTarget.scrollLeft += e.deltaY;
         }}
       >
         {tabs.map((tab) => (
-          <div key={tab.id} className="flex items-center shrink-0">
+          <div key={tab.id} data-tab-id={tab.id} className="flex items-center shrink-0">
             <div
               title={tab.repoPath}
               onClick={() => onSelect(tab.id)}
