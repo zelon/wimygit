@@ -2,7 +2,7 @@ import { useState, useEffect, useLayoutEffect, useRef, useCallback } from "react
 import { createPortal } from "react-dom";
 import { remove } from "@tauri-apps/plugin-fs";
 import { resolve } from "@tauri-apps/api/path";
-import { confirm as tauriConfirm } from "@tauri-apps/plugin-dialog";
+import { confirm as tauriConfirm, message as tauriMessage } from "@tauri-apps/plugin-dialog";
 import {
     getGitStatus,
     gitStage,
@@ -27,15 +27,19 @@ import {
     runGit,
     runGitSimple,
     type LfsLock,
-    generateAiCommitMessage,
+    generateAiCommitCandidates,
     generateAiReview,
     REVIEW_DIFF_LIMIT,
     type AiReviewKind,
-    type AiReviewState,
+    type AiTabState,
 } from "../../lib";
 import { SyncStatusBar } from "./SyncStatusBar";
 import { getSyncStatus, type SyncStatus } from "../../lib";
-import { AI_API_KEY_CHANGED_EVENT, AI_API_KEY_STORAGE } from "../../constants";
+import {
+    AI_API_KEY_CHANGED_EVENT,
+    AI_API_KEY_STORAGE,
+    AI_USE_COMMIT_MESSAGE_EVENT,
+} from "../../constants";
 
 const UNTRACKED_REVIEW_MAX_CHARS = 50_000;
 const UNTRACKED_REVIEW_CONCURRENCY = 4;
@@ -55,7 +59,7 @@ interface PendingTabProps {
     onShowInHistoryFile?: (absolutePath: string) => void;
     onOpenMergeEditor?: (file: FileStatus) => void;
     onConflictCountChange?: (count: number) => void;
-    onAiReviewChange?: (review: AiReviewState) => void;
+    onAiTabChange?: (tab: AiTabState) => void;
 }
 
 function statusIcon(file: FileStatus): { icon: string; cls: string } {
@@ -953,7 +957,7 @@ export function PendingTab({
     onShowInHistoryFile,
     onOpenMergeEditor,
     onConflictCountChange,
-    onAiReviewChange,
+    onAiTabChange,
 }: PendingTabProps) {
     const [status, setStatus] = useState<GitStatus | null>(null);
     const [mergeInfo, setMergeInfo] = useState<MergeInfo | null>(null);
@@ -961,7 +965,6 @@ export function PendingTab({
     const [loading, setLoading] = useState(true);
     const [commitMessage, setCommitMessage] = useState("");
     const [amend, setAmend] = useState(false);
-    const [aiGenerating, setAiGenerating] = useState(false);
     const [apiKey, setApiKey] = useState(
         () => localStorage.getItem(AI_API_KEY_STORAGE) ?? "",
     );
@@ -975,6 +978,39 @@ export function PendingTab({
         };
         window.addEventListener(AI_API_KEY_CHANGED_EVENT, handleApiKeyChanged);
         return () => window.removeEventListener(AI_API_KEY_CHANGED_EVENT, handleApiKeyChanged);
+    }, []);
+
+    // An AI commit-message candidate picked in the sidebar. If the box already
+    // has text, ask whether to replace it or append to it.
+    const commitMessageRef = useRef(commitMessage);
+    useEffect(() => {
+        commitMessageRef.current = commitMessage;
+    }, [commitMessage]);
+    useEffect(() => {
+        const handleUseCommitMessage = async (e: Event) => {
+            const text = (e as CustomEvent<string>).detail ?? "";
+            if (!text) return;
+            if (!commitMessageRef.current.trim()) {
+                setCommitMessage(text);
+                return;
+            }
+            const choice = await tauriMessage(
+                "The commit message box already has text.\nReplace it with the selected message, or append the selected message to it?",
+                {
+                    title: "Use AI commit message",
+                    kind: "info",
+                    buttons: { yes: "Replace", no: "Append", cancel: "Cancel" },
+                },
+            );
+            // Some platforms report the default labels instead of custom ones.
+            if (choice === "Replace" || choice === "Yes") {
+                setCommitMessage(text);
+            } else if (choice === "Append" || choice === "No") {
+                setCommitMessage((prev) => `${prev.trimEnd()}\n\n${text}`);
+            }
+        };
+        window.addEventListener(AI_USE_COMMIT_MESSAGE_EVENT, handleUseCommitMessage);
+        return () => window.removeEventListener(AI_USE_COMMIT_MESSAGE_EVENT, handleUseCommitMessage);
     }, []);
     const [error, setError] = useState<string | null>(null);
     const [previewKey, setPreviewKey] = useState<string | null>(null);
@@ -1477,26 +1513,43 @@ export function PendingTab({
         }
     };
 
+    // Opens an "AI Commit Message" sidebar tab with a few candidates; picking
+    // one there sends AI_USE_COMMIT_MESSAGE_EVENT back to this tab.
     const handleAiCommitMessage = async () => {
         const key = apiKey.trim();
         if (!key) {
             setShowApiKeyInput(true);
             return;
         }
-        setAiGenerating(true);
+        const controller = new AbortController();
+        const base = {
+            id: crypto.randomUUID(),
+            type: "commit" as const,
+            fileCount: status?.staged.length ?? 0,
+            at: Date.now(),
+        };
+        const report = (t: AiTabState) => {
+            if (!controller.signal.aborted) onAiTabChange?.(t);
+        };
         setError(null);
+        report({
+            ...base,
+            status: "loading",
+            abort: () => controller.abort(),
+        });
         try {
             const stagedDiff = await gitDiff(repoPath, undefined, true);
             if (!stagedDiff.trim()) {
-                setError("No staged changes to generate message from");
-                return;
+                throw new Error("No staged changes to generate message from");
             }
-            const message = await generateAiCommitMessage(stagedDiff, key);
-            setCommitMessage(message);
+            const candidates = await generateAiCommitCandidates(
+                stagedDiff,
+                key,
+                controller.signal,
+            );
+            report({ ...base, status: "done", candidates });
         } catch (e) {
-            setError(String(e));
-        } finally {
-            setAiGenerating(false);
+            report({ ...base, status: "error", error: String(e) });
         }
     };
 
@@ -1555,6 +1608,7 @@ export function PendingTab({
         const controller = new AbortController();
         const base = {
             id: crypto.randomUUID(),
+            type: "review" as const,
             kind,
             fileCount:
                 kind === "staged"
@@ -1563,8 +1617,8 @@ export function PendingTab({
             untrackedFiles: untracked,
             at: Date.now(),
         };
-        const report = (r: AiReviewState) => {
-            if (!controller.signal.aborted) onAiReviewChange?.(r);
+        const report = (r: AiTabState) => {
+            if (!controller.signal.aborted) onAiTabChange?.(r);
         };
         setError(null);
         report({
@@ -1701,24 +1755,16 @@ export function PendingTab({
                         <button
                             tabIndex={-1}
                             onClick={handleAiCommitMessage}
-                            disabled={aiGenerating || stagedFiles.length === 0}
+                            disabled={stagedFiles.length === 0}
                             title={
                                 apiKey
-                                    ? "Generate AI commit message (Gemini)"
+                                    ? "Suggest commit messages with AI (Gemini)"
                                     : "Set Gemini API key first"
                             }
                             className="px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-40 whitespace-nowrap flex items-center gap-1"
                         >
-                            {aiGenerating ? (
-                                <span className="animate-pulse">
-                                    Generating…
-                                </span>
-                            ) : (
-                                <>
-                                    <span>✦</span>
-                                    <span>AI commit message</span>
-                                </>
-                            )}
+                            <span>✦</span>
+                            <span>AI commit message</span>
                         </button>
                         <button
                             onClick={handleCommit}

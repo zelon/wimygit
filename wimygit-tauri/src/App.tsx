@@ -2,13 +2,13 @@ import { useState, useEffect, useCallback, useRef, lazy, Suspense } from "react"
 import { open } from "@tauri-apps/plugin-dialog";
 import { exists } from "@tauri-apps/plugin-fs";
 import { getCurrentWindow } from "@tauri-apps/api/window";
-import { APP_NAME } from "./constants";
+import { APP_NAME, AI_USE_COMMIT_MESSAGE_EVENT } from "./constants";
 import { Header, TabBar, RepoTabBar, GitLogPanel, LeftSidebar, RepoStateBanner } from "./components/layout";
 import type { PendingFilePreview, BranchFileDiffInfo } from "./components/layout/SidebarQuickDiff";
 import { PendingTab } from "./components/tabs";
 import { MergeEditor } from "./components/shared/MergeEditor";
 import { SettingsModal } from "./components/shared/SettingsModal";
-import type { FileStatus, AiReviewState } from "./lib";
+import type { FileStatus, AiTabState } from "./lib";
 
 // Lazy-loaded tabs (not needed at startup)
 const HistoryTab = lazy(() => import("./components/tabs/HistoryTab").then(m => ({ default: m.HistoryTab })));
@@ -128,26 +128,27 @@ function App() {
   const [conflictCount, setConflictCount] = useState(0);
   const [branchDiffOpen, setBranchDiffOpen] = useState(false);
   const [branchFileDiff, setBranchFileDiff] = useState<BranchFileDiffInfo | null>(null);
-  const [aiReviews, setAiReviews] = useState<AiReviewState[]>([]);
-  // Mirror for the repo-switch effect, which must abort in-flight reviews.
-  const aiReviewsRef = useRef(aiReviews);
+  // AI review / commit-message tabs shown in the left sidebar.
+  const [aiTabs, setAiTabs] = useState<AiTabState[]>([]);
+  // Mirror for the repo-switch effect, which must abort in-flight requests.
+  const aiTabsRef = useRef(aiTabs);
   useEffect(() => {
-    aiReviewsRef.current = aiReviews;
-  }, [aiReviews]);
+    aiTabsRef.current = aiTabs;
+  }, [aiTabs]);
 
-  // A "loading" update opens a new review; later updates only replace a
-  // review that is still open, so results of closed reviews are dropped.
-  const handleAiReviewChange = useCallback((review: AiReviewState) => {
-    setAiReviews((prev) =>
-      review.status === "loading"
-        ? [...prev, review]
-        : prev.map((r) => (r.id === review.id ? review : r))
+  // A "loading" update opens a new tab; later updates only replace a tab
+  // that is still open, so results of closed tabs are dropped.
+  const handleAiTabChange = useCallback((tab: AiTabState) => {
+    setAiTabs((prev) =>
+      tab.status === "loading"
+        ? [...prev, tab]
+        : prev.map((t) => (t.id === tab.id ? tab : t))
     );
   }, []);
 
-  const handleAiReviewClose = useCallback((id: string) => {
-    aiReviewsRef.current.find((r) => r.id === id)?.abort?.();
-    setAiReviews((prev) => prev.filter((r) => r.id !== id));
+  const handleAiTabClose = useCallback((id: string) => {
+    aiTabsRef.current.find((t) => t.id === id)?.abort?.();
+    setAiTabs((prev) => prev.filter((t) => t.id !== id));
   }, []);
   const [branchDiffInitialBase, setBranchDiffInitialBase] = useState<string | undefined>();
   const [branchDiffInitialCompare, setBranchDiffInitialCompare] = useState<string | undefined>();
@@ -379,8 +380,8 @@ function App() {
     setConflictCount(0);
     setBranchDiffOpen(false);
     setBranchFileDiff(null);
-    aiReviewsRef.current.forEach((r) => r.abort?.());
-    setAiReviews([]);
+    aiTabsRef.current.forEach((t) => t.abort?.());
+    setAiTabs([]);
     setBranchDiffInitialBase(undefined);
     setBranchDiffInitialCompare(undefined);
   }, [activeRepoId]);
@@ -518,8 +519,12 @@ function App() {
           onFileSelect={setSelectedFilePath}
           onRefresh={handleRefresh}
           highlightPath={workspaceHighlight}
-          aiReviews={aiReviews}
-          onAiReviewClose={handleAiReviewClose}
+          aiTabs={aiTabs}
+          onAiTabClose={handleAiTabClose}
+          onUseCommitMessage={(text) => {
+            handleTabChange("pending");
+            window.dispatchEvent(new CustomEvent(AI_USE_COMMIT_MESSAGE_EVENT, { detail: text }));
+          }}
           onAiReviewFileClick={(filename, kind, isUntracked) => {
             setSelectedDiff(null);
             setPendingFilePreview({ filename, staged: kind === "staged", isUntracked });
@@ -577,7 +582,7 @@ function App() {
               onLfsLockCountChange={setLfsLockCount}
               onOpenMergeEditor={setActiveMergeFile}
               onConflictCountChange={setConflictCount}
-              onAiReviewChange={handleAiReviewChange}
+              onAiTabChange={handleAiTabChange}
               onShowInWorkspaceFile={(absolutePath) => {
                 (async () => {
                   const fileExists = await exists(absolutePath);

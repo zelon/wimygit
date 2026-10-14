@@ -3,7 +3,7 @@
 const GEMINI_URL =
   "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent";
 
-const COMMIT_DIFF_LIMIT = 8000;
+const COMMIT_DIFF_LIMIT = 30_000;
 export const REVIEW_DIFF_LIMIT = 100_000;
 const REVIEW_FILE_LIST_LIMIT = 500;
 
@@ -23,19 +23,31 @@ export interface AiReviewResult {
   truncated: boolean;
 }
 
-export interface AiReviewState {
+// Each AI request opens its own sidebar tab; these are the tab states.
+interface AiTabBase {
   id: string;
-  kind: AiReviewKind;
   status: "loading" | "done" | "error";
   fileCount: number;
-  /** Untracked files included in an unstaged review (needed to preview them). */
-  untrackedFiles: string[];
   at: number;
-  result?: AiReviewResult;
   error?: string;
   /** Cancels the in-flight request; present while status is "loading". */
   abort?: () => void;
 }
+
+export interface AiReviewState extends AiTabBase {
+  type: "review";
+  kind: AiReviewKind;
+  /** Untracked files included in an unstaged review (needed to preview them). */
+  untrackedFiles: string[];
+  result?: AiReviewResult;
+}
+
+export interface AiCommitState extends AiTabBase {
+  type: "commit";
+  candidates?: string[];
+}
+
+export type AiTabState = AiReviewState | AiCommitState;
 
 async function callGemini(
   prompt: string,
@@ -60,14 +72,42 @@ async function callGemini(
   return data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() ?? "";
 }
 
-export async function generateAiCommitMessage(
+export async function generateAiCommitCandidates(
   stagedDiff: string,
   apiKey: string,
-): Promise<string> {
-  return callGemini(
-    `Write a concise git commit message (one line, under 72 chars) for the following staged diff. Output only the commit message text, nothing else.\n\n${stagedDiff.slice(0, COMMIT_DIFF_LIMIT)}`,
+  signal?: AbortSignal,
+): Promise<string[]> {
+  const prompt = `Write 3 alternative git commit messages for the following staged diff.
+1. A concise one-line subject (under 72 chars).
+2. A one-line subject in Conventional Commits style (e.g. "fix(ui): ..."), under 72 chars.
+3. A subject line (under 72 chars), a blank line, then a short body of 1-4 lines (or "- " bullets) explaining what changed and why.
+Use the imperative mood. Do not wrap messages in quotes or code fences.
+
+Respond with JSON only: {"candidates": ["<message 1>", "<message 2>", "<message 3>"]}
+
+${stagedDiff.slice(0, COMMIT_DIFF_LIMIT)}`;
+
+  const text = await callGemini(
+    prompt,
     apiKey,
+    { responseMimeType: "application/json" },
+    signal,
   );
+
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(text);
+  } catch {
+    throw new Error(`Could not parse AI response: ${text.slice(0, 200)}`);
+  }
+  const list = (parsed as { candidates?: unknown } | null)?.candidates;
+  const candidates = Array.isArray(list)
+    ? list.map((c) => String(c ?? "").trim()).filter(Boolean)
+    : [];
+  if (candidates.length === 0) {
+    throw new Error("AI returned no commit message candidates");
+  }
+  return [...new Set(candidates)];
 }
 
 const SEVERITIES: AiReviewSeverity[] = ["error", "warning", "info"];
