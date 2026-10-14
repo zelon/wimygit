@@ -227,6 +227,17 @@ export function LeftSidebar({ repoPath, refreshKey, selectedDiff, pendingFilePre
             <div
               key={tab.id}
               onClick={() => handleTabChange(tab.id)}
+              // Middle-click closes AI tabs. preventDefault on mousedown stops
+              // the browser's middle-button autoscroll.
+              onMouseDown={(e) => {
+                if (e.button === 1 && tab.ai) e.preventDefault();
+              }}
+              onAuxClick={(e) => {
+                if (e.button === 1 && tab.ai) {
+                  e.preventDefault();
+                  onAiTabClose?.(tab.ai.id);
+                }
+              }}
               title={tab.title}
               className={`
                 shrink-0 flex items-center gap-1 px-3 py-1.5 text-xs font-medium whitespace-nowrap cursor-pointer select-none transition-colors border-b-2 -mb-px
