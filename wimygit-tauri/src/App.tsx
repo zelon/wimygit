@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, lazy, Suspense } from "react";
+import { useState, useEffect, useCallback, useRef, lazy, Suspense } from "react";
 import { open } from "@tauri-apps/plugin-dialog";
 import { exists } from "@tauri-apps/plugin-fs";
 import { getCurrentWindow } from "@tauri-apps/api/window";
@@ -8,7 +8,7 @@ import type { PendingFilePreview, BranchFileDiffInfo } from "./components/layout
 import { PendingTab } from "./components/tabs";
 import { MergeEditor } from "./components/shared/MergeEditor";
 import { SettingsModal } from "./components/shared/SettingsModal";
-import type { FileStatus } from "./lib";
+import type { FileStatus, AiReviewState } from "./lib";
 
 // Lazy-loaded tabs (not needed at startup)
 const HistoryTab = lazy(() => import("./components/tabs/HistoryTab").then(m => ({ default: m.HistoryTab })));
@@ -128,6 +128,27 @@ function App() {
   const [conflictCount, setConflictCount] = useState(0);
   const [branchDiffOpen, setBranchDiffOpen] = useState(false);
   const [branchFileDiff, setBranchFileDiff] = useState<BranchFileDiffInfo | null>(null);
+  const [aiReviews, setAiReviews] = useState<AiReviewState[]>([]);
+  // Mirror for the repo-switch effect, which must abort in-flight reviews.
+  const aiReviewsRef = useRef(aiReviews);
+  useEffect(() => {
+    aiReviewsRef.current = aiReviews;
+  }, [aiReviews]);
+
+  // A "loading" update opens a new review; later updates only replace a
+  // review that is still open, so results of closed reviews are dropped.
+  const handleAiReviewChange = useCallback((review: AiReviewState) => {
+    setAiReviews((prev) =>
+      review.status === "loading"
+        ? [...prev, review]
+        : prev.map((r) => (r.id === review.id ? review : r))
+    );
+  }, []);
+
+  const handleAiReviewClose = useCallback((id: string) => {
+    aiReviewsRef.current.find((r) => r.id === id)?.abort?.();
+    setAiReviews((prev) => prev.filter((r) => r.id !== id));
+  }, []);
   const [branchDiffInitialBase, setBranchDiffInitialBase] = useState<string | undefined>();
   const [branchDiffInitialCompare, setBranchDiffInitialCompare] = useState<string | undefined>();
 
@@ -358,6 +379,8 @@ function App() {
     setConflictCount(0);
     setBranchDiffOpen(false);
     setBranchFileDiff(null);
+    aiReviewsRef.current.forEach((r) => r.abort?.());
+    setAiReviews([]);
     setBranchDiffInitialBase(undefined);
     setBranchDiffInitialCompare(undefined);
   }, [activeRepoId]);
@@ -495,6 +518,12 @@ function App() {
           onFileSelect={setSelectedFilePath}
           onRefresh={handleRefresh}
           highlightPath={workspaceHighlight}
+          aiReviews={aiReviews}
+          onAiReviewClose={handleAiReviewClose}
+          onAiReviewFileClick={(filename, kind, isUntracked) => {
+            setSelectedDiff(null);
+            setPendingFilePreview({ filename, staged: kind === "staged", isUntracked });
+          }}
         />
 
         {/* Right panel: tab bar + tab content */}
@@ -548,6 +577,7 @@ function App() {
               onLfsLockCountChange={setLfsLockCount}
               onOpenMergeEditor={setActiveMergeFile}
               onConflictCountChange={setConflictCount}
+              onAiReviewChange={handleAiReviewChange}
               onShowInWorkspaceFile={(absolutePath) => {
                 (async () => {
                   const fileExists = await exists(absolutePath);

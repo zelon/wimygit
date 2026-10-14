@@ -1,14 +1,56 @@
 import { useState, useEffect, useCallback } from "react";
-import { type SelectedDiffInfo } from "../../lib";
+import { type SelectedDiffInfo, type AiReviewKind, type AiReviewState } from "../../lib";
 import { WorkspaceTree } from "./WorkspaceTree";
 import { SidebarQuickDiff, type PendingFilePreview, type BranchFileDiffInfo } from "./SidebarQuickDiff";
+import { SidebarAiReview } from "./SidebarAiReview";
 
 // ─── constants ────────────────────────────────────────────────────────────────
 
 const MIN_SIDEBAR_WIDTH = 200;
 const MIN_MAIN_PANEL_WIDTH = 200;
 
-type LeftTab = "workspace" | "quickdiff";
+type BaseTab = "workspace" | "quickdiff";
+// AI review tabs are keyed by review id: `ai:<id>`.
+type LeftTab = BaseTab | `ai:${string}`;
+
+const aiTabId = (id: string): LeftTab => `ai:${id}`;
+
+// Stable default: the open-tab tracking below compares `aiReviews` by reference.
+const EMPTY_AI_REVIEWS: AiReviewState[] = [];
+
+function savedBaseTab(): BaseTab {
+  const saved = localStorage.getItem("sidebar_tab");
+  return saved === "quickdiff" ? "quickdiff" : "workspace";
+}
+
+// ─── AI review tab status ─────────────────────────────────────────────────────
+
+function aiReviewStatusText(review: AiReviewState): string {
+  if (review.status === "loading") return "reviewing…";
+  if (review.status === "error") return "failed";
+  const n = review.result?.issues.length ?? 0;
+  return n === 0 ? "no issues" : `${n} issue${n === 1 ? "" : "s"}`;
+}
+
+function AiReviewStatusIcon({ review }: { review: AiReviewState }) {
+  if (review.status === "loading") {
+    return (
+      <span className="inline-block w-2.5 h-2.5 border-[1.5px] border-current border-t-transparent rounded-full animate-spin" />
+    );
+  }
+  if (review.status === "error") return <span className="text-red-500">⚠</span>;
+  return <span className="text-purple-500">✦</span>;
+}
+
+function AiReviewResultBadge({ review }: { review: AiReviewState }) {
+  if (review.status !== "done" || !review.result) return null;
+  const { issues } = review.result;
+  if (issues.length === 0) return <span className="text-green-600 dark:text-green-400">✓</span>;
+  const hasError = issues.some((i) => i.severity === "error");
+  return (
+    <span className={hasError ? "text-red-500" : "text-gray-400"}>({issues.length})</span>
+  );
+}
 
 // ─── LeftSidebar ─────────────────────────────────────────────────────────────
 
@@ -21,16 +63,32 @@ interface LeftSidebarProps {
   onFileSelect?: (path: string | null) => void;
   onRefresh?: () => void;
   highlightPath?: { path: string; triggerCount: number } | null;
+  aiReviews?: AiReviewState[];
+  onAiReviewClose?: (id: string) => void;
+  onAiReviewFileClick?: (filename: string, kind: AiReviewKind, isUntracked: boolean) => void;
 }
 
-export function LeftSidebar({ repoPath, refreshKey, selectedDiff, pendingFilePreview, branchFileDiff, onFileSelect, onRefresh, highlightPath }: LeftSidebarProps) {
+export function LeftSidebar({ repoPath, refreshKey, selectedDiff, pendingFilePreview, branchFileDiff, onFileSelect, onRefresh, highlightPath, aiReviews = EMPTY_AI_REVIEWS, onAiReviewClose, onAiReviewFileClick }: LeftSidebarProps) {
   const [width, setWidth] = useState(() => {
     const quarter = Math.round(window.innerWidth / 4);
     return Math.max(MIN_SIDEBAR_WIDTH, quarter);
   });
-  const [activeTab, setActiveTab] = useState<LeftTab>(() =>
-    (localStorage.getItem("sidebar_tab") as LeftTab | null) ?? "workspace"
-  );
+  const [activeTab, setActiveTab] = useState<LeftTab>(savedBaseTab);
+  // A closed review's tab falls back to the last non-AI tab.
+  const activeReview = aiReviews.find((r) => aiTabId(r.id) === activeTab);
+  const visibleTab: LeftTab =
+    activeTab.startsWith("ai:") && !activeReview ? savedBaseTab() : activeTab;
+
+  // Focus a review's tab only when it is opened (an id not seen before) — not
+  // when a review finishes or another one is closed; the user may be on a
+  // different tab by then.
+  const [prevAiReviews, setPrevAiReviews] = useState(aiReviews);
+  if (aiReviews !== prevAiReviews) {
+    setPrevAiReviews(aiReviews);
+    const prevIds = new Set(prevAiReviews.map((r) => r.id));
+    const opened = aiReviews.filter((r) => !prevIds.has(r.id));
+    if (opened.length > 0) setActiveTab(aiTabId(opened[opened.length - 1].id));
+  }
 
   // Auto-switch to Quick Diff when a commit file or pending file is selected.
   // Adjusted during render (not in an effect) per the React-recommended
@@ -133,7 +191,7 @@ export function LeftSidebar({ repoPath, refreshKey, selectedDiff, pendingFilePre
 
   const handleTabChange = (tab: LeftTab) => {
     setActiveTab(tab);
-    localStorage.setItem("sidebar_tab", tab);
+    if (!tab.startsWith("ai:")) localStorage.setItem("sidebar_tab", tab);
   };
 
   return (
@@ -142,33 +200,54 @@ export function LeftSidebar({ repoPath, refreshKey, selectedDiff, pendingFilePre
       <div className="flex-1 flex flex-col overflow-hidden border-r border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
 
         {/* ── Tab bar ── */}
-        <div className="shrink-0 flex border-b border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800">
+        <div className="shrink-0 flex overflow-x-auto border-b border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800">
           {([
             { id: "workspace", label: "Workspace" },
             { id: "quickdiff", label: "Quick Diff" },
-          ] as { id: LeftTab; label: string }[]).map((tab) => (
-            <button
+            ...aiReviews.map((r) => ({
+              id: aiTabId(r.id),
+              label: `AI Review for ${r.kind}`,
+              title: `AI review of ${r.kind} changes · ${new Date(r.at).toLocaleTimeString()} · ${aiReviewStatusText(r)}`,
+              review: r,
+            })),
+          ] as { id: LeftTab; label: string; title?: string; review?: AiReviewState }[]).map((tab) => (
+            <div
               key={tab.id}
               onClick={() => handleTabChange(tab.id)}
+              title={tab.title}
               className={`
-                px-3 py-1.5 text-xs font-medium transition-colors border-b-2 -mb-px
-                ${activeTab === tab.id
+                shrink-0 flex items-center gap-1 px-3 py-1.5 text-xs font-medium whitespace-nowrap cursor-pointer select-none transition-colors border-b-2 -mb-px
+                ${visibleTab === tab.id
                   ? "border-blue-500 text-blue-600 dark:text-blue-400 bg-white dark:bg-gray-900"
                   : "border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700"
                 }
               `}
             >
-              {tab.label}
-            </button>
+              {tab.review && <AiReviewStatusIcon review={tab.review} />}
+              <span>{tab.label}</span>
+              {tab.review && <AiReviewResultBadge review={tab.review} />}
+              {tab.review && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onAiReviewClose?.(tab.review!.id);
+                  }}
+                  title={tab.review.status === "loading" ? "Cancel review and close" : "Close"}
+                  className="-mr-1 px-0.5 rounded leading-none text-gray-400 hover:text-gray-700 hover:bg-gray-300 dark:hover:text-gray-200 dark:hover:bg-gray-600"
+                >
+                  ×
+                </button>
+              )}
+            </div>
           ))}
         </div>
 
         {/* ── Content ── */}
         <div className="flex-1 overflow-hidden flex flex-col">
-          {activeTab === "workspace" && (
+          {visibleTab === "workspace" && (
             <WorkspaceTree repoPath={repoPath} refreshKey={refreshKey} onFileSelect={onFileSelect} onRefresh={onRefresh} selectPath={highlightPath} />
           )}
-          {activeTab === "quickdiff" && (
+          {visibleTab === "quickdiff" && (
             <SidebarQuickDiff
               repoPath={repoPath}
               selectedDiff={selectedDiff}
@@ -176,6 +255,9 @@ export function LeftSidebar({ repoPath, refreshKey, selectedDiff, pendingFilePre
               branchFileDiff={branchFileDiff}
               onRefresh={onRefresh}
             />
+          )}
+          {visibleTab === activeTab && activeReview && (
+            <SidebarAiReview review={activeReview} onFileClick={onAiReviewFileClick} />
           )}
         </div>
       </div>

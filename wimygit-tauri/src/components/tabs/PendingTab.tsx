@@ -24,39 +24,21 @@ import {
     lfsUnlockFile,
     readTextFile,
     writeTextFile,
+    runGit,
+    runGitSimple,
     type LfsLock,
+    generateAiCommitMessage,
+    generateAiReview,
+    REVIEW_DIFF_LIMIT,
+    type AiReviewKind,
+    type AiReviewState,
 } from "../../lib";
 import { SyncStatusBar } from "./SyncStatusBar";
 import { getSyncStatus, type SyncStatus } from "../../lib";
 import { AI_API_KEY_CHANGED_EVENT, AI_API_KEY_STORAGE } from "../../constants";
 
-async function generateAiCommitMessage(
-    stagedDiff: string,
-    apiKey: string,
-): Promise<string> {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${apiKey}`;
-    const response = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-            contents: [
-                {
-                    parts: [
-                        {
-                            text: `Write a concise git commit message (one line, under 72 chars) for the following staged diff. Output only the commit message text, nothing else.\n\n${stagedDiff.slice(0, 8000)}`,
-                        },
-                    ],
-                },
-            ],
-        }),
-    });
-    if (!response.ok) {
-        const err = await response.text();
-        throw new Error(`API error: ${response.status} ${err}`);
-    }
-    const data = await response.json();
-    return data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() ?? "";
-}
+const UNTRACKED_REVIEW_MAX_CHARS = 50_000;
+const UNTRACKED_REVIEW_CONCURRENCY = 4;
 
 interface PendingTabProps {
     repoPath: string;
@@ -73,6 +55,7 @@ interface PendingTabProps {
     onShowInHistoryFile?: (absolutePath: string) => void;
     onOpenMergeEditor?: (file: FileStatus) => void;
     onConflictCountChange?: (count: number) => void;
+    onAiReviewChange?: (review: AiReviewState) => void;
 }
 
 function statusIcon(file: FileStatus): { icon: string; cls: string } {
@@ -916,6 +899,7 @@ interface SectionHeaderProps {
     icon?: string;
     iconClass?: string;
     extra?: React.ReactNode;
+    aiReview?: { onClick: () => void; disabled: boolean; title: string };
 }
 
 function SectionHeader({
@@ -925,6 +909,7 @@ function SectionHeader({
     icon,
     iconClass,
     extra,
+    aiReview,
 }: SectionHeaderProps) {
     return (
         <div className="shrink-0 flex items-center justify-between px-3 py-1 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
@@ -933,6 +918,17 @@ function SectionHeader({
                 {label} <span className="text-gray-400">({count})</span>
                 {extra}
             </span>
+            {aiReview && (
+                <button
+                    tabIndex={-1}
+                    onClick={aiReview.onClick}
+                    disabled={aiReview.disabled}
+                    title={aiReview.title}
+                    className="text-xs text-purple-600 dark:text-purple-400 hover:underline disabled:opacity-40 disabled:no-underline shrink-0 mr-3"
+                >
+                    ✦ AI Review
+                </button>
+            )}
             {action && (
                 <button
                     onClick={action.onClick}
@@ -957,6 +953,7 @@ export function PendingTab({
     onShowInHistoryFile,
     onOpenMergeEditor,
     onConflictCountChange,
+    onAiReviewChange,
 }: PendingTabProps) {
     const [status, setStatus] = useState<GitStatus | null>(null);
     const [mergeInfo, setMergeInfo] = useState<MergeInfo | null>(null);
@@ -1503,6 +1500,127 @@ export function PendingTab({
         }
     };
 
+    // Untracked files are invisible to `git diff`; build a new-file diff for
+    // each one. `--no-index` exits with 1 when the files differ. Runs a few
+    // git processes at a time and stops once `budget` chars are collected,
+    // since the review only sends the first REVIEW_DIFF_LIMIT chars anyway.
+    const buildUntrackedDiff = async (
+        files: string[],
+        budget: number,
+        signal: AbortSignal,
+    ) => {
+        const parts: string[] = [];
+        let total = 0;
+        let next = 0;
+        const worker = async () => {
+            while (next < files.length && total < budget && !signal.aborted) {
+                const f = files[next++];
+                const r = await runGit(
+                    [
+                        "-c",
+                        "core.quotePath=false",
+                        "diff",
+                        "--no-index",
+                        "--",
+                        "/dev/null",
+                        f,
+                    ],
+                    repoPath,
+                );
+                if (r.exit_code > 1) continue;
+                if (/^Binary files /m.test(r.stdout)) continue;
+                if (r.stdout.length > UNTRACKED_REVIEW_MAX_CHARS) continue;
+                parts.push(r.stdout);
+                total += r.stdout.length;
+            }
+        };
+        await Promise.all(
+            Array.from({ length: UNTRACKED_REVIEW_CONCURRENCY }, worker),
+        );
+        return parts.join("\n");
+    };
+
+    // Every click starts an independent review (its own sidebar tab). Closing
+    // that tab calls `abort`; the owner ignores updates for closed reviews.
+    const handleAiReview = async (kind: AiReviewKind) => {
+        const key = apiKey.trim();
+        if (!key) {
+            setShowApiKeyInput(true);
+            return;
+        }
+        const untracked =
+            kind === "unstaged"
+                ? (status?.untracked ?? []).map((f) => f.filename)
+                : [];
+        const controller = new AbortController();
+        const base = {
+            id: crypto.randomUUID(),
+            kind,
+            fileCount:
+                kind === "staged"
+                    ? (status?.staged.length ?? 0)
+                    : (status?.modified.length ?? 0) + untracked.length,
+            untrackedFiles: untracked,
+            at: Date.now(),
+        };
+        const report = (r: AiReviewState) => {
+            if (!controller.signal.aborted) onAiReviewChange?.(r);
+        };
+        setError(null);
+        report({
+            ...base,
+            status: "loading",
+            abort: () => controller.abort(),
+        });
+        try {
+            // quotePath=false keeps non-ASCII paths unescaped, so the model
+            // reports them the same way they appear in `status`.
+            let diff = await runGitSimple(
+                [
+                    "-c",
+                    "core.quotePath=false",
+                    "diff",
+                    ...(kind === "staged" ? ["--cached"] : []),
+                ],
+                repoPath,
+            );
+            if (untracked.length > 0) {
+                diff +=
+                    "\n" +
+                    (await buildUntrackedDiff(
+                        untracked,
+                        REVIEW_DIFF_LIMIT - diff.length,
+                        controller.signal,
+                    ));
+            }
+            if (!diff.trim()) {
+                throw new Error(`No ${kind} changes to review`);
+            }
+            const files =
+                kind === "staged"
+                    ? (status?.staged ?? []).map((f) => f.filename)
+                    : [
+                          ...(status?.modified ?? []).map((f) => f.filename),
+                          ...untracked,
+                      ];
+            const result = await generateAiReview(
+                diff,
+                kind,
+                files,
+                key,
+                controller.signal,
+            );
+            report({ ...base, status: "done", result });
+        } catch (e) {
+            report({ ...base, status: "error", error: String(e) });
+        }
+    };
+
+    const aiReviewTitle = (kind: AiReviewKind) =>
+        apiKey
+            ? `Review all ${kind} changes with AI (Gemini)`
+            : "Set Gemini API key first";
+
     const handleSaveApiKey = (value: string) => {
         const trimmed = value.trim();
         setApiKey(trimmed);
@@ -1624,6 +1742,11 @@ export function PendingTab({
                 <SectionHeader
                     label="Staged files"
                     count={stagedFiles.length}
+                    aiReview={{
+                        onClick: () => handleAiReview("staged"),
+                        disabled: stagedFiles.length === 0,
+                        title: aiReviewTitle("staged"),
+                    }}
                     action={
                         stagedFiles.length > 0
                             ? {
@@ -1808,6 +1931,11 @@ export function PendingTab({
                     <SectionHeader
                         label="Unstaged files"
                         count={unstagedFiles.length}
+                        aiReview={{
+                            onClick: () => handleAiReview("unstaged"),
+                            disabled: unstagedFiles.length === 0,
+                            title: aiReviewTitle("unstaged"),
+                        }}
                         action={
                             unstagedFiles.length > 0
                                 ? {
