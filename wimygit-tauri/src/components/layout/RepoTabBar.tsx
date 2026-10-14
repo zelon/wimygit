@@ -41,7 +41,7 @@ export function RepoTabBar({ tabs, activeId, onSelect, onClose, onAdd, onPluginC
   return (
     <div
       data-tauri-drag-region
-      className="flex items-end h-9 bg-gray-100 dark:bg-gray-950 border-b border-gray-200 dark:border-gray-800 shrink-0 select-none"
+      className="flex items-end h-11 bg-gray-100 dark:bg-gray-950 border-b border-gray-200 dark:border-gray-800 shrink-0 select-none"
     >
       {/* Left: hamburger + logo */}
       <div className="self-center"><HamburgerMenu onPluginClick={onPluginClick} onSettingsClick={onSettingsClick} /></div>
@@ -53,8 +53,13 @@ export function RepoTabBar({ tabs, activeId, onSelect, onClose, onAdd, onPluginC
         {version && <span className="ml-1 font-normal text-gray-400 dark:text-gray-500">v{version}</span>}
       </span>
 
-      {/* Repo tabs */}
-      <div className="flex items-end overflow-x-auto overflow-y-hidden flex-1 gap-0.5 ml-1" data-tauri-drag-region>
+      {/* Repo tabs: not a drag region itself so its scrollbar stays draggable; the strip above it drags the window */}
+      <div
+        className="flex items-end overflow-x-auto overflow-y-hidden flex-1 gap-0.5 ml-1"
+        onWheel={(e) => {
+          if (e.deltaX === 0) e.currentTarget.scrollLeft += e.deltaY;
+        }}
+      >
         {tabs.map((tab) => (
           <div key={tab.id} className="flex items-center shrink-0">
             <div
@@ -101,14 +106,14 @@ export function RepoTabBar({ tabs, activeId, onSelect, onClose, onAdd, onPluginC
         </button>
 
         {/* Drag region spacer */}
-        <div className="flex-1 h-full" data-tauri-drag-region />
+        <div className="flex-1 self-stretch" data-tauri-drag-region />
       </div>
 
       {/* Window controls */}
       <div className="flex items-center shrink-0 self-stretch">
         <button
           onClick={handleMinimize}
-          className="w-11 h-9 flex items-center justify-center text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors"
+          className="w-11 h-full flex items-center justify-center text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors"
           title="Minimize"
         >
           <svg width="10" height="1" viewBox="0 0 10 1" fill="currentColor">
@@ -117,7 +122,7 @@ export function RepoTabBar({ tabs, activeId, onSelect, onClose, onAdd, onPluginC
         </button>
         <button
           onClick={handleToggleMaximize}
-          className="w-11 h-9 flex items-center justify-center text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors"
+          className="w-11 h-full flex items-center justify-center text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors"
           title={isMaximized ? "Restore" : "Maximize"}
         >
           {isMaximized ? (
@@ -133,7 +138,7 @@ export function RepoTabBar({ tabs, activeId, onSelect, onClose, onAdd, onPluginC
         </button>
         <button
           onClick={handleClose}
-          className="w-11 h-9 flex items-center justify-center text-gray-500 dark:text-gray-400 hover:bg-red-500 hover:text-white transition-colors"
+          className="w-11 h-full flex items-center justify-center text-gray-500 dark:text-gray-400 hover:bg-red-500 hover:text-white transition-colors"
           title="Close"
         >
           <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.2">
