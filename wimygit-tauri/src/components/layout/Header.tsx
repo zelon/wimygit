@@ -9,6 +9,9 @@ import {
   runGitSimple,
   openInFileManager,
   openInTerminal,
+  getRemotes,
+  toGitHubWebUrl,
+  openExternalUrl,
   type PluginInfo,
 } from "../../lib";
 import { PluginButtons } from "./PluginButtons";
@@ -96,6 +99,15 @@ function IconFolder({ className = ICON_CLASS }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
+    </svg>
+  );
+}
+
+function IconGitHub({ className = ICON_CLASS }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4" />
+      <path d="M9 18c-4.51 2-5-2-7-2" />
     </svg>
   );
 }
@@ -220,10 +232,27 @@ export function Header({ repoPath, refreshKey, onRefresh, onPushSuccess, plugins
   const [author, setAuthor] = useState<{ name: string; email: string } | null>(null);
   const [busy, setBusy] = useState<BusyKey | null>(null);
   const [lastError, setLastError] = useState<string | null>(null);
+  // Keyed by repoPath so a link from a previously opened repo is never shown.
+  const [githubLink, setGithubLink] = useState<{ repoPath: string; url: string | null } | null>(null);
+  const githubUrl = githubLink?.repoPath === repoPath ? githubLink.url : null;
 
   useEffect(() => {
     if (!repoPath) return;
     getCurrentBranch(repoPath).then(setCurrentBranch).catch(console.error);
+  }, [repoPath, refreshKey]);
+
+  useEffect(() => {
+    if (!repoPath) return;
+    let cancelled = false;
+    getRemotes(repoPath).then((remotes) => {
+      if (cancelled) return;
+      const origin = remotes.find((r) => r.name === "origin");
+      setGithubLink({ repoPath, url: origin ? toGitHubWebUrl(origin.fetch_url) : null });
+    }).catch((e) => {
+      console.error(e);
+      if (!cancelled) setGithubLink(null);
+    });
+    return () => { cancelled = true; };
   }, [repoPath, refreshKey]);
 
   useEffect(() => {
@@ -402,6 +431,18 @@ export function Header({ repoPath, refreshKey, onRefresh, onPushSuccess, plugins
           disabled={isDisabled}
           onClick={() => openInTerminal(repoPath).catch((e) => setLastError(String(e)))}
         />
+
+        {/* GitHub (only when origin is a GitHub remote) */}
+        {githubUrl && (
+          <ToolButton
+            icon={<IconGitHub />}
+            label="GitHub"
+            title={githubUrl}
+            isBusy={false}
+            disabled={isDisabled}
+            onClick={() => openExternalUrl(githubUrl)}
+          />
+        )}
 
         {/* ── Plugin buttons ── */}
         {plugins.length > 0 && (

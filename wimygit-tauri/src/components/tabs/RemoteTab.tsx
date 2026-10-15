@@ -7,6 +7,8 @@ import {
   gitPull,
   gitPush,
   getCurrentBranch,
+  toGitHubWebUrl,
+  openExternalUrl,
   type RemoteInfo,
 } from "../../lib";
 
@@ -246,9 +248,21 @@ export function RemoteTab({ repoPath, refreshKey, onRefresh, onPushSuccess }: Re
               <div>
                 <h4 className="font-medium">{remote.name}</h4>
                 <div className="text-sm text-gray-500 mt-1 space-y-1">
-                  <div className="flex gap-2">
+                  <div className="flex items-center gap-2">
                     <span className="text-gray-400">Fetch:</span>
                     <span className="font-mono text-xs">{remote.fetch_url}</span>
+                    {(() => {
+                      const githubUrl = toGitHubWebUrl(remote.fetch_url);
+                      return githubUrl ? (
+                        <button
+                          onClick={() => openExternalUrl(githubUrl)}
+                          title={githubUrl}
+                          className="px-2 py-0.5 text-xs bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded hover:bg-gray-300 dark:hover:bg-gray-600"
+                        >
+                          github link
+                        </button>
+                      ) : null;
+                    })()}
                   </div>
                   {remote.push_url !== remote.fetch_url && (
                     <div className="flex gap-2">
