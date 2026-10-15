@@ -9,8 +9,14 @@ interface QuickDiffTabProps {
 
 type DiffMode = "staged" | "working";
 
-function getStatusLabel(file: FileStatus): string {
-  const s = file.staged_status ?? file.unstaged_status;
+// A file can differ on both sides (e.g. "AM"), so show the status of the
+// side the current mode is diffing.
+function sideStatus(file: FileStatus, mode: DiffMode) {
+  return mode === "staged" ? file.staged_status : file.unstaged_status;
+}
+
+function getStatusLabel(file: FileStatus, mode: DiffMode): string {
+  const s = sideStatus(file, mode);
   switch (s) {
     case "Added": return "+";
     case "Deleted": return "−";
@@ -20,8 +26,8 @@ function getStatusLabel(file: FileStatus): string {
   }
 }
 
-function getStatusColor(file: FileStatus): string {
-  const s = file.staged_status ?? file.unstaged_status;
+function getStatusColor(file: FileStatus, mode: DiffMode): string {
+  const s = sideStatus(file, mode);
   switch (s) {
     case "Added": return "text-green-600 dark:text-green-400";
     case "Deleted": return "text-red-600 dark:text-red-400";
@@ -171,8 +177,8 @@ export function QuickDiffTab({ repoPath, refreshKey }: QuickDiffTabProps) {
                       : "hover:bg-gray-50 dark:hover:bg-gray-800"
                   }`}
                 >
-                  <span className={`font-mono font-bold w-4 shrink-0 ${getStatusColor(file)}`}>
-                    {getStatusLabel(file)}
+                  <span className={`font-mono font-bold w-4 shrink-0 ${getStatusColor(file, mode)}`}>
+                    {getStatusLabel(file, mode)}
                   </span>
                   <span className="truncate text-gray-800 dark:text-gray-200">
                     {file.filename}

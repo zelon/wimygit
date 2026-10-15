@@ -67,9 +67,14 @@ interface PendingTabProps {
     onOpenSettings?: () => void;
 }
 
-function statusIcon(file: FileStatus): { icon: string; cls: string } {
+// A file can differ on both sides (e.g. "AM": added in the index, then
+// modified in the working tree), so each list shows its own side's status.
+function statusIcon(
+    file: FileStatus,
+    side: "staged" | "unstaged",
+): { icon: string; cls: string } {
     if (file.is_unmerged) return { icon: "!", cls: "text-yellow-500" };
-    const s = file.staged_status ?? file.unstaged_status;
+    const s = side === "staged" ? file.staged_status : file.unstaged_status;
     if (s === "Added" || s === "Untracked")
         return { icon: "+", cls: "text-green-600 dark:text-green-400" };
     if (s === "Deleted")
@@ -83,6 +88,8 @@ function statusIcon(file: FileStatus): { icon: string; cls: string } {
 
 interface FileRowProps {
     file: FileStatus;
+    /** Which list the row is in; picks the status shown in its icon. */
+    side: "staged" | "unstaged";
     isSelected: boolean;
     isCheckSelected?: boolean;
     isLocked?: boolean;
@@ -93,6 +100,7 @@ interface FileRowProps {
 
 function FileRow({
     file,
+    side,
     isSelected,
     isCheckSelected,
     isLocked,
@@ -100,7 +108,7 @@ function FileRow({
     onContextMenu,
     actions,
 }: FileRowProps) {
-    const { icon, cls } = statusIcon(file);
+    const { icon, cls } = statusIcon(file, side);
     const highlight = isSelected || isCheckSelected;
     return (
         <div
@@ -1766,6 +1774,7 @@ export function PendingTab({
                             <div key={file.filename} className="group">
                                 <FileRow
                                     file={file}
+                                    side="staged"
                                     isSelected={
                                         previewKey === `s:${file.filename}`
                                     }
@@ -1867,6 +1876,7 @@ export function PendingTab({
                                 <div key={file.filename} className="group">
                                     <FileRow
                                         file={file}
+                                        side="unstaged"
                                         isSelected={selectedConflicts.has(
                                             file.filename,
                                         )}
@@ -1962,6 +1972,7 @@ export function PendingTab({
                                     <div key={file.filename} className="group">
                                         <FileRow
                                             file={file}
+                                            side="unstaged"
                                             isSelected={selectedUnstaged.has(
                                                 file.filename,
                                             )}
