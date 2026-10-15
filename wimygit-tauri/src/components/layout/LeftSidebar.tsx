@@ -213,7 +213,7 @@ export function LeftSidebar({ repoPath, refreshKey, selectedDiff, pendingFilePre
       <div className="flex-1 flex flex-col overflow-hidden border-r border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
 
         {/* ── Tab bar ── */}
-        <div className="shrink-0 flex overflow-x-auto border-b border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800">
+        <div className="shrink-0 flex overflow-x-auto overflow-y-hidden border-b border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800">
           {([
             { id: "workspace", label: "Workspace" },
             { id: "quickdiff", label: "Quick Diff" },
@@ -240,7 +240,7 @@ export function LeftSidebar({ repoPath, refreshKey, selectedDiff, pendingFilePre
               }}
               title={tab.title}
               className={`
-                shrink-0 flex items-center gap-1 px-3 py-1.5 text-xs font-medium whitespace-nowrap cursor-pointer select-none transition-colors border-b-2 -mb-px
+                shrink-0 flex items-center gap-1 px-3 py-1.5 text-xs font-medium whitespace-nowrap cursor-pointer select-none transition-colors border-b-2
                 ${visibleTab === tab.id
                   ? "border-blue-500 text-blue-600 dark:text-blue-400 bg-white dark:bg-gray-900"
                   : "border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700"
