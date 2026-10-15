@@ -583,6 +583,7 @@ function App() {
               onOpenMergeEditor={setActiveMergeFile}
               onConflictCountChange={setConflictCount}
               onAiTabChange={handleAiTabChange}
+              onOpenSettings={() => setShowSettingsModal(true)}
               onShowInWorkspaceFile={(absolutePath) => {
                 (async () => {
                   const fileExists = await exists(absolutePath);

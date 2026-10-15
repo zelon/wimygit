@@ -1,5 +1,11 @@
 import { useEffect, useRef, useState } from "react";
-import type { AiReviewIssue, AiReviewKind, AiReviewSeverity, AiReviewState } from "../../lib";
+import {
+  aiModelLabel,
+  type AiReviewIssue,
+  type AiReviewKind,
+  type AiReviewSeverity,
+  type AiReviewState,
+} from "../../lib";
 
 const SEVERITY_STYLE: Record<AiReviewSeverity, { label: string; cls: string }> = {
   error: { label: "ERROR", cls: "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300" },
@@ -81,7 +87,7 @@ function CopyButton({ text, label, title, className = "" }: { text: string; labe
 }
 
 export function SidebarAiReview({ review, onFileClick }: SidebarAiReviewProps) {
-  const { kind, status, result, error, fileCount, at, untrackedFiles } = review;
+  const { kind, status, result, error, fileCount, at, untrackedFiles, providerName } = review;
   const time = new Date(at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   const kindLabel = kind === "staged" ? "Staged changes" : "Unstaged changes";
 
@@ -97,7 +103,7 @@ export function SidebarAiReview({ review, onFileClick }: SidebarAiReviewProps) {
       <div className="shrink-0 px-3 py-1.5 text-xs border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 flex items-center gap-1.5">
         <span className="text-purple-600 dark:text-purple-400">✦</span>
         <span className="font-medium text-gray-700 dark:text-gray-200">{kindLabel}</span>
-        <span className="flex-1 truncate text-gray-400">· {fileCount} file{fileCount === 1 ? "" : "s"} · {time}</span>
+        <span className="flex-1 truncate text-gray-400">· by {providerName} - {aiModelLabel(review)} · {fileCount} file{fileCount === 1 ? "" : "s"} · {time}</span>
         {status === "done" && result && (
           <CopyButton text={formatReview(review, groups)} label="Copy all" title="Copy the whole review to the clipboard" />
         )}

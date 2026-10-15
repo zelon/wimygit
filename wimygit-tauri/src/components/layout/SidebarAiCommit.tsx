@@ -1,4 +1,4 @@
-import type { AiCommitState } from "../../lib";
+import { aiModelLabel, type AiCommitState } from "../../lib";
 
 interface SidebarAiCommitProps {
   commit: AiCommitState;
@@ -6,7 +6,7 @@ interface SidebarAiCommitProps {
 }
 
 export function SidebarAiCommit({ commit, onUse }: SidebarAiCommitProps) {
-  const { status, candidates, error, fileCount, at } = commit;
+  const { status, candidates, error, fileCount, at, providerName } = commit;
   const time = new Date(at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 
   return (
@@ -14,7 +14,7 @@ export function SidebarAiCommit({ commit, onUse }: SidebarAiCommitProps) {
       <div className="shrink-0 px-3 py-1.5 text-xs border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 flex items-center gap-1.5">
         <span className="text-purple-600 dark:text-purple-400">✦</span>
         <span className="font-medium text-gray-700 dark:text-gray-200">Commit message for staged changes</span>
-        <span className="text-gray-400">· {fileCount} file{fileCount === 1 ? "" : "s"} · {time}</span>
+        <span className="text-gray-400">· by {providerName} - {aiModelLabel(commit)} · {fileCount} file{fileCount === 1 ? "" : "s"} · {time}</span>
       </div>
 
       <div className="flex-1 overflow-y-auto text-xs">

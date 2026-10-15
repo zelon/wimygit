@@ -32,12 +32,15 @@ import {
     REVIEW_DIFF_LIMIT,
     type AiReviewKind,
     type AiTabState,
+    type AiConfig,
+    loadAiConfig,
+    aiProviderName,
+    aiEffectiveModel,
 } from "../../lib";
 import { SyncStatusBar } from "./SyncStatusBar";
 import { getSyncStatus, type SyncStatus } from "../../lib";
 import {
-    AI_API_KEY_CHANGED_EVENT,
-    AI_API_KEY_STORAGE,
+    AI_SETTINGS_CHANGED_EVENT,
     AI_USE_COMMIT_MESSAGE_EVENT,
 } from "../../constants";
 
@@ -60,6 +63,8 @@ interface PendingTabProps {
     onOpenMergeEditor?: (file: FileStatus) => void;
     onConflictCountChange?: (count: number) => void;
     onAiTabChange?: (tab: AiTabState) => void;
+    /** Opens the Settings modal (e.g. when no AI API key is set). */
+    onOpenSettings?: () => void;
 }
 
 function statusIcon(file: FileStatus): { icon: string; cls: string } {
@@ -72,51 +77,6 @@ function statusIcon(file: FileStatus): { icon: string; cls: string } {
     if (s === "Renamed")
         return { icon: "→", cls: "text-blue-600 dark:text-blue-400" };
     return { icon: "M", cls: "text-yellow-600 dark:text-yellow-400" };
-}
-
-// ─── API Key Input ────────────────────────────────────────────────────────────
-
-interface ApiKeyInputProps {
-    initial: string;
-    onSave: (key: string) => void;
-    onCancel: () => void;
-}
-
-function ApiKeyInput({ initial, onSave, onCancel }: ApiKeyInputProps) {
-    const [value, setValue] = useState(initial);
-    return (
-        <div className="flex flex-col gap-1 p-2 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-300 dark:border-yellow-700 rounded text-xs">
-            <span className="font-medium text-yellow-800 dark:text-yellow-200">
-                Google Gemini API Key
-            </span>
-            <input
-                type="password"
-                value={value}
-                onChange={(e) => setValue(e.target.value)}
-                onKeyDown={(e) => {
-                    if (e.key === "Enter") onSave(value);
-                    if (e.key === "Escape") onCancel();
-                }}
-                placeholder="AIza..."
-                autoFocus
-                className="px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
-            />
-            <div className="flex gap-1 justify-end">
-                <button
-                    onClick={onCancel}
-                    className="px-2 py-0.5 rounded border border-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                >
-                    Cancel
-                </button>
-                <button
-                    onClick={() => onSave(value)}
-                    className="px-2 py-0.5 rounded bg-blue-600 text-white hover:bg-blue-700"
-                >
-                    Save
-                </button>
-            </div>
-        </div>
-    );
 }
 
 // ─── File row ─────────────────────────────────────────────────────────────────
@@ -958,6 +918,7 @@ export function PendingTab({
     onOpenMergeEditor,
     onConflictCountChange,
     onAiTabChange,
+    onOpenSettings,
 }: PendingTabProps) {
     const [status, setStatus] = useState<GitStatus | null>(null);
     const [mergeInfo, setMergeInfo] = useState<MergeInfo | null>(null);
@@ -965,19 +926,18 @@ export function PendingTab({
     const [loading, setLoading] = useState(true);
     const [commitMessage, setCommitMessage] = useState("");
     const [amend, setAmend] = useState(false);
-    const [apiKey, setApiKey] = useState(
-        () => localStorage.getItem(AI_API_KEY_STORAGE) ?? "",
-    );
-    const [showApiKeyInput, setShowApiKeyInput] = useState(false);
+    const [aiConfig, setAiConfig] = useState<AiConfig>(loadAiConfig);
+    const aiEnabled = aiConfig.provider !== "none";
+    const aiName = aiProviderName(aiConfig.provider);
 
-    // Keep apiKey in sync when the Settings modal saves a new key while this
-    // tab stays mounted (same-tab localStorage writes don't emit "storage").
+    // Keep aiConfig in sync when the Settings modal saves while this tab
+    // stays mounted (same-tab localStorage writes don't emit "storage").
     useEffect(() => {
-        const handleApiKeyChanged = (e: Event) => {
-            setApiKey((e as CustomEvent<string>).detail ?? "");
+        const handleAiSettingsChanged = (e: Event) => {
+            setAiConfig((e as CustomEvent<AiConfig>).detail);
         };
-        window.addEventListener(AI_API_KEY_CHANGED_EVENT, handleApiKeyChanged);
-        return () => window.removeEventListener(AI_API_KEY_CHANGED_EVENT, handleApiKeyChanged);
+        window.addEventListener(AI_SETTINGS_CHANGED_EVENT, handleAiSettingsChanged);
+        return () => window.removeEventListener(AI_SETTINGS_CHANGED_EVENT, handleAiSettingsChanged);
     }, []);
 
     // An AI commit-message candidate picked in the sidebar. If the box already
@@ -1516,9 +1476,8 @@ export function PendingTab({
     // Opens an "AI Commit Message" sidebar tab with a few candidates; picking
     // one there sends AI_USE_COMMIT_MESSAGE_EVENT back to this tab.
     const handleAiCommitMessage = async () => {
-        const key = apiKey.trim();
-        if (!key) {
-            setShowApiKeyInput(true);
+        if (!aiConfig.apiKey) {
+            onOpenSettings?.();
             return;
         }
         const controller = new AbortController();
@@ -1527,6 +1486,8 @@ export function PendingTab({
             type: "commit" as const,
             fileCount: status?.staged.length ?? 0,
             at: Date.now(),
+            providerName: aiName,
+            modelName: aiEffectiveModel(aiConfig),
         };
         const report = (t: AiTabState) => {
             if (!controller.signal.aborted) onAiTabChange?.(t);
@@ -1542,12 +1503,12 @@ export function PendingTab({
             if (!stagedDiff.trim()) {
                 throw new Error("No staged changes to generate message from");
             }
-            const candidates = await generateAiCommitCandidates(
+            const { candidates, respondedModel } = await generateAiCommitCandidates(
                 stagedDiff,
-                key,
+                aiConfig,
                 controller.signal,
             );
-            report({ ...base, status: "done", candidates });
+            report({ ...base, status: "done", candidates, respondedModel });
         } catch (e) {
             report({ ...base, status: "error", error: String(e) });
         }
@@ -1596,9 +1557,8 @@ export function PendingTab({
     // Every click starts an independent review (its own sidebar tab). Closing
     // that tab calls `abort`; the owner ignores updates for closed reviews.
     const handleAiReview = async (kind: AiReviewKind) => {
-        const key = apiKey.trim();
-        if (!key) {
-            setShowApiKeyInput(true);
+        if (!aiConfig.apiKey) {
+            onOpenSettings?.();
             return;
         }
         const untracked =
@@ -1616,6 +1576,8 @@ export function PendingTab({
                     : (status?.modified.length ?? 0) + untracked.length,
             untrackedFiles: untracked,
             at: Date.now(),
+            providerName: aiName,
+            modelName: aiEffectiveModel(aiConfig),
         };
         const report = (r: AiTabState) => {
             if (!controller.signal.aborted) onAiTabChange?.(r);
@@ -1657,30 +1619,23 @@ export function PendingTab({
                           ...(status?.modified ?? []).map((f) => f.filename),
                           ...untracked,
                       ];
-            const result = await generateAiReview(
+            const { result, respondedModel } = await generateAiReview(
                 diff,
                 kind,
                 files,
-                key,
+                aiConfig,
                 controller.signal,
             );
-            report({ ...base, status: "done", result });
+            report({ ...base, status: "done", result, respondedModel });
         } catch (e) {
             report({ ...base, status: "error", error: String(e) });
         }
     };
 
     const aiReviewTitle = (kind: AiReviewKind) =>
-        apiKey
-            ? `Review all ${kind} changes with AI (Gemini)`
-            : "Set Gemini API key first";
-
-    const handleSaveApiKey = (value: string) => {
-        const trimmed = value.trim();
-        setApiKey(trimmed);
-        localStorage.setItem(AI_API_KEY_STORAGE, trimmed);
-        setShowApiKeyInput(false);
-    };
+        aiConfig.apiKey
+            ? `Review all ${kind} changes with AI (${aiName})`
+            : `Set ${aiName} API key in Settings`;
 
     // ── Render ────────────────────────────────────────────────────────────────
 
@@ -1731,13 +1686,6 @@ export function PendingTab({
                     rows={3}
                     className="w-full px-2 py-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-850 resize-none focus:outline-none focus:ring-1 focus:ring-blue-500 dark:text-gray-200"
                 />
-                {showApiKeyInput && (
-                    <ApiKeyInput
-                        initial={apiKey}
-                        onSave={handleSaveApiKey}
-                        onCancel={() => setShowApiKeyInput(false)}
-                    />
-                )}
                 <div className="flex items-center justify-between gap-2">
                     <label className="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-400 cursor-pointer select-none">
                         <input
@@ -1752,20 +1700,22 @@ export function PendingTab({
                         Amend Commit
                     </label>
                     <div className="flex items-center gap-1.5">
-                        <button
-                            tabIndex={-1}
-                            onClick={handleAiCommitMessage}
-                            disabled={stagedFiles.length === 0}
-                            title={
-                                apiKey
-                                    ? "Suggest commit messages with AI (Gemini)"
-                                    : "Set Gemini API key first"
-                            }
-                            className="px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-40 whitespace-nowrap flex items-center gap-1"
-                        >
-                            <span>✦</span>
-                            <span>AI commit message</span>
-                        </button>
+                        {aiEnabled && (
+                            <button
+                                tabIndex={-1}
+                                onClick={handleAiCommitMessage}
+                                disabled={stagedFiles.length === 0}
+                                title={
+                                    aiConfig.apiKey
+                                        ? `Suggest commit messages with AI (${aiName})`
+                                        : `Set ${aiName} API key in Settings`
+                                }
+                                className="px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-40 whitespace-nowrap flex items-center gap-1"
+                            >
+                                <span>✦</span>
+                                <span>AI commit message</span>
+                            </button>
+                        )}
                         <button
                             onClick={handleCommit}
                             disabled={
@@ -1788,11 +1738,15 @@ export function PendingTab({
                 <SectionHeader
                     label="Staged files"
                     count={stagedFiles.length}
-                    aiReview={{
-                        onClick: () => handleAiReview("staged"),
-                        disabled: stagedFiles.length === 0,
-                        title: aiReviewTitle("staged"),
-                    }}
+                    aiReview={
+                        aiEnabled
+                            ? {
+                                  onClick: () => handleAiReview("staged"),
+                                  disabled: stagedFiles.length === 0,
+                                  title: aiReviewTitle("staged"),
+                              }
+                            : undefined
+                    }
                     action={
                         stagedFiles.length > 0
                             ? {
@@ -1977,11 +1931,15 @@ export function PendingTab({
                     <SectionHeader
                         label="Unstaged files"
                         count={unstagedFiles.length}
-                        aiReview={{
-                            onClick: () => handleAiReview("unstaged"),
-                            disabled: unstagedFiles.length === 0,
-                            title: aiReviewTitle("unstaged"),
-                        }}
+                        aiReview={
+                            aiEnabled
+                                ? {
+                                      onClick: () => handleAiReview("unstaged"),
+                                      disabled: unstagedFiles.length === 0,
+                                      title: aiReviewTitle("unstaged"),
+                                  }
+                                : undefined
+                        }
                         action={
                             unstagedFiles.length > 0
                                 ? {

@@ -1,23 +1,33 @@
-import { useRef, useState } from "react";
-import { AI_API_KEY_CHANGED_EVENT, AI_API_KEY_STORAGE } from "../../constants";
+import { useState } from "react";
+import {
+  AI_PROVIDERS,
+  loadAiApiKey,
+  loadAiConfig,
+  loadAiModel,
+  saveAiConfig,
+  type AiProvider,
+} from "../../lib";
 
 interface SettingsModalProps {
   onClose: () => void;
 }
 
 export function SettingsModal({ onClose }: SettingsModalProps) {
-  const [apiKey, setApiKey] = useState(
-    () => localStorage.getItem(AI_API_KEY_STORAGE) ?? "",
-  );
+  const [initial] = useState(loadAiConfig);
+  const [provider, setProvider] = useState<AiProvider>(initial.provider);
+  const [apiKey, setApiKey] = useState(initial.apiKey);
+  const [model, setModel] = useState(initial.model);
   const [saved, setSaved] = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const providerInfo = AI_PROVIDERS.find((p) => p.id === provider);
+
+  const handleProviderChange = (next: AiProvider) => {
+    setProvider(next);
+    setApiKey(loadAiApiKey(next));
+    setModel(loadAiModel(next));
+  };
 
   const handleSave = () => {
-    const trimmed = apiKey.trim();
-    localStorage.setItem(AI_API_KEY_STORAGE, trimmed);
-    // Same-tab localStorage writes don't fire the native "storage" event, so
-    // notify already-mounted components (e.g. PendingTab) directly.
-    window.dispatchEvent(new CustomEvent(AI_API_KEY_CHANGED_EVENT, { detail: trimmed }));
+    saveAiConfig({ provider, apiKey, model });
     setSaved(true);
     setTimeout(() => setSaved(false), 1500);
   };
@@ -49,20 +59,58 @@ export function SettingsModal({ onClose }: SettingsModalProps) {
               AI
             </h3>
             <label className="text-xs font-medium text-gray-700 dark:text-gray-300">
-              Google Gemini API Key
+              AI Provider
             </label>
-            <input
-              ref={inputRef}
-              type="password"
-              value={apiKey}
-              onChange={(e) => setApiKey(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder="AIza..."
-              autoFocus
-              className="w-full px-2 py-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-            />
+            <select
+              value={provider}
+              onChange={(e) => handleProviderChange(e.target.value as AiProvider)}
+              onKeyDown={(e) => {
+                if (e.key === "Escape") onClose();
+              }}
+              autoFocus={provider === "none"}
+              className="w-full px-2 py-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            >
+              {AI_PROVIDERS.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.label}
+                </option>
+              ))}
+            </select>
+            {provider !== "none" && providerInfo && (
+              <>
+                <label className="mt-1 text-xs font-medium text-gray-700 dark:text-gray-300">
+                  {providerInfo.keyLabel}
+                </label>
+                <input
+                  key={provider}
+                  type="password"
+                  value={apiKey}
+                  onChange={(e) => setApiKey(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder={providerInfo.keyPlaceholder}
+                  autoFocus
+                  className="w-full px-2 py-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                />
+                <label className="mt-1 text-xs font-medium text-gray-700 dark:text-gray-300">
+                  Model
+                </label>
+                <input
+                  key={`${provider}-model`}
+                  type="text"
+                  value={model}
+                  onChange={(e) => setModel(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder={providerInfo.defaultModel}
+                  spellCheck={false}
+                  className="w-full px-2 py-1.5 text-xs font-mono border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                />
+                <p className="text-[11px] text-gray-500 dark:text-gray-400">
+                  Leave empty to use the default ({providerInfo.defaultModel}).
+                </p>
+              </>
+            )}
             <p className="text-[11px] text-gray-500 dark:text-gray-400">
-              Used to generate AI commit messages from the Pending Changes tab.
+              Used for AI commit messages and AI reviews in the Pending Changes tab.
             </p>
           </section>
         </div>

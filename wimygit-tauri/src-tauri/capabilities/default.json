@@ -46,7 +46,10 @@
       "identifier": "http:default",
       "allow": [
         { "url": "https://api.github.com/repos/zelon/wimygit/releases/latest" },
-        { "url": "https://raw.githubusercontent.com/zelon/wimygit-plugins/main/WimygitPlugins.xml" }
+        { "url": "https://raw.githubusercontent.com/zelon/wimygit-plugins/main/WimygitPlugins.xml" },
+        { "url": "https://api.anthropic.com/*" },
+        { "url": "https://api.openai.com/*" },
+        { "url": "https://generativelanguage.googleapis.com/*" }
       ]
     },
     "dialog:default"

@@ -1,7 +1,12 @@
-// ============= Gemini AI helpers =============
+// ============= AI helpers (provider-independent) =============
 
-const GEMINI_URL =
-  "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent";
+import { callClaude } from "./claude";
+import { callCodex } from "./codex";
+import { callGemini } from "./gemini";
+import { aiEffectiveModel, type AiConfig } from "./settings";
+import type { AiReply } from "./types";
+
+export * from "./settings";
 
 const COMMIT_DIFF_LIMIT = 30_000;
 export const REVIEW_DIFF_LIMIT = 100_000;
@@ -29,6 +34,12 @@ interface AiTabBase {
   status: "loading" | "done" | "error";
   fileCount: number;
   at: number;
+  /** Display name of the AI provider that handled the request, e.g. "Claude". */
+  providerName: string;
+  /** Model the request was sent to, e.g. "gemini-flash-latest". */
+  modelName: string;
+  /** Model the response reports, e.g. "gemini-flash-5.3"; set once done. */
+  respondedModel?: string;
   error?: string;
   /** Cancels the in-flight request; present while status is "loading". */
   abort?: () => void;
@@ -49,34 +60,50 @@ export interface AiCommitState extends AiTabBase {
 
 export type AiTabState = AiReviewState | AiCommitState;
 
-async function callGemini(
+// "requested" or, when the response reports a different model (e.g. an alias
+// like gemini-flash-latest resolving to a concrete version), "requested -> actual".
+export function aiModelLabel(tab: AiTabBase): string {
+  const { modelName, respondedModel } = tab;
+  return respondedModel && respondedModel !== modelName
+    ? `${modelName} -> ${respondedModel}`
+    : modelName;
+}
+
+// Sends `prompt` to the configured provider and returns its text reply, which
+// the prompts below ask to be a single JSON object.
+async function callAi(
+  config: AiConfig,
   prompt: string,
-  apiKey: string,
-  generationConfig?: Record<string, unknown>,
   signal?: AbortSignal,
-): Promise<string> {
-  const response = await fetch(`${GEMINI_URL}?key=${apiKey}`, {
-    method: "POST",
-    signal,
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      contents: [{ parts: [{ text: prompt }] }],
-      ...(generationConfig ? { generationConfig } : {}),
-    }),
-  });
-  if (!response.ok) {
-    const err = await response.text();
-    throw new Error(`API error: ${response.status} ${err}`);
+): Promise<AiReply> {
+  const model = aiEffectiveModel(config);
+  switch (config.provider) {
+    case "claude":
+      return callClaude(prompt, config.apiKey, model, signal);
+    case "codex":
+      return callCodex(prompt, config.apiKey, model, signal);
+    case "gemini":
+      return callGemini(prompt, config.apiKey, model, signal);
+    default:
+      throw new Error("AI is disabled in Settings");
   }
-  const data = await response.json();
-  return data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() ?? "";
+}
+
+// Providers without a JSON response mode may wrap the object in a code fence
+// or add a sentence around it; keep only the outermost {...}.
+function extractJson(text: string): string {
+  const fenced = text.trim().match(/^```(?:json)?\s*([\s\S]*?)\s*```$/);
+  const body = (fenced ? fenced[1] : text).trim();
+  const first = body.indexOf("{");
+  const last = body.lastIndexOf("}");
+  return first >= 0 && last > first ? body.slice(first, last + 1) : body;
 }
 
 export async function generateAiCommitCandidates(
   stagedDiff: string,
-  apiKey: string,
+  config: AiConfig,
   signal?: AbortSignal,
-): Promise<string[]> {
+): Promise<{ candidates: string[]; respondedModel?: string }> {
   const prompt = `Write 3 alternative git commit messages for the following staged diff.
 1. A concise one-line subject (under 72 chars).
 2. A one-line subject in Conventional Commits style (e.g. "fix(ui): ..."), under 72 chars.
@@ -87,16 +114,11 @@ Respond with JSON only: {"candidates": ["<message 1>", "<message 2>", "<message 
 
 ${stagedDiff.slice(0, COMMIT_DIFF_LIMIT)}`;
 
-  const text = await callGemini(
-    prompt,
-    apiKey,
-    { responseMimeType: "application/json" },
-    signal,
-  );
+  const { text, model } = await callAi(config, prompt, signal);
 
   let parsed: unknown;
   try {
-    parsed = JSON.parse(text);
+    parsed = JSON.parse(extractJson(text));
   } catch {
     throw new Error(`Could not parse AI response: ${text.slice(0, 200)}`);
   }
@@ -107,7 +129,7 @@ ${stagedDiff.slice(0, COMMIT_DIFF_LIMIT)}`;
   if (candidates.length === 0) {
     throw new Error("AI returned no commit message candidates");
   }
-  return [...new Set(candidates)];
+  return { candidates: [...new Set(candidates)], respondedModel: model };
 }
 
 const SEVERITIES: AiReviewSeverity[] = ["error", "warning", "info"];
@@ -128,9 +150,9 @@ export async function generateAiReview(
   diff: string,
   kind: AiReviewKind,
   files: string[],
-  apiKey: string,
+  config: AiConfig,
   signal?: AbortSignal,
-): Promise<AiReviewResult> {
+): Promise<{ result: AiReviewResult; respondedModel?: string }> {
   const truncated = diff.length > REVIEW_DIFF_LIMIT;
   const known = new Set(files);
   const fileList = files
@@ -152,16 +174,11 @@ ${fileList}
 
 ${diff.slice(0, REVIEW_DIFF_LIMIT)}`;
 
-  const text = await callGemini(
-    prompt,
-    apiKey,
-    { responseMimeType: "application/json" },
-    signal,
-  );
+  const { text, model } = await callAi(config, prompt, signal);
 
   let parsed: unknown;
   try {
-    parsed = JSON.parse(text);
+    parsed = JSON.parse(extractJson(text));
   } catch {
     throw new Error(`Could not parse AI review response: ${text.slice(0, 200)}`);
   }
@@ -180,8 +197,11 @@ ${diff.slice(0, REVIEW_DIFF_LIMIT)}`;
         .filter((i) => i.message)
     : [];
   return {
-    summary: typeof obj.summary === "string" ? obj.summary : "",
-    issues,
-    truncated,
+    result: {
+      summary: typeof obj.summary === "string" ? obj.summary : "",
+      issues,
+      truncated,
+    },
+    respondedModel: model,
   };
 }
