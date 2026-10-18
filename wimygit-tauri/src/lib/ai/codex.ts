@@ -1,7 +1,7 @@
 // ============= OpenAI Codex API (Responses API) =============
 
 import { fetch } from "@tauri-apps/plugin-http";
-import type { AiReply } from "./types";
+import type { AiPrompt, AiReply } from "./types";
 
 const CODEX_URL = "https://api.openai.com/v1/responses";
 
@@ -10,7 +10,7 @@ interface ResponsesOutputItem {
 }
 
 export async function callCodex(
-  prompt: string,
+  prompt: AiPrompt,
   apiKey: string,
   model: string,
   signal?: AbortSignal,
@@ -24,7 +24,8 @@ export async function callCodex(
     },
     body: JSON.stringify({
       model,
-      input: prompt,
+      instructions: prompt.system,
+      input: prompt.user,
       text: { format: { type: "json_object" } },
     }),
   });

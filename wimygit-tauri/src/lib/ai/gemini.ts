@@ -1,12 +1,12 @@
 // ============= Google Gemini API =============
 
 import { fetch } from "@tauri-apps/plugin-http";
-import type { AiReply } from "./types";
+import type { AiPrompt, AiReply } from "./types";
 
 const GEMINI_MODELS_URL = "https://generativelanguage.googleapis.com/v1beta/models";
 
 export async function callGemini(
-  prompt: string,
+  prompt: AiPrompt,
   apiKey: string,
   model: string,
   signal?: AbortSignal,
@@ -20,7 +20,8 @@ export async function callGemini(
       "x-goog-api-key": apiKey,
     },
     body: JSON.stringify({
-      contents: [{ parts: [{ text: prompt }] }],
+      systemInstruction: { parts: [{ text: prompt.system }] },
+      contents: [{ parts: [{ text: prompt.user }] }],
       generationConfig: { responseMimeType: "application/json" },
     }),
   });

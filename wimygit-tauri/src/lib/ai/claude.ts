@@ -1,13 +1,13 @@
 // ============= Anthropic Claude API =============
 
 import { fetch } from "@tauri-apps/plugin-http";
-import type { AiReply } from "./types";
+import type { AiPrompt, AiReply } from "./types";
 
 const CLAUDE_URL = "https://api.anthropic.com/v1/messages";
 const CLAUDE_MAX_TOKENS = 4096;
 
 export async function callClaude(
-  prompt: string,
+  prompt: AiPrompt,
   apiKey: string,
   model: string,
   signal?: AbortSignal,
@@ -27,7 +27,8 @@ export async function callClaude(
     body: JSON.stringify({
       model,
       max_tokens: CLAUDE_MAX_TOKENS,
-      messages: [{ role: "user", content: prompt }],
+      system: prompt.system,
+      messages: [{ role: "user", content: prompt.user }],
     }),
   });
   if (!response.ok) {
