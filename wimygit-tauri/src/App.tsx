@@ -23,6 +23,7 @@ const BranchDiffTab = lazy(() => import("./components/tabs/BranchDiffTab").then(
 import {
   isGitRepository,
   getRepositoryRoot,
+  getStartupDir,
   getPluginDir,
   loadPlugins,
   hasLfsAttributes,
@@ -68,6 +69,17 @@ function makeId() {
 
 function repoNameFromPath(path: string) {
   return path.replace(/\\/g, "/").split("/").filter(Boolean).pop() ?? path;
+}
+
+const IS_WINDOWS = navigator.userAgent.includes("Windows");
+
+// Compare repo paths ignoring separator style, trailing slashes and (on Windows) case.
+function isSamePath(a: string, b: string) {
+  const norm = (p: string) => {
+    const s = p.replace(/\\/g, "/").replace(/\/+$/, "");
+    return IS_WINDOWS ? s.toLowerCase() : s;
+  };
+  return norm(a) === norm(b);
 }
 
 function loadStoredTabs(): Pick<RepoTabState, "id" | "repoPath" | "repoName">[] {
@@ -173,9 +185,13 @@ function App() {
         setRepoTabs((prev) => {
           const next = prev.filter((t) => t.id !== firstId);
           saveStoredTabs(next);
-          const newActive = next[0]?.id ?? "";
-          setActiveRepoId(newActive);
-          localStorage.setItem("activeRepoId", newActive);
+          // Keep a selection made meanwhile (e.g. the startup directory argument).
+          setActiveRepoId((prevActive) => {
+            if (prevActive !== firstId) return prevActive;
+            const newActive = next[0]?.id ?? "";
+            localStorage.setItem("activeRepoId", newActive);
+            return newActive;
+          });
           return next;
         });
       }
@@ -335,7 +351,7 @@ function App() {
         const root = await getRepositoryRoot(selectedPath);
 
         // If already open, just switch to it
-        const existing = repoTabs.find((t) => t.repoPath === root);
+        const existing = repoTabs.find((t) => isSamePath(t.repoPath, root));
         if (existing) {
           handleSelectRepo(existing.id);
           return;
@@ -363,6 +379,20 @@ function App() {
     },
     [repoTabs, handleSelectRepo]
   );
+
+  // `wimygit <dir>`: switch to the tab for that repo if already open, otherwise open it.
+  const startupDirHandledRef = useRef(false);
+  useEffect(() => {
+    if (startupDirHandledRef.current) return;
+    startupDirHandledRef.current = true;
+    getStartupDir()
+      .then((dir) => {
+        if (dir) handleOpenRepo(dir);
+      })
+      .catch(() => {
+        // ignore
+      });
+  }, [handleOpenRepo]);
 
   // Clear file selections when switching repos. Intentionally synchronous:
   // this resets ~10 independent UI-only state slots together when the

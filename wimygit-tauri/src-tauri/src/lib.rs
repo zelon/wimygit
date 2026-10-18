@@ -114,6 +114,23 @@ fn get_executable_dir() -> Result<String, String> {
     Ok(dir.to_string_lossy().to_string())
 }
 
+/// 첫 번째 명령줄 인자로 넘어온 디렉토리를 절대 경로로 반환한다 (예: `wimygit.exe .`).
+/// 인자가 없거나 디렉토리가 아니면 None.
+#[tauri::command]
+fn get_startup_dir() -> Option<String> {
+    let arg = std::env::args_os().nth(1)?;
+    let path = std::path::PathBuf::from(arg);
+    let path = if path.is_absolute() {
+        path
+    } else {
+        std::env::current_dir().ok()?.join(path)
+    };
+    if !path.is_dir() {
+        return None;
+    }
+    Some(path.to_string_lossy().to_string())
+}
+
 /// Returns the wimygit config directory (parent of Plugins dir)
 #[tauri::command]
 fn get_config_dir() -> Result<String, String> {
@@ -234,6 +251,7 @@ pub fn run() {
       write_text_file,
       get_executable_dir,
       get_config_dir,
+      get_startup_dir,
       // LFS commands
       has_lfs_attributes,
       get_lfs_lockable_extensions_cmd,

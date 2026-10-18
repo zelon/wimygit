@@ -52,6 +52,11 @@ export async function getRepositoryRoot(path: string): Promise<string> {
   return invoke<string>("get_repository_root", { path });
 }
 
+/** Directory passed as the first command-line argument (e.g. `wimygit .`), or null. */
+export async function getStartupDir(): Promise<string | null> {
+  return invoke<string | null>("get_startup_dir");
+}
+
 export async function getGitAuthor(
   cwd: string
 ): Promise<{ name: string; email: string }> {
