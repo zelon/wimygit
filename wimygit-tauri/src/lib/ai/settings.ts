@@ -123,9 +123,11 @@ Write in English.`;
 
 export const DEFAULT_AI_COMMIT_INSTRUCTIONS = `Write 3 alternative commit messages for the diff:
 1. A concise one-line subject (under 72 chars).
-2. A one-line subject in Conventional Commits style (e.g. "fix(ui): ..."), under 72 chars.
+2. A one-line subject with a bit more detail, under 72 chars.
 3. A subject line (under 72 chars), a blank line, then a short body of 1-4 lines (or "- " bullets) explaining what changed and why.
-Use the imperative mood. Do not wrap messages in quotes or code fences.`;
+Write in the language most of the recent commits use, and follow their conventions (prefixes such as "fix(ui): ", issue references, capitalization, punctuation).
+If there are no recent commits, write in English and use Conventional Commits style (e.g. "fix(ui): ...").
+Use the imperative mood (or its natural equivalent in that language). Do not wrap messages in quotes or code fences.`;
 
 const promptStorage = (kind: AiPromptKind) => `wimygit_ai_prompt_${kind}`;
 

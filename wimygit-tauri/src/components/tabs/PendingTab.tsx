@@ -11,6 +11,7 @@ import {
     gitCommit,
     getLastCommitMessage,
     gitDiff,
+    getHistory,
     runDifftool,
     runMergetool,
     openInFileManager,
@@ -28,6 +29,8 @@ import {
     runGitSimple,
     type LfsLock,
     generateAiCommitCandidates,
+    pickCommitExamples,
+    COMMIT_EXAMPLE_COUNT,
     generateAiReview,
     REVIEW_DIFF_LIMIT,
     type AiReviewKind,
@@ -1511,8 +1514,14 @@ export function PendingTab({
             if (!stagedDiff.trim()) {
                 throw new Error("No staged changes to generate message from");
             }
+            // Examples are best-effort: a repo without commits has no history.
+            // Fetch extra since merge/fixup commits are dropped; subjects are cheap.
+            const history = await getHistory(
+                repoPath, "", 0, COMMIT_EXAMPLE_COUNT * 5, false,
+            ).catch(() => []);
             const { candidates, respondedModel } = await generateAiCommitCandidates(
                 stagedDiff,
+                pickCommitExamples(history),
                 aiConfig,
                 controller.signal,
             );
