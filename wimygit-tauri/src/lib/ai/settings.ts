@@ -111,6 +111,46 @@ export function loadAiConfig(): AiConfig {
   };
 }
 
+// ============= Editable prompt instructions =============
+
+export type AiPromptKind = "review" | "commit";
+
+// Only the guidance part of each prompt is editable; the role, the rule to
+// treat the diff as data and the JSON response format are always added by the app.
+export const DEFAULT_AI_REVIEW_INSTRUCTIONS = `Focus on bugs, security problems, data loss, broken edge cases and obvious mistakes.
+Do not comment on minor style or formatting. Do not praise. If there is nothing worth reporting, return an empty issues array.
+Write in English.`;
+
+export const DEFAULT_AI_COMMIT_INSTRUCTIONS = `Write 3 alternative commit messages for the diff:
+1. A concise one-line subject (under 72 chars).
+2. A one-line subject in Conventional Commits style (e.g. "fix(ui): ..."), under 72 chars.
+3. A subject line (under 72 chars), a blank line, then a short body of 1-4 lines (or "- " bullets) explaining what changed and why.
+Use the imperative mood. Do not wrap messages in quotes or code fences.`;
+
+const promptStorage = (kind: AiPromptKind) => `wimygit_ai_prompt_${kind}`;
+
+export function aiDefaultPrompt(kind: AiPromptKind): string {
+  return kind === "review"
+    ? DEFAULT_AI_REVIEW_INSTRUCTIONS
+    : DEFAULT_AI_COMMIT_INSTRUCTIONS;
+}
+
+/** Instructions typed in Settings for `kind`, else the app default. */
+export function loadAiPrompt(kind: AiPromptKind): string {
+  return localStorage.getItem(promptStorage(kind))?.trim() || aiDefaultPrompt(kind);
+}
+
+// An empty or default value is not stored, so a changed default in a later
+// app version takes effect.
+export function saveAiPrompt(kind: AiPromptKind, text: string) {
+  const value = text.trim();
+  if (!value || value === aiDefaultPrompt(kind)) {
+    localStorage.removeItem(promptStorage(kind));
+  } else {
+    localStorage.setItem(promptStorage(kind), value);
+  }
+}
+
 export function saveAiConfig(config: AiConfig) {
   const apiKey = config.apiKey.trim();
   const model = config.model.trim();

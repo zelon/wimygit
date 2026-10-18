@@ -1,10 +1,13 @@
 import { useState } from "react";
 import {
   AI_PROVIDERS,
+  aiDefaultPrompt,
   loadAiApiKey,
   loadAiConfig,
   loadAiModel,
+  loadAiPrompt,
   saveAiConfig,
+  saveAiPrompt,
   type AiProvider,
 } from "../../lib";
 
@@ -12,11 +15,46 @@ interface SettingsModalProps {
   onClose: () => void;
 }
 
+interface FieldHeaderProps {
+  label: string;
+  /** Restores the app default; omitted for fields that have no default. */
+  onReset?: () => void;
+  /** True when the field already holds the default (Reset is disabled). */
+  isDefault?: boolean;
+}
+
+// A field label with an optional Reset button on the right.
+function FieldHeader({ label, onReset, isDefault }: FieldHeaderProps) {
+  return (
+    <div className="mt-1 flex items-center justify-between">
+      <label className="text-xs font-medium text-gray-700 dark:text-gray-300">
+        {label}
+      </label>
+      {onReset && (
+        <button
+          type="button"
+          onClick={onReset}
+          disabled={isDefault}
+          title="Reset to the WimyGit default"
+          className="px-1.5 py-0.5 text-[11px] rounded border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-40 disabled:hover:bg-transparent disabled:cursor-default transition-colors"
+        >
+          Reset
+        </button>
+      )}
+    </div>
+  );
+}
+
+const inputClass =
+  "w-full px-2 py-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-blue-500";
+
 export function SettingsModal({ onClose }: SettingsModalProps) {
   const [initial] = useState(loadAiConfig);
   const [provider, setProvider] = useState<AiProvider>(initial.provider);
   const [apiKey, setApiKey] = useState(initial.apiKey);
   const [model, setModel] = useState(initial.model);
+  const [reviewPrompt, setReviewPrompt] = useState(() => loadAiPrompt("review"));
+  const [commitPrompt, setCommitPrompt] = useState(() => loadAiPrompt("commit"));
   const [saved, setSaved] = useState(false);
   const providerInfo = AI_PROVIDERS.find((p) => p.id === provider);
 
@@ -27,6 +65,8 @@ export function SettingsModal({ onClose }: SettingsModalProps) {
   };
 
   const handleSave = () => {
+    saveAiPrompt("review", reviewPrompt);
+    saveAiPrompt("commit", commitPrompt);
     saveAiConfig({ provider, apiKey, model });
     setSaved(true);
     setTimeout(() => setSaved(false), 1500);
@@ -37,9 +77,15 @@ export function SettingsModal({ onClose }: SettingsModalProps) {
     if (e.key === "Escape") onClose();
   };
 
+  // Enter inserts a newline in a prompt; Ctrl+Enter saves.
+  const handlePromptKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) handleSave();
+    if (e.key === "Escape") onClose();
+  };
+
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-md mx-4 flex flex-col">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-2xl mx-4 flex flex-col max-h-[90vh]">
         <div className="flex items-center justify-between px-5 py-3 border-b border-gray-200 dark:border-gray-700">
           <h2 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
             Settings
@@ -53,7 +99,7 @@ export function SettingsModal({ onClose }: SettingsModalProps) {
           </button>
         </div>
 
-        <div className="px-5 py-4 flex flex-col gap-4">
+        <div className="px-5 py-4 flex flex-col gap-4 overflow-y-auto">
           <section className="flex flex-col gap-1.5">
             <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
               AI
@@ -89,11 +135,13 @@ export function SettingsModal({ onClose }: SettingsModalProps) {
                   onKeyDown={handleKeyDown}
                   placeholder={providerInfo.keyPlaceholder}
                   autoFocus
-                  className="w-full px-2 py-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  className={inputClass}
                 />
-                <label className="mt-1 text-xs font-medium text-gray-700 dark:text-gray-300">
-                  Model
-                </label>
+                <FieldHeader
+                  label="Model"
+                  onReset={() => setModel("")}
+                  isDefault={!model.trim()}
+                />
                 <input
                   key={`${provider}-model`}
                   type="text"
@@ -102,10 +150,40 @@ export function SettingsModal({ onClose }: SettingsModalProps) {
                   onKeyDown={handleKeyDown}
                   placeholder={providerInfo.defaultModel}
                   spellCheck={false}
-                  className="w-full px-2 py-1.5 text-xs font-mono border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  className={`${inputClass} font-mono`}
                 />
                 <p className="text-[11px] text-gray-500 dark:text-gray-400">
                   Leave empty to use the default ({providerInfo.defaultModel}).
+                </p>
+                <FieldHeader
+                  label="Review prompt"
+                  onReset={() => setReviewPrompt(aiDefaultPrompt("review"))}
+                  isDefault={reviewPrompt.trim() === aiDefaultPrompt("review")}
+                />
+                <textarea
+                  value={reviewPrompt}
+                  onChange={(e) => setReviewPrompt(e.target.value)}
+                  onKeyDown={handlePromptKeyDown}
+                  rows={5}
+                  spellCheck={false}
+                  className={`${inputClass} font-mono resize-y`}
+                />
+                <FieldHeader
+                  label="Commit message prompt"
+                  onReset={() => setCommitPrompt(aiDefaultPrompt("commit"))}
+                  isDefault={commitPrompt.trim() === aiDefaultPrompt("commit")}
+                />
+                <textarea
+                  value={commitPrompt}
+                  onChange={(e) => setCommitPrompt(e.target.value)}
+                  onKeyDown={handlePromptKeyDown}
+                  rows={6}
+                  spellCheck={false}
+                  className={`${inputClass} font-mono resize-y`}
+                />
+                <p className="text-[11px] text-gray-500 dark:text-gray-400">
+                  The response format and the rule to treat the diff as data are
+                  added automatically. Leave a prompt empty to use the default.
                 </p>
               </>
             )}
