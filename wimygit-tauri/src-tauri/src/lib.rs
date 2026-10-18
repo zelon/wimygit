@@ -115,20 +115,23 @@ fn get_executable_dir() -> Result<String, String> {
 }
 
 /// 첫 번째 명령줄 인자로 넘어온 디렉토리를 절대 경로로 반환한다 (예: `wimygit.exe .`).
-/// 인자가 없거나 디렉토리가 아니면 None.
+/// 인자가 없으면 None, 디렉토리가 아니면 사용자에게 보여줄 에러 메시지를 반환한다.
 #[tauri::command]
-fn get_startup_dir() -> Option<String> {
-    let arg = std::env::args_os().nth(1)?;
-    let path = std::path::PathBuf::from(arg);
+fn get_startup_dir() -> Result<Option<String>, String> {
+    let Some(arg) = std::env::args_os().nth(1) else {
+        return Ok(None);
+    };
+    let invalid = || format!("Invalid directory: {}", arg.to_string_lossy());
+    let path = std::path::PathBuf::from(&arg);
     let path = if path.is_absolute() {
         path
     } else {
-        std::env::current_dir().ok()?.join(path)
+        std::env::current_dir().map_err(|_| invalid())?.join(path)
     };
     if !path.is_dir() {
-        return None;
+        return Err(invalid());
     }
-    Some(path.to_string_lossy().to_string())
+    Ok(Some(path.to_string_lossy().to_string()))
 }
 
 /// Returns the wimygit config directory (parent of Plugins dir)

@@ -52,7 +52,10 @@ export async function getRepositoryRoot(path: string): Promise<string> {
   return invoke<string>("get_repository_root", { path });
 }
 
-/** Directory passed as the first command-line argument (e.g. `wimygit .`), or null. */
+/**
+ * Directory passed as the first command-line argument (e.g. `wimygit .`), or null.
+ * Rejects with "Invalid directory: ..." if the argument is not a directory.
+ */
 export async function getStartupDir(): Promise<string | null> {
   return invoke<string | null>("get_startup_dir");
 }

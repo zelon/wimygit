@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef, lazy, Suspense } from "react";
-import { open } from "@tauri-apps/plugin-dialog";
+import { open, message } from "@tauri-apps/plugin-dialog";
 import { exists } from "@tauri-apps/plugin-fs";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { APP_NAME, AI_USE_COMMIT_MESSAGE_EVENT } from "./constants";
@@ -389,8 +389,9 @@ function App() {
       .then((dir) => {
         if (dir) handleOpenRepo(dir);
       })
-      .catch(() => {
-        // ignore
+      .catch((e) => {
+        // Not a directory: tell the user, then continue with the restored tabs.
+        message(String(e), { title: APP_NAME, kind: "error", okLabel: "OK" }).catch(() => { });
       });
   }, [handleOpenRepo]);
 
