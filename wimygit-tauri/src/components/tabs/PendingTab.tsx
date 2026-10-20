@@ -32,13 +32,14 @@ import {
     pickCommitExamples,
     COMMIT_EXAMPLE_COUNT,
     generateAiReview,
-    REVIEW_DIFF_LIMIT,
+    aiReviewDiffLimit,
     type AiReviewKind,
     type AiTabState,
     type AiConfig,
     loadAiConfig,
     aiProviderName,
     aiEffectiveModel,
+    aiIsConfigured,
 } from "../../lib";
 import { SyncStatusBar } from "./SyncStatusBar";
 import { getSyncStatus, type SyncStatus } from "../../lib";
@@ -1487,7 +1488,7 @@ export function PendingTab({
     // Opens an "AI Commit Message" sidebar tab with a few candidates; picking
     // one there sends AI_USE_COMMIT_MESSAGE_EVENT back to this tab.
     const handleAiCommitMessage = async () => {
-        if (!aiConfig.apiKey) {
+        if (!aiIsConfigured(aiConfig)) {
             onOpenSettings?.();
             return;
         }
@@ -1534,7 +1535,7 @@ export function PendingTab({
     // Untracked files are invisible to `git diff`; build a new-file diff for
     // each one. `--no-index` exits with 1 when the files differ. Runs a few
     // git processes at a time and stops once `budget` chars are collected,
-    // since the review only sends the first REVIEW_DIFF_LIMIT chars anyway.
+    // since the review only sends the first aiReviewDiffLimit() chars anyway.
     const buildUntrackedDiff = async (
         files: string[],
         budget: number,
@@ -1574,7 +1575,7 @@ export function PendingTab({
     // Every click starts an independent review (its own sidebar tab). Closing
     // that tab calls `abort`; the owner ignores updates for closed reviews.
     const handleAiReview = async (kind: AiReviewKind) => {
-        if (!aiConfig.apiKey) {
+        if (!aiIsConfigured(aiConfig)) {
             onOpenSettings?.();
             return;
         }
@@ -1622,7 +1623,7 @@ export function PendingTab({
                     "\n" +
                     (await buildUntrackedDiff(
                         untracked,
-                        REVIEW_DIFF_LIMIT - diff.length,
+                        aiReviewDiffLimit(aiConfig) - diff.length,
                         controller.signal,
                     ));
             }
@@ -1650,7 +1651,7 @@ export function PendingTab({
     };
 
     const aiReviewTitle = (kind: AiReviewKind) =>
-        aiConfig.apiKey
+        aiIsConfigured(aiConfig)
             ? `Review all ${kind} changes with AI (${aiName})`
             : `Set ${aiName} API key in Settings`;
 
@@ -1723,7 +1724,7 @@ export function PendingTab({
                                 onClick={handleAiCommitMessage}
                                 disabled={stagedFiles.length === 0}
                                 title={
-                                    aiConfig.apiKey
+                                    aiIsConfigured(aiConfig)
                                         ? `Suggest commit messages with AI (${aiName})`
                                         : `Set ${aiName} API key in Settings`
                                 }

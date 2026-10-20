@@ -2,13 +2,15 @@
 
 import { AI_SETTINGS_CHANGED_EVENT } from "../../constants";
 
-export type AiProvider = "none" | "claude" | "codex" | "gemini";
+export type AiProvider = "none" | "claude" | "codex" | "gemini" | "ollama";
 
 export interface AiConfig {
   provider: AiProvider;
   apiKey: string;
   /** Model name typed in Settings; "" means the provider's `defaultModel`. */
   model: string;
+  /** Server URL typed in Settings; "" means the provider's `defaultBaseUrl`. */
+  baseUrl: string;
 }
 
 export const AI_PROVIDERS: {
@@ -16,9 +18,14 @@ export const AI_PROVIDERS: {
   label: string;
   /** Short name used in tooltips, e.g. "Review with AI (Claude)". */
   name: string;
+  /** Empty for providers that need no API key (e.g. a local Ollama server). */
   keyLabel: string;
   keyPlaceholder: string;
   defaultModel: string;
+  /** Set for providers whose server URL is configurable. */
+  defaultBaseUrl?: string;
+  /** Max diff chars sent to this provider, below the app-wide limits. */
+  diffLimit?: number;
 }[] = [
   {
     id: "none",
@@ -52,6 +59,17 @@ export const AI_PROVIDERS: {
     keyPlaceholder: "AIza...",
     defaultModel: "gemini-flash-latest",
   },
+  {
+    id: "ollama",
+    label: "Ollama (local)",
+    name: "Ollama",
+    keyLabel: "",
+    keyPlaceholder: "",
+    defaultModel: "gemma4:latest",
+    defaultBaseUrl: "http://localhost:11434",
+    // Local models have small context windows and are slow on long input.
+    diffLimit: 20_000,
+  },
 ];
 
 const PROVIDER_STORAGE = "wimygit_ai_provider";
@@ -60,6 +78,7 @@ const LEGACY_API_KEY_STORAGE = "wimygit_ai_api_key";
 
 const apiKeyStorage = (provider: AiProvider) => `wimygit_ai_api_key_${provider}`;
 const modelStorage = (provider: AiProvider) => `wimygit_ai_model_${provider}`;
+const baseUrlStorage = (provider: AiProvider) => `wimygit_ai_base_url_${provider}`;
 
 function isProvider(v: string | null): v is AiProvider {
   return AI_PROVIDERS.some((p) => p.id === v);
@@ -73,9 +92,35 @@ export function aiDefaultModel(provider: AiProvider): string {
   return AI_PROVIDERS.find((p) => p.id === provider)?.defaultModel ?? "";
 }
 
+export function aiDefaultBaseUrl(provider: AiProvider): string {
+  return AI_PROVIDERS.find((p) => p.id === provider)?.defaultBaseUrl ?? "";
+}
+
+/** True when `provider` authenticates with an API key. */
+export function aiRequiresApiKey(provider: AiProvider): boolean {
+  return !!AI_PROVIDERS.find((p) => p.id === provider)?.keyLabel;
+}
+
+/** True when requests can be sent: a provider is chosen and has a key if it needs one. */
+export function aiIsConfigured(config: AiConfig): boolean {
+  if (config.provider === "none") return false;
+  return !aiRequiresApiKey(config.provider) || !!config.apiKey;
+}
+
+/** `limit` lowered to the provider's own diff limit, if it has one. */
+export function aiDiffLimit(provider: AiProvider, limit: number): number {
+  const own = AI_PROVIDERS.find((p) => p.id === provider)?.diffLimit;
+  return own ? Math.min(own, limit) : limit;
+}
+
 /** The model a request actually uses: the one typed in Settings, else the default. */
 export function aiEffectiveModel(config: AiConfig): string {
   return config.model || aiDefaultModel(config.provider);
+}
+
+/** The server URL a request actually uses: the one typed in Settings, else the default. */
+export function aiEffectiveBaseUrl(config: AiConfig): string {
+  return config.baseUrl || aiDefaultBaseUrl(config.provider);
 }
 
 /** Stored key for `provider` (keys are kept per provider so switching back keeps them). */
@@ -88,6 +133,12 @@ export function loadAiApiKey(provider: AiProvider): string {
 export function loadAiModel(provider: AiProvider): string {
   if (provider === "none") return "";
   return localStorage.getItem(modelStorage(provider)) ?? "";
+}
+
+/** Server URL typed for `provider`, or "" to use its default (kept per provider). */
+export function loadAiBaseUrl(provider: AiProvider): string {
+  if (provider === "none") return "";
+  return localStorage.getItem(baseUrlStorage(provider)) ?? "";
 }
 
 export function loadAiConfig(): AiConfig {
@@ -108,6 +159,7 @@ export function loadAiConfig(): AiConfig {
     provider,
     apiKey: loadAiApiKey(provider),
     model: loadAiModel(provider),
+    baseUrl: loadAiBaseUrl(provider),
   };
 }
 
@@ -156,17 +208,20 @@ export function saveAiPrompt(kind: AiPromptKind, text: string) {
 export function saveAiConfig(config: AiConfig) {
   const apiKey = config.apiKey.trim();
   const model = config.model.trim();
+  const baseUrl = config.baseUrl.trim().replace(/\/+$/, "");
   localStorage.setItem(PROVIDER_STORAGE, config.provider);
   if (config.provider !== "none") {
     localStorage.setItem(apiKeyStorage(config.provider), apiKey);
     if (model) localStorage.setItem(modelStorage(config.provider), model);
     else localStorage.removeItem(modelStorage(config.provider));
+    if (baseUrl) localStorage.setItem(baseUrlStorage(config.provider), baseUrl);
+    else localStorage.removeItem(baseUrlStorage(config.provider));
   }
   // Same-tab localStorage writes don't fire the native "storage" event, so
   // notify already-mounted components (e.g. PendingTab) directly.
   window.dispatchEvent(
     new CustomEvent<AiConfig>(AI_SETTINGS_CHANGED_EVENT, {
-      detail: { provider: config.provider, apiKey, model },
+      detail: { provider: config.provider, apiKey, model, baseUrl },
     }),
   );
 }

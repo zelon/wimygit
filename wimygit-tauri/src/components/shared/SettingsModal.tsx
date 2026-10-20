@@ -3,6 +3,7 @@ import {
   AI_PROVIDERS,
   aiDefaultPrompt,
   loadAiApiKey,
+  loadAiBaseUrl,
   loadAiConfig,
   loadAiModel,
   loadAiPrompt,
@@ -53,6 +54,7 @@ export function SettingsModal({ onClose }: SettingsModalProps) {
   const [provider, setProvider] = useState<AiProvider>(initial.provider);
   const [apiKey, setApiKey] = useState(initial.apiKey);
   const [model, setModel] = useState(initial.model);
+  const [baseUrl, setBaseUrl] = useState(initial.baseUrl);
   const [reviewPrompt, setReviewPrompt] = useState(() => loadAiPrompt("review"));
   const [commitPrompt, setCommitPrompt] = useState(() => loadAiPrompt("commit"));
   const [saved, setSaved] = useState(false);
@@ -62,12 +64,13 @@ export function SettingsModal({ onClose }: SettingsModalProps) {
     setProvider(next);
     setApiKey(loadAiApiKey(next));
     setModel(loadAiModel(next));
+    setBaseUrl(loadAiBaseUrl(next));
   };
 
   const handleSave = () => {
     saveAiPrompt("review", reviewPrompt);
     saveAiPrompt("commit", commitPrompt);
-    saveAiConfig({ provider, apiKey, model });
+    saveAiConfig({ provider, apiKey, model, baseUrl });
     setSaved(true);
     setTimeout(() => setSaved(false), 1500);
   };
@@ -124,19 +127,47 @@ export function SettingsModal({ onClose }: SettingsModalProps) {
             </select>
             {provider !== "none" && providerInfo && (
               <>
-                <label className="mt-1 text-xs font-medium text-gray-700 dark:text-gray-300">
-                  {providerInfo.keyLabel}
-                </label>
-                <input
-                  key={provider}
-                  type="password"
-                  value={apiKey}
-                  onChange={(e) => setApiKey(e.target.value)}
-                  onKeyDown={handleKeyDown}
-                  placeholder={providerInfo.keyPlaceholder}
-                  autoFocus
-                  className={inputClass}
-                />
+                {providerInfo.keyLabel && (
+                  <>
+                    <label className="mt-1 text-xs font-medium text-gray-700 dark:text-gray-300">
+                      {providerInfo.keyLabel}
+                    </label>
+                    <input
+                      key={provider}
+                      type="password"
+                      value={apiKey}
+                      onChange={(e) => setApiKey(e.target.value)}
+                      onKeyDown={handleKeyDown}
+                      placeholder={providerInfo.keyPlaceholder}
+                      autoFocus
+                      className={inputClass}
+                    />
+                  </>
+                )}
+                {providerInfo.defaultBaseUrl && (
+                  <>
+                    <FieldHeader
+                      label="Server URL"
+                      onReset={() => setBaseUrl("")}
+                      isDefault={!baseUrl.trim()}
+                    />
+                    <input
+                      key={`${provider}-base-url`}
+                      type="text"
+                      value={baseUrl}
+                      onChange={(e) => setBaseUrl(e.target.value)}
+                      onKeyDown={handleKeyDown}
+                      placeholder={providerInfo.defaultBaseUrl}
+                      spellCheck={false}
+                      autoFocus={!providerInfo.keyLabel}
+                      className={`${inputClass} font-mono`}
+                    />
+                    <p className="text-[11px] text-gray-500 dark:text-gray-400">
+                      Only localhost is allowed. Leave empty to use the default
+                      ({providerInfo.defaultBaseUrl}).
+                    </p>
+                  </>
+                )}
                 <FieldHeader
                   label="Model"
                   onReset={() => setModel("")}

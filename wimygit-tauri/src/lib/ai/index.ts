@@ -3,14 +3,26 @@
 import { callClaude } from "./claude";
 import { callCodex } from "./codex";
 import { callGemini } from "./gemini";
-import { aiEffectiveModel, loadAiPrompt, type AiConfig } from "./settings";
+import { callOllama } from "./ollama";
+import {
+  aiDiffLimit,
+  aiEffectiveBaseUrl,
+  aiEffectiveModel,
+  loadAiPrompt,
+  type AiConfig,
+} from "./settings";
 import type { AiPrompt, AiReply } from "./types";
 
 export * from "./settings";
 
 const COMMIT_DIFF_LIMIT = 30_000;
-export const REVIEW_DIFF_LIMIT = 100_000;
+const REVIEW_DIFF_LIMIT = 100_000;
 const REVIEW_FILE_LIST_LIMIT = 500;
+
+/** Max diff chars a review sends to the configured provider. */
+export function aiReviewDiffLimit(config: AiConfig): number {
+  return aiDiffLimit(config.provider, REVIEW_DIFF_LIMIT);
+}
 
 export type AiReviewKind = "staged" | "unstaged";
 export type AiReviewSeverity = "error" | "warning" | "info";
@@ -84,6 +96,8 @@ async function callAi(
       return callCodex(prompt, config.apiKey, model, signal);
     case "gemini":
       return callGemini(prompt, config.apiKey, model, signal);
+    case "ollama":
+      return callOllama(prompt, aiEffectiveBaseUrl(config), model, signal);
     default:
       throw new Error("AI is disabled in Settings");
   }
@@ -147,7 +161,7 @@ ${loadAiPrompt("commit")}
 
 Respond with JSON only: {"candidates": ["<message 1>", "<message 2>", ...]}`,
     user: `${examples}<diff>
-${escapeDataTags(stagedDiff.slice(0, COMMIT_DIFF_LIMIT))}
+${escapeDataTags(stagedDiff.slice(0, aiDiffLimit(config.provider, COMMIT_DIFF_LIMIT)))}
 </diff>
 
 Respond with the JSON object only.`,
@@ -192,7 +206,8 @@ export async function generateAiReview(
   config: AiConfig,
   signal?: AbortSignal,
 ): Promise<{ result: AiReviewResult; respondedModel?: string }> {
-  const truncated = diff.length > REVIEW_DIFF_LIMIT;
+  const diffLimit = aiReviewDiffLimit(config);
+  const truncated = diff.length > diffLimit;
   const known = new Set(files);
   const fileList = files
     .slice(0, REVIEW_FILE_LIST_LIMIT)
@@ -217,7 +232,7 @@ ${escapeDataTags(fileList)}
 </files>
 
 <diff>
-${escapeDataTags(diff.slice(0, REVIEW_DIFF_LIMIT))}
+${escapeDataTags(diff.slice(0, diffLimit))}
 </diff>
 
 Respond with the JSON object only.`,
