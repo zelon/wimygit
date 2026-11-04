@@ -39,7 +39,14 @@ export async function callOllama(
     response = await fetch(url.href, {
       method: "POST",
       signal,
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        // The HTTP plugin otherwise sends the webview origin, which is
+        // "http://tauri.localhost" in Windows release builds. Ollama's default
+        // OLLAMA_ORIGINS does not allow it and answers 403. An empty value makes
+        // the plugin drop the header (requires the "unsafe-headers" feature).
+        Origin: "",
+      },
       body: JSON.stringify({
         model,
         stream: false,
@@ -59,7 +66,12 @@ export async function callOllama(
   }
   if (!response.ok) {
     const err = await response.text();
-    const hint = response.status === 404 ? ` Run "ollama pull ${model}" first.` : "";
+    const hint =
+      response.status === 404
+        ? ` Run "ollama pull ${model}" first.`
+        : response.status === 403
+          ? ` Ollama rejected the request origin; try setting OLLAMA_ORIGINS="*" and restarting Ollama.`
+          : "";
     throw new Error(`Ollama error: ${response.status} ${err}${hint}`);
   }
   const data = await response.json();
