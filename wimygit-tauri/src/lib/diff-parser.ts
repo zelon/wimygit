@@ -247,7 +247,6 @@ export function parseConflictMarkers(content: string): ParsedConflictFile {
   let oursBuf: string[] = [];
   let theirsBuf: string[] = [];
   let oursLabel = "";
-  let theirsLabel = "";
 
   for (const line of lines) {
     if (state === "normal") {
@@ -269,7 +268,7 @@ export function parseConflictMarkers(content: string): ParsedConflictFile {
       }
     } else {
       if (line.startsWith(">>>>>>>")) {
-        theirsLabel = line.slice(8).trim();
+        const theirsLabel = line.slice(8).trim();
         const blockIndex = blocks.length;
         blocks.push({ index: blockIndex, oursLines: oursBuf, theirsLines: theirsBuf, oursLabel, theirsLabel });
         segments.push({ kind: "block", blockIndex });

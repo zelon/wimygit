@@ -62,6 +62,7 @@ export async function callOllama(
     if (signal?.aborted) throw e;
     throw new Error(
       `Could not connect to Ollama at ${baseUrl}. Is "ollama serve" running? (${e})`,
+      { cause: e },
     );
   }
   if (!response.ok) {
