@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { confirm as tauriConfirm } from "@tauri-apps/plugin-dialog";
 import {
   getBranches,
   getCurrentBranch,
@@ -103,13 +104,14 @@ export function BranchTab({ repoPath, refreshKey, silentRefreshKey, onRefresh, o
   };
 
   const handleDeleteBranch = async (branchName: string, force: boolean = false) => {
-    if (!confirm(`Delete branch "${branchName}"?`)) return;
+    // The force retry was already confirmed by the "not fully merged" prompt.
+    if (!force && !await tauriConfirm(`Delete branch "${branchName}"?`)) return;
     try {
       await gitDeleteBranch(repoPath, branchName, force);
       await fetchBranches();
     } catch (e) {
       if (!force && String(e).includes("not fully merged")) {
-        if (confirm(`Branch "${branchName}" is not fully merged. Force delete?`)) {
+        if (await tauriConfirm(`Branch "${branchName}" is not fully merged. Force delete?`)) {
           await handleDeleteBranch(branchName, true);
         }
       } else {
@@ -119,7 +121,7 @@ export function BranchTab({ repoPath, refreshKey, silentRefreshKey, onRefresh, o
   };
 
   const handleMerge = async (branchName: string) => {
-    if (!confirm(`Merge "${branchName}" into "${currentBranch}"?`)) return;
+    if (!await tauriConfirm(`Merge "${branchName}" into "${currentBranch}"?`)) return;
     try {
       await gitMerge(repoPath, branchName);
       await fetchBranches();

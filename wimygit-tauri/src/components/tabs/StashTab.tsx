@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { confirm as tauriConfirm } from "@tauri-apps/plugin-dialog";
 import {
   getStashList,
   stashPush,
@@ -101,7 +102,7 @@ export function StashTab({ repoPath, refreshKey, onRefresh }: StashTabProps) {
   };
 
   const handleDrop = async (index: number) => {
-    if (!confirm(`Drop stash@{${index}}?`)) return;
+    if (!await tauriConfirm(`Drop stash@{${index}}?`)) return;
     setOperating(index);
     setError(null);
     setSuccess(null);

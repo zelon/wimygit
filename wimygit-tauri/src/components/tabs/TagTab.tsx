@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { confirm as tauriConfirm } from "@tauri-apps/plugin-dialog";
 import {
   getTags,
   createTag,
@@ -88,7 +89,7 @@ export function TagTab({ repoPath, refreshKey, onRefresh }: TagTabProps) {
   };
 
   const handleDelete = async (name: string) => {
-    if (!confirm(`Delete tag "${name}"?`)) return;
+    if (!await tauriConfirm(`Delete tag "${name}"?`)) return;
     setOperating(`delete-${name}`);
     try {
       await deleteTag(repoPath, name);

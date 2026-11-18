@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { confirm as tauriConfirm } from "@tauri-apps/plugin-dialog";
 import { resolve } from "@tauri-apps/api/path";
 import {
   getWorktrees,
@@ -121,7 +122,7 @@ export function WorktreeTab({ repoPath, refreshKey, onRefresh, onOpenRepo, onWor
       setError("Cannot remove the main worktree");
       return;
     }
-    if (!confirm(`Remove worktree at "${worktree.path}"?\nThis does not delete the directory.`)) return;
+    if (!await tauriConfirm(`Remove worktree at "${worktree.path}"?\nThis does not delete the directory.`)) return;
     setOperating(`remove-${worktree.path}`);
     try {
       await removeWorktree(repoPath, worktree.path);

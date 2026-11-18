@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { confirm as tauriConfirm } from "@tauri-apps/plugin-dialog";
 import { open as shellOpen } from "@tauri-apps/plugin-shell";
 import { fetch } from "@tauri-apps/plugin-http";
 import { getVersion } from "@tauri-apps/api/app";
@@ -77,7 +78,7 @@ export function HamburgerMenu({ onPluginClick, onSettingsClick }: HamburgerMenuP
       const latestVersion = latestTag.replace(/^v/, "");
 
       if (latestVersion > appVersion) {
-        const go = confirm(
+        const go = await tauriConfirm(
           `New version available: ${appVersion} → ${latestVersion}\nOpen download page?`
         );
         if (go) {

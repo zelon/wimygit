@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { confirm as tauriConfirm } from "@tauri-apps/plugin-dialog";
 import {
   getRemotes,
   addRemote,
@@ -120,7 +121,7 @@ export function RemoteTab({ repoPath, refreshKey, onRefresh, onPushSuccess }: Re
   };
 
   const handleRemoveRemote = async (name: string) => {
-    if (!confirm(`Remove remote "${name}"?`)) return;
+    if (!await tauriConfirm(`Remove remote "${name}"?`)) return;
     try {
       await removeRemote(repoPath, name);
       await fetchData();

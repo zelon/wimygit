@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { confirm as tauriConfirm } from "@tauri-apps/plugin-dialog";
 import { fetch } from "@tauri-apps/plugin-http";
 import { open as shellOpen } from "@tauri-apps/plugin-shell";
 import {
@@ -376,7 +377,7 @@ export function PluginTab({ repoPath, onRefresh, onPluginChanged }: PluginTabPro
   };
 
   const handleUninstall = async (plugin: PluginInfo) => {
-    if (!confirm(`Uninstall "${plugin.title}"?\nDirectory: ${plugin.plugin_dir}`)) return;
+    if (!await tauriConfirm(`Uninstall "${plugin.title}"?\nDirectory: ${plugin.plugin_dir}`)) return;
     setOperating("uninstall");
     setError(null);
     try {
