@@ -145,13 +145,13 @@ export function RepoStateBanner({ repoPath, refreshKey, onRefresh, conflictCount
         )}
         {isRevert && (
           <>
-            <button
-              disabled={running}
-              onClick={() => runAction(["revert", "--continue"])}
-              className="px-2.5 py-0.5 rounded bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white font-medium"
-            >
-              Continue
-            </button>
+            {/* No Continue button: `git revert --continue` may open an editor.
+                Committing in the Pending tab finishes the revert instead. */}
+            <span className="text-gray-700 dark:text-gray-300 italic">
+              {conflictCount > 0
+                ? "Resolve the conflicts, review the staged files, then commit to create the revert commit."
+                : "Review the staged files, then commit to create the revert commit."}
+            </span>
             <button
               disabled={running}
               onClick={() => runAction(["revert", "--abort"])}

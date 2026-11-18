@@ -211,6 +211,37 @@ export async function getLastCommitMessage(cwd: string): Promise<string> {
   return runGitSimple(["log", "-1", "--pretty=format:%B"], cwd);
 }
 
+/**
+ * Returns the commit message git prepared in .git/MERGE_MSG (e.g. after
+ * `git revert --no-commit`, `git cherry-pick --no-commit` or a conflicted
+ * merge). Comment lines are stripped because `git commit -m` keeps them.
+ * Returns null when the file does not exist.
+ *
+ * The repo state (REVERT_HEAD etc.) is intentionally not checked: it is not
+ * written in every case (e.g. `cherry-pick --no-commit` writes no
+ * CHERRY_PICK_HEAD), while `git commit` itself uses MERGE_MSG whenever it
+ * exists. Git removes the file on commit, abort and reset.
+ */
+export async function getPreparedCommitMessage(cwd: string): Promise<string | null> {
+  let msgPath = (await runGitSimple(["rev-parse", "--git-path", "MERGE_MSG"], cwd)).trim();
+  // --git-path may be relative to cwd (e.g. ".git/MERGE_MSG")
+  if (!msgPath.startsWith("/") && !/^[A-Za-z]:[\\/]/.test(msgPath)) {
+    msgPath = `${cwd.replace(/[\\/]+$/, "")}/${msgPath}`;
+  }
+  let raw: string;
+  try {
+    raw = await readTextFile(msgPath);
+  } catch {
+    return null;
+  }
+  const msg = raw
+    .split(/\r?\n/)
+    .filter((line) => !line.startsWith("#"))
+    .join("\n")
+    .trim();
+  return msg || null;
+}
+
 export async function gitStage(cwd: string, files: string[]): Promise<string> {
   return runGitSimple(["add", ...files], cwd);
 }

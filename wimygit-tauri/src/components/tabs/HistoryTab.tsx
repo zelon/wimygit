@@ -5,6 +5,8 @@ import {
   getHistory,
   getCommitFiles,
   getCommitParents,
+  getRepoState,
+  getCommitMessageDraft,
   getLocalOnlyBranches,
   getStaleBranches,
   getRemotes,
@@ -13,6 +15,7 @@ import {
   type SelectedDiffInfo,
 } from "../../lib";
 import { invoke } from "@tauri-apps/api/core";
+import { confirm as tauriConfirm, message as tauriMessage } from "@tauri-apps/plugin-dialog";
 import { GraphSvg, ROW_H } from "./GitGraph";
 import { computeGraphLayout, computeLinearLayout } from "./git-graph-layout";
 
@@ -28,6 +31,8 @@ interface HistoryTabProps {
   onShowInWorkspaceFile?: (absolutePath: string) => void;
   onShowInHistoryFile?: (absolutePath: string) => void;
   onOpenCompare?: (base: string, compare: string) => void;
+  /** Switches to the Pending Changes tab. */
+  onShowPending?: () => void;
 }
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
@@ -93,9 +98,10 @@ interface ContextMenuProps {
   onOpenCreateBranch: (commitHash: string) => void;
   onOpenCreateTag: (commitHash: string) => void;
   onOpenCompare?: (base: string, compare: string) => void;
+  onShowPending?: () => void;
 }
 
-function ContextMenu({ x, y, commit, repoPath, localOnlyBranches, staleBranches, selectedForCompare, onClose, onRefresh, onOpenCreateBranch, onOpenCreateTag, onOpenCompare }: ContextMenuProps) {
+function ContextMenu({ x, y, commit, repoPath, localOnlyBranches, staleBranches, selectedForCompare, onClose, onRefresh, onOpenCreateBranch, onOpenCreateTag, onOpenCompare, onShowPending }: ContextMenuProps) {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -108,6 +114,77 @@ function ContextMenu({ x, y, commit, repoPath, localOnlyBranches, staleBranches,
     onClose();
     try { await invoke("run_git_simple", { args, cwd: repoPath }); onRefresh(); }
     catch (e) { alert(String(e)); }
+  };
+
+  // Applies the inverse changes of the commit to the working tree without
+  // committing (git revert --no-commit), then switches to the Pending tab so
+  // the user can review the result and commit it with the prepared message.
+  // The repo stays in the "reverting" state until that commit; RepoStateBanner
+  // offers Abort meanwhile.
+  const revert = async () => {
+    onClose();
+    let parents: string[] = [];
+    try { parents = await getCommitParents(repoPath, commit.hash); }
+    catch { parents = commit.parents ?? []; }
+    const isMerge = parents.length > 1;
+
+    const subject = commit.message.split("\n")[0];
+    const lines = [
+      `Revert ${commit.short_hash}?`,
+      "",
+      `  ${commit.short_hash} ${subject}`,
+      "",
+      "The inverse changes will be applied to the working tree. Review them in the Pending tab and commit.",
+    ];
+    if (isMerge) {
+      lines.push("", "This is a merge commit. It will be reverted relative to its first parent (-m 1).");
+    }
+    // Use the dialog plugin's confirm and await it: the plugin replaces
+    // window.confirm with an async function, so a plain `confirm()` returns
+    // a (truthy) Promise and never blocks.
+    const ok = await tauriConfirm(lines.join("\n"), { title: "Revert", kind: "warning" });
+    if (!ok) return;
+
+    // Shown only after the user confirmed, so cancelling shows no extra popup.
+    if (getCommitMessageDraft(repoPath).trim()) {
+      await tauriMessage(
+        "The commit message box in the Pending tab already has text.\nThe revert commit message will be appended after the existing message.",
+        { title: "Revert", kind: "info" },
+      );
+    }
+
+    const args = ["revert", "--no-commit"];
+    if (isMerge) args.push("-m", "1");
+    args.push(commit.hash);
+
+    // Whether the inverse changes were applied to the working tree (fully or
+    // with conflicts), i.e. there is something to review in the Pending tab.
+    let prepared = false;
+    try {
+      const result = await invoke<{ stdout: string; stderr: string; exit_code: number }>(
+        "run_git", { args, cwd: repoPath });
+      prepared = result.exit_code === 0;
+      if (result.exit_code !== 0) {
+        // git output may be localized, so detect conflicts via repo state
+        // (REVERT_HEAD) instead of parsing messages.
+        let conflicted = false;
+        try { conflicted = (await getRepoState(repoPath)).state === "reverting"; }
+        catch { /* fall through to generic error */ }
+        if (conflicted) {
+          prepared = true;
+          await tauriMessage(
+            `Revert of ${commit.short_hash} stopped due to conflicts.\n\nResolve the conflicts in the Pending tab and commit, or use Abort in the banner.`,
+            { title: "Revert", kind: "warning" });
+        } else {
+          await tauriMessage(`Revert failed:\n${result.stderr.trim() || result.stdout.trim()}`,
+            { title: "Revert", kind: "error" });
+        }
+      }
+    } catch (e) {
+      await tauriMessage(String(e), { title: "Revert", kind: "error" });
+    }
+    onRefresh();
+    if (prepared) onShowPending?.();
   };
 
   const localOnlyRefsOnCommit = parseRefNames(commit.ref_names)
@@ -147,6 +224,7 @@ function ContextMenu({ x, y, commit, repoPath, localOnlyBranches, staleBranches,
         onRefresh();
       }
     },
+    { label: "Revert…", action: () => revert() },
     { label: "──", action: () => { } },
     { label: "Reset Soft", action: () => { if (confirm(`Reset soft to ${commit.short_hash}?`)) run(["reset", "--soft", commit.hash]); } },
     { label: "Reset Mixed", action: () => { if (confirm(`Reset mixed to ${commit.short_hash}?`)) run(["reset", "--mixed", commit.hash]); } },
@@ -264,7 +342,7 @@ function FileContextMenu({ x, y, absolutePath, onClose, onShowInWorkspace, onSho
 
 const PAGE_SIZE = 100;
 
-export function HistoryTab({ repoPath, filePath, refreshKey, silentRefreshKey, onRefresh, onFileSelect, onClearPath, onShowInWorkspace, onShowInWorkspaceFile, onShowInHistoryFile, onOpenCompare }: HistoryTabProps) {
+export function HistoryTab({ repoPath, filePath, refreshKey, silentRefreshKey, onRefresh, onFileSelect, onClearPath, onShowInWorkspace, onShowInWorkspaceFile, onShowInHistoryFile, onOpenCompare, onShowPending }: HistoryTabProps) {
   const [commits, setCommits] = useState<CommitInfo[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -696,6 +774,7 @@ export function HistoryTab({ repoPath, filePath, refreshKey, silentRefreshKey, o
           selectedForCompare={selectedForCompare}
           onClose={() => setContextMenu(null)}
           onRefresh={() => { setContextMenu(null); onRefresh(); }}
+          onShowPending={onShowPending}
           onOpenCreateBranch={async (hash) => {
             const remotes = await getRemotes(repoPath).catch(() => []);
             setCreateBranchModal({ commitHash: hash, hasRemotes: remotes.length > 0 });

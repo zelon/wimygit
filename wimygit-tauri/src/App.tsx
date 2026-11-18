@@ -609,6 +609,7 @@ function App() {
               repoPath={activeRepo.repoPath}
               refreshKey={activeRepo.refreshKey}
               silentRefreshKey={activeRepo.silentRefreshKey}
+              onCommitted={handleRefresh}
               onFilePreview={(filename, staged, isUntracked, isConflict) => { setSelectedDiff(null); setPendingFilePreview({ filename, staged, isUntracked, isConflict }); }}
               onLfsLockCountChange={setLfsLockCount}
               onOpenMergeEditor={setActiveMergeFile}
@@ -653,6 +654,7 @@ function App() {
                   })();
                 }}
                 onShowInHistoryFile={(absolutePath) => setSelectedFilePath(absolutePath)}
+                onShowPending={() => handleTabChange("pending")}
                 onOpenCompare={(base, compare) => {
                   setBranchDiffInitialBase(base || undefined);
                   setBranchDiffInitialCompare(compare || undefined);

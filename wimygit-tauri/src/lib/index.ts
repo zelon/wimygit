@@ -1,5 +1,6 @@
 export * from "./git-types";
 export * from "./git-api";
+export * from "./commit-message-draft";
 export * from "./git-log";
 export * from "./git-lfs";
 export * from "./diff-parser";

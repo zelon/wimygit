@@ -10,6 +10,8 @@ import {
     gitDiscard,
     gitCommit,
     getLastCommitMessage,
+    getPreparedCommitMessage,
+    setCommitMessageDraft,
     gitDiff,
     getHistory,
     runDifftool,
@@ -55,6 +57,9 @@ interface PendingTabProps {
     repoPath: string;
     refreshKey: number;
     silentRefreshKey?: number;
+    /** Called after a successful commit so app-wide state (e.g. the
+     *  revert/merge banner, history) can refresh. */
+    onCommitted?: () => void;
     onFilePreview?: (
         filename: string,
         staged: boolean,
@@ -923,6 +928,7 @@ export function PendingTab({
     repoPath,
     refreshKey,
     silentRefreshKey,
+    onCommitted,
     onFilePreview,
     onLfsLockCountChange,
     onShowInWorkspaceFile,
@@ -958,6 +964,10 @@ export function PendingTab({
     useEffect(() => {
         commitMessageRef.current = commitMessage;
     }, [commitMessage]);
+    // Publish the draft so other tabs (History's Revert) can see it.
+    useEffect(() => {
+        setCommitMessageDraft(repoPath, commitMessage.trim() ? commitMessage : "");
+    }, [repoPath, commitMessage]);
     useEffect(() => {
         const handleUseCommitMessage = async (e: Event) => {
             const text = (e as CustomEvent<string>).detail ?? "";
@@ -984,6 +994,9 @@ export function PendingTab({
         window.addEventListener(AI_USE_COMMIT_MESSAGE_EVENT, handleUseCommitMessage);
         return () => window.removeEventListener(AI_USE_COMMIT_MESSAGE_EVENT, handleUseCommitMessage);
     }, []);
+    // Last message auto-filled from .git/MERGE_MSG. Remembered so that a
+    // message the user cleared on purpose is not filled in again on refresh.
+    const lastPreparedMessageRef = useRef<string | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [previewKey, setPreviewKey] = useState<string | null>(null);
     const [selectedUnstaged, setSelectedUnstaged] = useState<Set<string>>(
@@ -1055,6 +1068,24 @@ export function PendingTab({
             } else {
                 setMergeInfo(null);
             }
+            // Pre-fill the message git prepared for an in-progress revert,
+            // cherry-pick or merge (e.g. "Revert ..." after --no-commit).
+            getPreparedCommitMessage(repoPath)
+                .then((prepared) => {
+                    if (gen !== fetchGenRef.current) return;
+                    if (prepared === null) {
+                        lastPreparedMessageRef.current = null;
+                        return;
+                    }
+                    if (prepared === lastPreparedMessageRef.current) return;
+                    lastPreparedMessageRef.current = prepared;
+                    // Keep any message the user already typed and append the
+                    // prepared one after it (History's Revert warns about this).
+                    setCommitMessage((prev) =>
+                        prev.trim() ? `${prev.trimEnd()}\n\n${prepared}` : prepared,
+                    );
+                })
+                .catch(() => { /* optional convenience; ignore failures */ });
             setError(null);
         } catch (e) {
             if (gen === fetchGenRef.current) setError(String(e));
@@ -1479,7 +1510,10 @@ export function PendingTab({
             await gitCommit(repoPath, commitMessage, amend);
             setCommitMessage("");
             setAmend(false);
-            await fetchStatus();
+            // A commit can finish an in-progress revert/merge/cherry-pick, so
+            // refresh app-wide state too (this also re-fetches this tab).
+            if (onCommitted) onCommitted();
+            else await fetchStatus();
         } catch (e) {
             setError(String(e));
         }
